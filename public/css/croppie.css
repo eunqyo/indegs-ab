@@ -1,0 +1,243 @@
+.croppie-container {
+	/*padding: 30px;*/
+    margin-top:-1px;
+    margin-left:-1px;
+}
+.croppie-container .cr-image {
+	z-index: -1;
+	position: absolute;
+	top: 0;
+	left: 0;
+	transform-origin: 0 0;
+    max-width: none;
+}
+
+.croppie-container .cr-boundary {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    background-color: #FFFFFF;
+    border: 1px solid #efefef;
+}
+
+.croppie-container .cr-viewport {
+	position: absolute;
+	border: 2px solid #fff;
+  /*border-radius:15px;*/
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+  box-shadow: 0 0 0 899px rgba(226, 226, 226, 0.5);
+	z-index: 0;
+}
+.croppie-container .cr-vp-circle {
+	border-radius: 50%;
+}
+.croppie-container .cr-overlay {
+	z-index: 1;
+	position: absolute;
+	cursor: move;
+}
+.croppie-container .cr-slider-wrap {
+	width: 90%;
+	margin: 0 auto;
+	margin-top: 3px;
+	text-align: center;
+}
+.croppie-result {
+	position: relative; 
+	overflow: hidden;
+}
+.croppie-result img {
+	position: absolute;
+}
+
+/*************************************/
+/***** STYLING RANGE INPUT ***********/
+/*************************************/
+/*http://brennaobrien.com/blog/2014/05/style-input-type-range-in-every-browser.html */
+/*************************************/
+
+.cr-slider {
+    -webkit-appearance: none;/*removes default webkit styles*/
+    /*border: 1px solid white; *//*fix for FF unable to apply focus style bug */
+    width: 300px;/*required for proper track sizing in FF*/
+    max-width: 100%;
+    /*border:1px inset;*/
+}
+.cr-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 0;
+    border-radius: 3px;
+}
+.cr-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ddd;
+    margin-top: -6px;
+}
+.cr-slider:focus {
+    outline: none;
+}
+/*
+.cr-slider:focus::-webkit-slider-runnable-track {
+    background: #ccc;
+}
+*/
+
+.cr-slider::-moz-range-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 0;
+    border-radius: 3px;
+}
+.cr-slider::-moz-range-thumb {
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ddd;
+    margin-top: -6px;
+}
+
+/*hide the outline behind the border*/
+.cr-slider:-moz-focusring{
+    outline: 1px solid white;
+    outline-offset: -1px;
+}
+
+.cr-slider::-ms-track {
+    width: 300px;
+    height: 5px;
+    background: transparent;/*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+    border-color: transparent;/*leave room for the larger thumb to overflow with a transparent border */
+    border-width: 6px 0;
+    color: transparent;/*remove default tick marks*/
+}
+.cr-slider::-ms-fill-lower {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+.cr-slider::-ms-fill-upper {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+.cr-slider::-ms-thumb {
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #ddd;
+}
+.cr-slider:focus::-ms-fill-lower {
+    background: rgba(0, 0, 0, 0.5);
+}
+.cr-slider:focus::-ms-fill-upper {
+    background: rgba(0, 0, 0, 0.5);
+}
+/*******************************************/
+
+
+/* Just cross hairs for debugging - can be removed upon release */
+.croppie-container .cr-viewport.debug:before,
+.croppie-container .cr-viewport.debug:after {
+    background: white;
+    width: 1px;
+    height: 1px;
+    content: '';
+    position: absolute;
+}
+.croppie-container .cr-viewport.debug:before {
+	top: 0;
+    height: 100%;
+    left: 50%;
+}
+.croppie-container .cr-viewport.debug:after {
+	top: 50%;
+	left: 0;
+	width: 100%;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: 1px solid #a2a2a2;
+  height: 20px;
+  width: 15px;
+  border-radius: 5px;
+  background: #ffffff;
+  cursor: pointer;
+  margin-top: -7px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+  box-shadow: 0px 0px 1px #a4a4a4;
+}
+
+/* All the same stuff for Firefox */
+input[type=range]::-moz-range-thumb {
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  border: 1px solid #000000;
+  height: 36px;
+  width: 16px;
+  border-radius: 3px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/* All the same stuff for IE */
+input[type=range]::-ms-thumb {
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  border: 1px solid #000000;
+  height: 36px;
+  width: 16px;
+  border-radius: 3px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 7px;
+  border-top:1px solid #d3d3d3;
+  border-bottom:1px solid #d3d3d3;
+  box-shadow:inset 0px 0px 6px #d9d9d9; 
+  cursor: pointer;
+  background: #efefef;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+  box-shadow:inset 0px 0px 10px #c2c2c2;
+}
+
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 1px;
+  cursor: pointer;
+  background: #efefef;
+}
+
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 1px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #efefef;
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: black;
+}
+input[type=range]::-ms-fill-upper {
+  background: #efefef;
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: black;
+}

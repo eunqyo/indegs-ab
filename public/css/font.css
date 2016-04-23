@@ -1,0 +1,92 @@
+@font-face {
+    font-family: 'lato';
+    src: url('/font/Lato-Hairline.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'lato';
+    src: url('/font/Lato-Light.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'lato';
+    src: url('/font/Lato-Regular.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'lato';
+    src: url('/font/Lato-Bold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'lato';
+    src: url('/font/Lato-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Lato';
+    src: url('/font/Lato-Black.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+/*KOREAN FONT FACE*/
+
+@font-face {
+    font-family: 'SpoqaHanSans';
+    src: url('/font/SpoqaHanSans-Thin.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+    letter-spacing: -0.3px;
+}
+@font-face {
+    font-family: 'SpoqaHanSans';
+    src: url('/font/SpoqaHanSans-Regular.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    letter-spacing: -0.3px;
+}
+@font-face {
+    font-family: 'SpoqaHanSans';
+    src: url('/font/SpoqaHanSans-Bold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: -0.3px;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('/font/OpenSans-Light.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'OpenSans';
+    src: url('/font/OpenSans-Regular.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'OpenSans';
+    src: url('/font/OpenSans-SemiBold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Vegur';
+    src: url('/font/Vegur-Light.otf') format('opentype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Vegur';
+    src: url('/font/Vegur-Regular.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
