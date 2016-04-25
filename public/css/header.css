@@ -6,7 +6,7 @@
 	z-index:1;
 	top:0;
     background-color: rgba(255,255,255,0.9);
-    border-bottom:1px solid #efefef;
+    border-bottom:1px solid #d2d2d2;
 }
 
 #header-wrapper{
@@ -29,7 +29,7 @@
 }
 
 #header .btn{
-    font-size: 15px;
+    font-size: 16px;
     text-align: left;
     line-height: 40px;
     float: left;
@@ -40,8 +40,8 @@
 }
 
 #header .btn:hover{
-    color:#d3d3d3;
-    transition:0.5s color ease;
+    color:#a7a7a7;
+    transition:0.2s color ease;
 }
 
 
@@ -56,16 +56,16 @@
 
 #login-holder{
     position: absolute;
-    right: -80px;
-    left:200px;
+    right: 0;
+    left: 48px;
     top: 65px;
-    width: 240px;
+    width: 230px;
     padding: 0 20px;
     background-color: white;
-    border: 1px solid #D8D8D8;
+    border: 1px solid #C1C1C1;
 }
 #login-tri{
-    border: 1px solid #d8d8d8;
+    border: 1px solid #c1c1c1;
     position: absolute;
     top: -7px;
     left: 50%;
@@ -80,7 +80,7 @@
     width:30px;
     height:10px;
     position:absolute;
-    background-color:white;
+    background-color: white;
     z-index:2;
     top:0;
     left:50%;
@@ -88,50 +88,67 @@
 }
 
 #login-title{
-    padding: 30px 0;
-    font-size: 16px;
+    font-size: 14px;
     color: #5f5f5f;
     text-align: center;
-    cursor:default;
-    border-bottom: 1px solid #E4E4E4;
-}
-#login-holder input{
-    width: 100%;
-    height: 45px;
-    line-height: 45px;
-    border: 0;
-    border-bottom: 1px solid #e2e2e2;
-    font-size: 14px;
-    display: block;
-    outline:none;
-}
-#login-holder input::-moz-placeholder{
-    font-weight:200;
-}
-#login-holder input:-webkit-input-placeholder{
-    font-weight:200;
+    padding:30px 0;
 }
 
-#login-holder input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0px 1000px white inset;
-    color: #42abff;
-}
-
-#login-submit{
+#login-submit input{
     width: 100%;
-    height: 40px;
-    line-height: 40px;
-    color: black;
+    line-height: 35px;
+    color: white;
     text-align: center;
-    margin: 10px 0;
-    font-weight: 300;
+    margin: 30px 0;
+    margin-top:5px;
+    font-weight: 200;
     cursor: pointer;
+    font-size: 16px;
+    font-family: 'Vegur';
+    border-radius: 3px;
+    border: 1px solid #ff0000;
+    background: linear-gradient(#FF735C,#FF0000);
+}
+#login-submit input:hover{
+    background:#ff0000;
+}
+
+#login-remember{
+    margin-top:3px;
+}
+#login-remember span{
+    font-size:12px;
+    margin-left:5px;
+}
+
+/*<FacebookLogin/>*/
+#fb-signin{
+    padding-top:10px;
+    border-top:1px solid #d2d2d2;
+}
+#fb-signin-guide{
+    font-size: 12px;
+    color: #848484;
+    /*text-align: center;*/
+}
+#fb-signin input{
+    width: 100%;
+    background: linear-gradient(#0770F3,#1A63C7);
+    line-height: 35px;
+    color: white;
+    border-radius: 3px;
+    font-family: 'Vegur';
+    font-weight: 200;
     font-size: 15px;
+    margin-top: 5px;
+    margin-bottom: 30px;
 }
-#login-submit:hover{
-    text-decoration: underline;
-    /*background:#efefef;*/
+#fb-signin input:hover{
+    cursor:pointer;
+    background:#1A63C7;
 }
+
+
 
 
 /*<UserPic /> stylesheet*/

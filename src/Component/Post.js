@@ -3,6 +3,85 @@ var AppAPI = require('../API/AppAPI.js');
 var AppAction = require('../Action/AppAction.js');
 var AppStore = require('../Store/AppStore.js');
 
+
+const DropCenter = React.createClass({
+	render:function(){
+		return (
+			<div className="drop-center">
+				<div className="image-btn" onClick={this.handleClick}>Add image</div>
+				<input type="file" className="image-input" onChange={this.handleChange} />
+				<span className="drop-title">
+					Drop an image from your hard drive or right from a browser.
+				</span>
+				<div className="cb"></div>
+			</div>
+		)
+	}
+})
+const PostDrop = React.createClass({
+	onFileDrop:function(e){
+		var self = this;
+		e.preventDefault();
+		$(e.target).hide();
+
+		var isFromLocal,isFromBrowser;
+		var nativeEvent = e.nativeEvent;
+		var localFile = nativeEvent.dataTransfer.files[0];
+		if(localFile != null){
+
+		} else {
+
+		}
+
+		// var files = e.dataTransfer.files;
+		// if(files.length == 0){
+		// 	var url = e.dataTransfer.getData(e.dataTransfer.types[0]);
+		// 	self.checkImage(url,function (url,status){
+		// 		if(status){
+		// 			// 이미지다
+		// 			self.props.success(url);
+		// 		} else {
+		// 			// 이미지가 아니다
+		// 			url = e.dataTransfer.getData('Text');
+		// 			console.log(url)
+		// 		}
+		// 	},false)
+		// }
+	},
+	checkImage:function(url,callback,timeout){
+		timeout = timeout || 5000;
+	    var timedOut = false, timer;
+	    var img = new Image();
+	    img.onerror = img.onabort = function() {
+	        if (!timedOut) {
+	            clearTimeout(timer);
+	            callback(url, false);
+	        }
+	    };
+	    img.onload = function() {
+	        if (!timedOut) {
+	            clearTimeout(timer);
+	            callback(url, true);
+	        }
+	    };
+	    img.src = url;
+	},
+	onFileDragOver:function(e){
+		$(e.target).children('.drop-box').show();
+	},
+	onFileDragLeave:function(e){
+		$(e.target).hide();
+	},
+	render:function(){
+		return (
+			<div className="drop" onDrop={this.onFileDrop} onDragOver={this.onFileDragOver}>
+				<DropCenter />
+				<div className="drop-box" onDragLeave={this.onFileDragLeave}></div>
+			</div>
+		)
+	}
+})
+
 const PostSection = React.createClass({
 	getInitialState:function(){
 		return({
@@ -67,6 +146,25 @@ const PostSection = React.createClass({
 	    };
 	    img.src = tmpPath;
 	},
+	handleDropSuccess:function(url){
+		var self = this;
+		this.setState({
+			src:url
+		});
+		this.getImageData(url,function (imageData){
+			console.log(imageData)
+		})
+	},
+	getImageData:function(url,callback){
+		var img = new Image();
+		img.onload = function(){
+			var imageData = {}
+			imageData.width = this.width;
+			imageData.height = this.height;
+			callback(imageData)
+		}
+		img.src = url;
+	},
 	render:function(){
 		var image;
 		var src = this.state.src;
@@ -83,26 +181,37 @@ const PostSection = React.createClass({
 		}
 
 		if(src == null){
-			image = <div className="post-image-holder"></div>;
+			image = <PostDrop success={this.handleDropSuccess} />;
 		} else {
-			image = <div className="post-image-holder"><img src={src} className="post-image" style={{"opacity":opacity}} id={imgId} /></div>
+			image = <div className="post-image-holder"><img src={src} className="post-image" id={imgId} /></div>
 		}
+
 		return (
-			<div className="post-section" id={sectionId} >
+			<div className="post-section" id={sectionId}>
 				<div className="header">
-					<div className="left">
-						<div className="title">{'Version '+ sectionTitle}</div>
-						<div className="guide">Upload jpeg or png file</div>
-						<div className="cb"></div>
-					</div>
-					<div className="submit" onClick={this.handleClick}>+</div>
-					<input type="file" className="post-image-input" onChange={this.handleChange} />
+					<div className="category">{sectionTitle}</div>
+					<div className="cb"></div>
 				</div>
 				{image}
 			</div>
 		)
 	}
+});
+
+
+const PostSections = React.createClass({
+	render:function(){
+		return (
+			<div id="post-sections">
+				<PostSection idx={1} key={1} />
+				<PostSection idx={2} key={2} />
+				<div className="cb"></div>
+			</div>
+		)
+	}
 })
+
+
 const PostTitle = React.createClass({
 	getInitialState:function(){
 		return({
@@ -114,7 +223,7 @@ const PostTitle = React.createClass({
 		if(title != null){
 			AppAction.updatePostTitle(title);
 		}
-		$(e.target).attr('placeholder','Title of your AB test');
+		$(e.target).attr('placeholder','ex) Facebook layout vs Twitter layout');
 	},
 	handleEnter:function(e){
 		if(e.which == 13){
@@ -127,17 +236,13 @@ const PostTitle = React.createClass({
 		});
 	},
 	changePlaceholder:function(e){
-		$(e.target).attr('placeholder','ex) Movie Poster AB test');
-	},
-	resize:function(e){
-		var obj = $(e.target).context;
-		obj.style.height = "1px";
-		obj.style.height = (20+obj.scrollHeight)+"px";
+		$(e.target).attr('placeholder','How about font AB? "Helvetica vs Open Sans"');
 	},
 	render:function(){
 		return (
 			<div id="post-title">
-				<textarea type="text" id="post-title-input" name="post-title" placeholder="Title of your AB test" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyPress={this.handleEnter} onKeyUp={this.resize} onChange={this.handleChange} value={this.state.title} spellCheck="false" autoCorrect="off" autoComplete="off" />
+				<div className="category">Title</div>
+				<input type="text" id="post-title-input" name="post-title" placeholder="ex) Facebook layout vs Twitter layout" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyPress={this.handleEnter} onChange={this.handleChange} value={this.state.title} spellCheck="false" autoCorrect="off" autoComplete="off" />
 			</div>
 		)
 	}
@@ -181,6 +286,7 @@ const PostText = React.createClass({
 	render:function(){
 		return (
 			<div id="post-text">
+				<div className="category">Description</div>
 				<textarea id="post-text-input" name="post-text" placeholder="Detailed explanation of your test (optional)" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyUp={this.resize} onKeyPress={this.handleEnter} onChange={this.handleChange} value={this.state.text} spellCheck="false" autoCorrect="off" autoComplete="off"/>
 			</div>
 		)
@@ -217,16 +323,35 @@ const PostAlert = React.createClass({
 	}
 });
 
-const PostChart = React.createClass({
+
+const PostDrag = React.createClass({
+	onMouseDown:function(e){
+		console.log(e)
+	},
+	onMouseUp:function(e){
+		console.log(e)
+	},
+	closePost:function(){
+		console.log('a')
+	},
 	render:function(){
 		return (
-			<div id="chart">
-				<div id="title-holder">
-					<div id="title">Graph of likes</div>
-					<div id="go-data">Experience data-powered design</div>
-					<div className="cb"></div>
-				</div>
-				<div id="graph"></div>
+			<div id="post-drag" onMouseDown={this.onMouseDown} onMouseUp={this.onMouseUp}>
+				<div id="title">Create a New AB test</div>
+				<div id="exp">Create your ABs using your design or any other images</div>
+				<div className="cb"></div>
+			</div>
+		)
+	}
+});
+
+const PostForm = React.createClass({
+	render:function(){
+		return (
+			<div id="post-form">
+				<PostTitle />
+				<PostText />
+				<PostSections />
 			</div>
 		)
 	}
@@ -298,20 +423,9 @@ const Post = React.createClass({
 		var self = this;
 		return (
 			<div id="post">
-				<div className="c1190">
-					<div id="post-header">
-						<div id="left">
-							<PostTitle />
-							<PostText />
-						</div>
-						<div id="right">
-							<PostChart />
-						</div>
-						<div className="cb"></div>
-					</div>
-					<PostSection idx={1} key={1} change={this.handleChange} />
-					<PostSection idx={2} key={2} change={this.handleChange} />
-					<div className="cb"></div>
+				<div id="post-body">
+					<PostDrag />
+					<PostForm />
 				</div>
 			</div>
 		)

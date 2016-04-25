@@ -16,10 +16,7 @@ router.get('/session',function(req, res, next) {
 });
 
 router.post('/session',function(req, res, next) {
-    var sessionObj = req.body;
-    var session = sessionObj;
-    session.participated = JSON.parse(sessionObj.participated);
-    session.published = JSON.parse(sessionObj.published);
+    var session = req.body;
     req.session.userinfo = session;
     res.json({
         status:true,

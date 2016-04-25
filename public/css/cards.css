@@ -19,7 +19,7 @@
 
 
 .card-title{
-	margin-bottom:-2px;
+	margin-bottom:-1px;
 }
 span.title{
 	text-align: left;
@@ -74,12 +74,14 @@ span.category{
     cursor: pointer;
     width: 15px;
     height: 15px;
-    background: url('/images/like-off.png') 50% 50% no-repeat;
+    background: url('/images/like-on.png') 50% 50% no-repeat;
     background-size: contain;
+    opacity:0.2;
 }
 .card-like .liked{
     background: url('/images/like-on.png') 50% 50% no-repeat;
     background-size: contain;
+    opacity:1;
 }
 .card-like .count{
     height: 15px;

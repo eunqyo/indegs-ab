@@ -78,21 +78,25 @@
 
 	var _CardAPI2 = _interopRequireDefault(_CardAPI);
 
+	var _UserAPI = __webpack_require__(261);
+
+	var _UserAPI2 = _interopRequireDefault(_UserAPI);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	// 'use strict';
 
-	window.$ = window.jQuery = __webpack_require__(262);
+	window.$ = window.jQuery = __webpack_require__(267);
 
 
-	var Header = __webpack_require__(263);
-	var Banner = __webpack_require__(264);
+	var Header = __webpack_require__(268);
+	var Banner = __webpack_require__(271);
 	var Cards = __webpack_require__(254);
-	var AB = __webpack_require__(265);
-	var Join = __webpack_require__(268);
-	var Post = __webpack_require__(272);
-	var User = __webpack_require__(273);
-	var Analysis = __webpack_require__(279);
+	var AB = __webpack_require__(272);
+	var Join = __webpack_require__(275);
+	var Post = __webpack_require__(279);
+	var User = __webpack_require__(280);
+	var Analysis = __webpack_require__(284);
 
 	_AppAPI2.default.getSession();
 
@@ -108,6 +112,7 @@
 			window.addEventListener('resize', this._onResize);
 			_AppStore2.default.addChangeListener(this._onChange);
 			this.layout();
+			this.preventDrop();
 		},
 		componentWillUnmount: function componentWillUnmount() {
 			window.removeEventListener('resize', this._onResize);
@@ -123,6 +128,23 @@
 			this.setState({
 				session: _AppStore2.default.getSession()
 			});
+		},
+		preventDrop: function preventDrop() {
+			var holder = document.getElementById('app');
+			holder.ondragover = function () {
+				return false;
+			};
+			holder.ondragleave = function () {
+				return false;
+			};
+
+			holder.ondragend = function () {
+				return false;
+			};
+			holder.ondrop = function (e) {
+				e.preventDefault();
+				return false;
+			};
 		},
 		render: function render() {
 			var session = this.state.session;
@@ -27375,8 +27397,6 @@
 		},
 		updateSession: function updateSession(session) {
 			var data = session;
-			data.participated = JSON.stringify(session.participated);
-			data.published = JSON.stringify(session.published);
 			$.ajax({
 				url: credentials.host_server + '/users/session',
 				type: 'POST',
@@ -27656,11 +27676,11 @@
 
 	var _Cards2 = _interopRequireDefault(_Cards);
 
-	var _Left = __webpack_require__(259);
+	var _Left = __webpack_require__(260);
 
 	var _Left2 = _interopRequireDefault(_Left);
 
-	var _Right = __webpack_require__(261);
+	var _Right = __webpack_require__(266);
 
 	var _Right2 = _interopRequireDefault(_Right);
 
@@ -27770,7 +27790,7 @@
 
 	var _AppHistory2 = _interopRequireDefault(_AppHistory);
 
-	var _Dates = __webpack_require__(284);
+	var _Dates = __webpack_require__(259);
 
 	var _Dates2 = _interopRequireDefault(_Dates);
 
@@ -29095,6 +29115,180 @@
 
 /***/ },
 /* 259 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+		getTimeStandard: function getTimeStandard() {
+			var res = {};
+			var today = new Date();
+			var lastYear = new Date(new Date().setFullYear(today.getFullYear() - 1));
+			var lastMonth = new Date(new Date().setMonth(today.getMonth() - 1));
+			var yesterday = new Date(new Date().setDate(today.getDate() - 1));
+			var hourAgo = new Date(new Date().setHours(today.getHours() - 1));
+			var minuteAgo = new Date(new Date().setMinutes(today.getMinutes() - 1));
+
+			res.today = today.getTime();
+			res.lastYear = lastYear.getTime();
+			res.lastMonth = lastMonth.getTime();
+			res.yesterday = yesterday.getTime();
+			res.hourAgo = hourAgo.getTime();
+			res.minuteAgo = minuteAgo.getTime();
+			return res;
+		},
+		getDateString: function getDateString(dateString) {
+			var self = this;
+			var date = new Date(dateString);
+			var time = this.getTimeStandard();
+			if (date.getTime() >= time.minuteAgo) {
+				// 바로 지금 업데이트 된 경우
+				return 'just now';
+			}
+			if (date.getTime() >= time.hourAgo) {
+				// 한 시간 전에 업데이트 된 경우
+				var diff = ((time.today - date.getTime()) / 1000 / 60).toFixed(0);
+				return diff + ' minutes ago';
+			}
+			if (date.getTime() >= time.yesterday) {
+				// 하루 전에 업데이트되거나 추가된 경우
+				var diff = ((time.today - date.getTime()) / 1000 / 60 / 60).toFixed(0);
+				if (diff == 1) {
+					return 'an hour ago';
+				} else {
+					return diff + ' hours ago';
+				}
+			}
+			if (date.getTime() < time.yesterday) {
+				// 오늘 해당되지 않는 경우
+				var month = self.getMonthOfDate(date);
+				var day = date.getDate();
+				return month + ' ' + day;
+			}
+			if (date.getTime() < time.lastYear) {
+				// 올해가 아닌 경우
+				var month = self.getMonthOfDate(date);
+				var day = date.getDate();
+				var year = date.getFullYear();
+				return day + ' ' + month + ' ' + year;
+			}
+		},
+		getMonthOfDate: function getMonthOfDate(date) {
+			var month;
+			switch ((date.getMonth() + 1).toString()) {
+				case '1':
+					month = 'Jan';
+					break;
+				case '2':
+					month = 'Feb';
+					break;
+				case '3':
+					month = 'Mar';
+					break;
+				case '4':
+					month = 'Apr';
+					break;
+				case '5':
+					month = 'May';
+					break;
+				case '6':
+					month = 'Jun';
+					break;
+				case '7':
+					month = 'Jul';
+					break;
+				case '8':
+					month = 'Aug';
+					break;
+				case '9':
+					month = 'Sept';
+					break;
+				case '10':
+					month = 'Oct';
+					break;
+				case '11':
+					month = 'Nov';
+					break;
+				case '12':
+					month = 'Dec';
+					break;
+				default:
+					return true;
+			}
+			return month;
+		},
+		getVersionDate: function getVersionDate(date) {
+			var date = new Date(date);
+			var month, AP, day;
+			var year = date.getFullYear();
+			var hour = date.getHours();
+			var minute = date.getMinutes();
+			day = date.getDate().toString();
+			if (hour == 0) {
+				hour = 12;
+				AP = 'AM';
+			} else if (hour > 12) {
+				hour = hour - 12;
+				AP = 'PM';
+			} else if (hour < 12) {
+				hour = hour;
+				AP = 'AM';
+			} else if (hour == 12) {
+				hour = hour;
+				AP = 'PM';
+			};
+
+			if (minute < 10) {
+				minute = '0' + minute;
+			}
+
+			switch ((date.getMonth() + 1).toString()) {
+				case '1':
+					month = 'Jan';
+					break;
+				case '2':
+					month = 'Feb';
+					break;
+				case '3':
+					month = 'Mar';
+					break;
+				case '4':
+					month = 'Apr';
+					break;
+				case '5':
+					month = 'May';
+					break;
+				case '6':
+					month = 'Jun';
+					break;
+				case '7':
+					month = 'Jul';
+					break;
+				case '8':
+					month = 'Aug';
+					break;
+				case '9':
+					month = 'Sept';
+					break;
+				case '10':
+					month = 'Oct';
+					break;
+				case '11':
+					month = 'Nov';
+					break;
+				case '12':
+					month = 'Dec';
+					break;
+				default:
+					return true;
+			}
+			var dateString = month + ' ' + day + ', ' + year + ', ' + hour + ':' + minute + ' ' + AP;
+			return dateString;
+		}
+	};
+
+/***/ },
+/* 260 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29107,7 +29301,15 @@
 
 	var _AppAPI2 = _interopRequireDefault(_AppAPI);
 
-	var _UserAction = __webpack_require__(260);
+	var _UserAPI = __webpack_require__(261);
+
+	var _UserAPI2 = _interopRequireDefault(_UserAPI);
+
+	var _UserStore = __webpack_require__(264);
+
+	var _UserStore2 = _interopRequireDefault(_UserStore);
+
+	var _UserAction = __webpack_require__(262);
 
 	var _UserAction2 = _interopRequireDefault(_UserAction);
 
@@ -29116,6 +29318,10 @@
 	var _credentials2 = _interopRequireDefault(_credentials);
 
 	var _reactRouter = __webpack_require__(159);
+
+	var _Post = __webpack_require__(279);
+
+	var _Post2 = _interopRequireDefault(_Post);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -29218,26 +29424,104 @@
 		}
 	});
 
+	var UserABGuide = _react2.default.createClass({
+		displayName: 'UserABGuide',
+
+		render: function render() {
+			var titleString = "Create your ABs using your design or any other images";
+			return _react2.default.createElement(
+				'div',
+				{ id: 'user-ab-guide' },
+				_react2.default.createElement(
+					'div',
+					{ id: 'title' },
+					titleString
+				)
+			);
+		}
+	});
+
+	var UserABHeader = _react2.default.createClass({
+		displayName: 'UserABHeader',
+
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'user-ab-header' },
+				_react2.default.createElement(
+					'div',
+					{ id: 'title' },
+					'Your ABs'
+				),
+				_react2.default.createElement(
+					_reactRouter.Link,
+					{ to: '/post' },
+					_react2.default.createElement(
+						'div',
+						{ id: 'create' },
+						' New AB '
+					)
+				),
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var UserAB = _react2.default.createClass({
+		displayName: 'UserAB',
+
+		render: function render() {
+			var _cards = this.props._cards;
+			var body;
+			if (_cards.length == 0) {
+				body = _react2.default.createElement(UserABGuide, null);
+			} else {}
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'user-ab' },
+				_react2.default.createElement(UserABHeader, null),
+				body
+			);
+		}
+	});
+
 	var UserCard = _react2.default.createClass({
 		displayName: 'UserCard',
 
 		getInitialState: function getInitialState() {
 			return {
-				session: this.props.session
+				_cards: _UserStore2.default.getUserCards()
 			};
 		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+		componentDidMount: function componentDidMount() {
+			// 사용자가 생성한 테스트가 있는지 확인한다
+			var session = this.props.session;
+			_UserStore2.default.addChangeListener(this._onChange);
+			_UserAPI2.default.receiveUserCards(session._id);
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			_UserStore2.default.removeChangeListener(this._onChange);
+		},
+		_onChange: function _onChange() {
 			this.setState({
-				session: nextProps.session
+				_cards: _UserStore2.default.getUserCards()
 			});
 		},
 		render: function render() {
-			var session = this.state.session;
+			var session = this.props.session;
+			var _cards = this.state._cards;
+			var userAB;
+			if (_cards == null) {
+				userAB = null;
+			} else {
+				userAB = _react2.default.createElement(UserAB, { session: session, _cards: _cards });
+			}
 			return _react2.default.createElement(
 				'div',
 				{ id: 'user-card' },
 				_react2.default.createElement(UserCardPic, { session: session }),
-				_react2.default.createElement(UserStatus, { session: session }),
+				userAB,
 				_react2.default.createElement('div', { className: 'cb' })
 			);
 		}
@@ -29276,19 +29560,8 @@
 	var Left = _react2.default.createClass({
 		displayName: 'Left',
 
-		getInitialState: function getInitialState() {
-			return {
-				session: this.props.session
-			};
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				session: nextProps.session
-			});
-		},
 		render: function render() {
-			var a;
-			var session = this.state.session;
+			var session = this.props.session;
 			var box;
 			if (session == false) {
 				box = null;
@@ -29308,34 +29581,111 @@
 	module.exports = Left;
 
 /***/ },
-/* 260 */
+/* 261 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var AppDispatcher = __webpack_require__(245);
+	var _credentials = __webpack_require__(252);
+
+	var _credentials2 = _interopRequireDefault(_credentials);
+
+	var _UserAction = __webpack_require__(262);
+
+	var _UserAction2 = _interopRequireDefault(_UserAction);
+
+	var _AppAction = __webpack_require__(250);
+
+	var _AppAction2 = _interopRequireDefault(_AppAction);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	module.exports = {
+		receiveUserCards: function receiveUserCards(user_id) {
+			$.ajax({
+				url: _credentials2.default.api_server + '/users/' + user_id + '/cards',
+				type: 'GET',
+				success: function success(result) {
+					if (result.status) {
+						_UserAction2.default.updateUserCards(result.body);
+					} else {
+						console.log(result.body);
+					}
+				}
+
+			});
+		},
+		addLike: function addLike(session_id, image_id) {
+			var data = {
+				session_id: session_id,
+				image_id: image_id
+			};
+			$.ajax({
+				url: _credentials2.default.api_server + '/images/like',
+				type: 'POST',
+				data: data,
+				dataType: 'json',
+				success: function success(result) {
+					if (result.status) {
+						var imageObj = result.body;
+						_UserAction2.default.updateUserImageLike(imageObj);
+					} else {
+						console.log(result.body);
+					}
+				}
+			});
+		},
+		removeLike: function removeLike(image) {
+			var data = {
+				image_id: image._id,
+				likeObj: JSON.stringify(image.like)
+			};
+			$.ajax({
+				url: _credentials2.default.api_server + '/images/like/remove',
+				type: 'POST',
+				data: data,
+				dataType: 'json',
+				success: function success(result) {
+					if (result.status) {
+						var imageObj = result.body;
+						_UserAction2.default.updateUserImageLike(imageObj);
+					} else {
+						console.log(result.body);
+					}
+				}
+			});
+		}
+	};
+
+/***/ },
+/* 262 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var UserDispatcher = __webpack_require__(263);
 
 	var UserAction = {
 		updateUserCards: function updateUserCards(data) {
-			AppDispatcher.handleAction({
+			UserDispatcher.handleAction({
 				actionType: 'UPDATE_USER_CARDS',
 				data: data
 			});
 		},
 		updateParticipated: function updateParticipated(data) {
-			AppDispatcher.handleAction({
+			UserDispatcher.handleAction({
 				actionType: 'UPDATE_PARTICIPATED',
 				data: data
 			});
 		},
 		changeMode: function changeMode(data) {
-			AppDispatcher.handleAction({
+			UserDispatcher.handleAction({
 				actionType: 'CHANGE_MODE',
 				data: data
 			});
 		},
 		updateUserImageLike: function updateUserImageLike(data) {
-			AppDispatcher.handleAction({
+			UserDispatcher.handleAction({
 				actionType: 'UPDATE_USER_IMAGE_LIKE',
 				data: data
 			});
@@ -29345,7 +29695,181 @@
 	module.exports = UserAction;
 
 /***/ },
-/* 261 */
+/* 263 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Dispatcher = __webpack_require__(246).Dispatcher;
+
+	var UserDispatcher = new Dispatcher();
+
+	UserDispatcher.handleAction = function (action) {
+		this.dispatch({
+			source: 'VIEW_ACTION',
+			action: action
+		});
+	};
+
+	module.exports = UserDispatcher;
+
+/***/ },
+/* 264 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var UserDispatcher = __webpack_require__(263);
+	var objectAssign = __webpack_require__(265);
+	var EventEmitter = __webpack_require__(249).EventEmitter;
+
+	var _cards;
+	var _mode;
+	var _published = {};
+	var _participated = {};
+
+	var sortByDate = function sortByDate(a, b) {
+		if (a.date < b.date) {
+			return 1;
+		}
+		if (a.date > b.date) {
+			return -1;
+		}
+		return 0;
+	};
+
+	var updateUserCards = function updateUserCards(cards) {
+		_cards = cards;
+	};
+
+	var updateUserImageLike = function updateUserImageLike(imageObj) {
+		var published = _cards.published;
+		var participated = _cards.participated;
+		for (var i = 0; i < published.length; i++) {
+			if (published[i].card.A._id == imageObj._id) {
+				published[i].card.A.like = imageObj.like;
+				break;
+			}
+			if (published[i].card.B._id == imageObj._id) {
+				published[i].card.B.like = imageObj.like;
+				break;
+			}
+		}
+		for (var i = 0; i < participated.length; i++) {
+			if (participated[i].card.A._id == imageObj._id) {
+				participated[i].card.A.like = imageObj.like;
+				break;
+			}
+			if (participated[i].card.B._id == imageObj._id) {
+				participated[i].card.B.like = imageObj.like;
+				break;
+			}
+		}
+	};
+
+	var updateParticipated = function updateParticipated(participated) {
+		_participated = participated;
+	};
+
+	var changeMode = function changeMode(mode) {
+		_mode = mode;
+	};
+
+	var UserStore = objectAssign({}, EventEmitter.prototype, {
+		addChangeListener: function addChangeListener(cb) {
+			this.on('change', cb);
+		},
+		removeChangeListener: function removeChangeListener(cb) {
+			this.removeListener('change', cb);
+		},
+		getUserCards: function getUserCards() {
+			return _cards;
+		},
+		getPublished: function getPublished() {
+			return _published;
+		},
+		getParticipated: function getParticipated() {
+			return _participated;
+		},
+		getMode: function getMode() {
+			return _mode;
+		}
+	});
+
+	UserDispatcher.register(function (payload) {
+		var action = payload.action;
+		switch (action.actionType) {
+			case 'UPDATE_USER_CARDS':
+				updateUserCards(action.data);
+				UserStore.emit('change');
+				break;
+			case 'UPDATE_USER_IMAGE_LIKE':
+				updateUserImageLike(action.data);
+				UserStore.emit('change');
+				break;
+			case 'UPDATE_PARTICIPATED':
+				updateParticipated(action.data);
+				UserStore.emit('change');
+				break;
+			case 'CHANGE_MODE':
+				changeMode(action.data);
+				UserStore.emit('change');
+				break;
+
+			default:
+				return true;
+		}
+	});
+
+	module.exports = UserStore;
+
+/***/ },
+/* 265 */
+/***/ function(module, exports) {
+
+	/* eslint-disable no-unused-vars */
+	'use strict';
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+	function toObject(val) {
+		if (val === null || val === undefined) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var to = toObject(target);
+		var symbols;
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = Object(arguments[s]);
+
+			for (var key in from) {
+				if (hasOwnProperty.call(from, key)) {
+					to[key] = from[key];
+				}
+			}
+
+			if (Object.getOwnPropertySymbols) {
+				symbols = Object.getOwnPropertySymbols(from);
+				for (var i = 0; i < symbols.length; i++) {
+					if (propIsEnumerable.call(from, symbols[i])) {
+						to[symbols[i]] = from[symbols[i]];
+					}
+				}
+			}
+		}
+
+		return to;
+	};
+
+
+/***/ },
+/* 266 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -29473,7 +29997,7 @@
 	module.exports = Right;
 
 /***/ },
-/* 262 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -39310,7 +39834,7 @@
 
 
 /***/ },
-/* 263 */
+/* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39328,6 +39852,14 @@
 	var _credentials = __webpack_require__(252);
 
 	var _credentials2 = _interopRequireDefault(_credentials);
+
+	var _OnHeader = __webpack_require__(269);
+
+	var _OnHeader2 = _interopRequireDefault(_OnHeader);
+
+	var _OffHeader = __webpack_require__(270);
+
+	var _OffHeader2 = _interopRequireDefault(_OffHeader);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -39371,8 +39903,8 @@
 		submit: function submit() {
 			var self = this;
 			var json = {
-				email: $('#login-email-input').val(),
-				pw: $('#login-pw-input').val()
+				email: $('#login-email input').val(),
+				pw: $('#login-pw input').val()
 			};
 			AppAPI.handleLogin(json, function (message) {
 				self.shakeForm();
@@ -39394,6 +39926,11 @@
 			var value = $(e.target).val();
 			this.setState({
 				value: value
+			});
+		},
+		handleFBLogin: function handleFBLogin() {
+			FB.login(function (response) {
+				console.log(response);
 			});
 		},
 		render: function render() {
@@ -39420,17 +39957,18 @@
 				_react2.default.createElement(
 					'div',
 					{ id: 'login-email' },
-					_react2.default.createElement('input', { type: 'email', autoCorrect: 'off', spellCheck: 'false', name: 'email', id: 'login-email-input', placeholder: 'Email address', onChange: this.handleEmail, value: this.state.value })
+					_react2.default.createElement('input', { type: 'email', autoCorrect: 'off', spellCheck: 'false', name: 'email', className: 'user', placeholder: 'Email address', onChange: this.handleEmail, value: this.state.value, autoComplete: 'off' })
 				),
 				_react2.default.createElement(
 					'div',
 					{ id: 'login-pw' },
-					_react2.default.createElement('input', { type: 'password', name: 'pw', id: 'login-pw-input', placeholder: 'Password' })
+					_react2.default.createElement('input', { type: 'password', name: 'pw', className: 'user', placeholder: 'Password' })
 				),
+				_react2.default.createElement('input', { type: 'submit', id: 'login-submit', onClick: this.submit, value: 'Signin' }),
 				_react2.default.createElement(
 					'div',
-					{ id: 'login-submit', onClick: this.submit },
-					' Sign In >'
+					{ id: 'fb-login', onClick: this.handleFBLogin },
+					'Signin with facebook'
 				)
 			);
 		}
@@ -39715,7 +40253,7 @@
 			if (session == false) {
 				headerBtn = null;
 			} else if (session == null) {
-				headerBtn = _react2.default.createElement(OffBtn, null);
+				headerBtn = _react2.default.createElement(_OffHeader2.default, null);
 			} else {
 				if (location == '/post') {
 					headerBtn = _react2.default.createElement(PostBtn, { session: session });
@@ -39753,7 +40291,216 @@
 	module.exports = Header;
 
 /***/ },
-/* 264 */
+/* 269 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var OnHeader = _react2.default.createClass({
+		displayName: 'OnHeader',
+
+		render: function render() {
+			return _react2.default.createElement('div', null);
+		}
+	});
+
+	module.exports = OnHeader;
+
+/***/ },
+/* 270 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRouter = __webpack_require__(159);
+
+	var _UserAction = __webpack_require__(262);
+
+	var _UserAction2 = _interopRequireDefault(_UserAction);
+
+	var _UserStore = __webpack_require__(264);
+
+	var _UserStore2 = _interopRequireDefault(_UserStore);
+
+	var _UserAPI = __webpack_require__(261);
+
+	var _UserAPI2 = _interopRequireDefault(_UserAPI);
+
+	var _AppAPI = __webpack_require__(251);
+
+	var _AppAPI2 = _interopRequireDefault(_AppAPI);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var SigninSubmit = _react2.default.createClass({
+		displayName: 'SigninSubmit',
+
+		componentDidMount: function componentDidMount() {
+			document.body.addEventListener('keypress', this.handleEnter);
+			var self = this;
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			document.body.removeEventListener('keypress', this.handleEnter);
+		},
+		handleEnter: function handleEnter(e) {
+			var self = this;
+			if (e.which == 13) {
+				self.handleSignin();
+			}
+		},
+		handleSignin: function handleSignin() {
+			var self = this;
+			var json = {
+				email: $('#login-email input').val(),
+				pw: $('#login-pw input').val()
+			};
+			_AppAPI2.default.handleLogin(json, function (onErrorMessage) {
+				self.shakeForm();
+				self.props.onErrorMessage(onErrorMessage);
+			});
+		},
+		shakeForm: function shakeForm() {
+			var l = 10;
+			for (var i = 0; i < 8; i++) {
+				$("#login-holder").animate({
+					'left': "+=" + (l = -l) + 'px',
+					'right': "-=" + l + 'px'
+				}, 50);
+			}
+		},
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'login-submit' },
+				_react2.default.createElement('input', { type: 'submit', onClick: this.handleSignin, value: 'Signin' })
+			);
+		}
+	});
+
+	var LoginBox = _react2.default.createClass({
+		displayName: 'LoginBox',
+
+		getInitialState: function getInitialState() {
+			return {
+				message: null
+			};
+		},
+		componentDidMount: function componentDidMount() {
+			document.body.addEventListener('click', this.handleBodyClick);
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			document.body.removeEventListener('click', this.handleBodyClick);
+		},
+		handleBodyClick: function handleBodyClick(e) {
+			var self = this;
+			var a = $('#login-holder');
+			if (!a.is(e.target) && a.has(e.target).length == 0) {
+				self.props.toggle(false);
+			}
+		},
+		handleSubmitError: function handleSubmitError(onErrorMessage) {
+			this.setState({
+				message: onErrorMessage
+			});
+		},
+		render: function render() {
+			var message = this.state.message;
+			var title, titleStyle;
+			if (message != null) {
+				title = message;
+				titleStyle = { 'color': '#ff4242' };
+			} else {
+				title = 'Welcome Back !';
+				titleStyle = null;
+			}
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'login-holder' },
+				_react2.default.createElement('div', { id: 'login-tri' }),
+				_react2.default.createElement('div', { id: 'login-cover' }),
+				_react2.default.createElement(
+					'div',
+					{ id: 'login-title', style: titleStyle },
+					title
+				),
+				_react2.default.createElement(
+					'div',
+					{ id: 'login-email' },
+					_react2.default.createElement('input', { type: 'email', autoCorrect: 'off', spellCheck: 'false', name: 'email', className: 'user', placeholder: 'Email address', autoComplete: 'off' })
+				),
+				_react2.default.createElement(
+					'div',
+					{ id: 'login-pw' },
+					_react2.default.createElement('input', { type: 'password', name: 'pw', className: 'user', placeholder: 'Password' })
+				),
+				_react2.default.createElement(SigninSubmit, { onErrorMessage: this.handleSubmitError })
+			);
+		}
+	});
+
+	var OffHeader = _react2.default.createClass({
+		displayName: 'OffHeader',
+
+		getInitialState: function getInitialState() {
+			return {
+				loginToggle: false
+			};
+		},
+		login: function login() {
+			this.setState({
+				loginToggle: true
+			});
+		},
+		onToggle: function onToggle(bool) {
+			this.setState({
+				loginToggle: bool
+			});
+		},
+		render: function render() {
+			var self = this;
+			var loginToggle = this.state.loginToggle;
+			if (loginToggle) {
+				var loginBox = _react2.default.createElement(LoginBox, { toggle: self.onToggle });
+			} else {
+				var loginBox = null;
+			}
+			return _react2.default.createElement(
+				'div',
+				{ id: 'login-off-btn' },
+				_react2.default.createElement(
+					_reactRouter.Link,
+					{ to: '/join' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'btn', id: 'signup-btn' },
+						'Signup'
+					)
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'btn', id: 'login-btn', onClick: this.login },
+					'Signin'
+				),
+				loginBox
+			);
+		}
+	});
+
+	module.exports = OffHeader;
+
+/***/ },
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39784,7 +40531,7 @@
 	module.exports = Banner;
 
 /***/ },
-/* 265 */
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39827,7 +40574,7 @@
 
 	var _Util2 = _interopRequireDefault(_Util);
 
-	var _LikeGraph = __webpack_require__(266);
+	var _LikeGraph = __webpack_require__(273);
 
 	var _LikeGraph2 = _interopRequireDefault(_LikeGraph);
 
@@ -40614,12 +41361,12 @@
 	module.exports = AB;
 
 /***/ },
-/* 266 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _d = __webpack_require__(267);
+	var _d = __webpack_require__(274);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -40758,7 +41505,7 @@
 	module.exports = Chart;
 
 /***/ },
-/* 267 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
@@ -50317,7 +51064,7 @@
 	}();
 
 /***/ },
-/* 268 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50589,7 +51336,7 @@
 		},
 		submitInput: function submitInput(e) {
 			var self = this;
-			var vd = __webpack_require__(269);
+			var vd = __webpack_require__(276);
 			var value = $(e.target).val();
 			if (value.length == 0 || value == null) {
 				self.props.answer({
@@ -50946,7 +51693,7 @@
 	module.exports = Join;
 
 /***/ },
-/* 269 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module, process) {/*!
@@ -51116,7 +51863,7 @@
 	            if (!validator.isServerSide()) {
 	                return;
 	            }
-	            depd = __webpack_require__(271)('validator');
+	            depd = __webpack_require__(278)('validator');
 	        }
 	        depd(msg);
 	    };
@@ -51932,10 +52679,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(270)(module), __webpack_require__(4)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(277)(module), __webpack_require__(4)))
 
 /***/ },
-/* 270 */
+/* 277 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -51951,7 +52698,7 @@
 
 
 /***/ },
-/* 271 */
+/* 278 */
 /***/ function(module, exports) {
 
 	/*!
@@ -52036,7 +52783,7 @@
 
 
 /***/ },
-/* 272 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52045,6 +52792,91 @@
 	var AppAPI = __webpack_require__(251);
 	var AppAction = __webpack_require__(250);
 	var AppStore = __webpack_require__(244);
+
+	var DropCenter = React.createClass({
+		displayName: 'DropCenter',
+
+		render: function render() {
+			return React.createElement(
+				'div',
+				{ className: 'drop-center' },
+				React.createElement(
+					'div',
+					{ className: 'image-btn', onClick: this.handleClick },
+					'Add image'
+				),
+				React.createElement('input', { type: 'file', className: 'image-input', onChange: this.handleChange }),
+				React.createElement(
+					'span',
+					{ className: 'drop-title' },
+					'Drop an image from your hard drive or right from a browser.'
+				),
+				React.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+	var PostDrop = React.createClass({
+		displayName: 'PostDrop',
+
+		onFileDrop: function onFileDrop(e) {
+			var self = this;
+			e.preventDefault();
+			$(e.target).hide();
+
+			var isFromLocal, isFromBrowser;
+			var nativeEvent = e.nativeEvent;
+			var localFile = nativeEvent.dataTransfer.files[0];
+			if (localFile != null) {} else {}
+
+			// var files = e.dataTransfer.files;
+			// if(files.length == 0){
+			// 	var url = e.dataTransfer.getData(e.dataTransfer.types[0]);
+			// 	self.checkImage(url,function (url,status){
+			// 		if(status){
+			// 			// 이미지다
+			// 			self.props.success(url);
+			// 		} else {
+			// 			// 이미지가 아니다
+			// 			url = e.dataTransfer.getData('Text');
+			// 			console.log(url)
+			// 		}
+			// 	},false)
+			// }
+		},
+		checkImage: function checkImage(url, callback, timeout) {
+			timeout = timeout || 5000;
+			var timedOut = false,
+			    timer;
+			var img = new Image();
+			img.onerror = img.onabort = function () {
+				if (!timedOut) {
+					clearTimeout(timer);
+					callback(url, false);
+				}
+			};
+			img.onload = function () {
+				if (!timedOut) {
+					clearTimeout(timer);
+					callback(url, true);
+				}
+			};
+			img.src = url;
+		},
+		onFileDragOver: function onFileDragOver(e) {
+			$(e.target).children('.drop-box').show();
+		},
+		onFileDragLeave: function onFileDragLeave(e) {
+			$(e.target).hide();
+		},
+		render: function render() {
+			return React.createElement(
+				'div',
+				{ className: 'drop', onDrop: this.onFileDrop, onDragOver: this.onFileDragOver },
+				React.createElement(DropCenter, null),
+				React.createElement('div', { className: 'drop-box', onDragLeave: this.onFileDragLeave })
+			);
+		}
+	});
 
 	var PostSection = React.createClass({
 		displayName: 'PostSection',
@@ -52110,6 +52942,25 @@
 			};
 			img.src = tmpPath;
 		},
+		handleDropSuccess: function handleDropSuccess(url) {
+			var self = this;
+			this.setState({
+				src: url
+			});
+			this.getImageData(url, function (imageData) {
+				console.log(imageData);
+			});
+		},
+		getImageData: function getImageData(url, callback) {
+			var img = new Image();
+			img.onload = function () {
+				var imageData = {};
+				imageData.width = this.width;
+				imageData.height = this.height;
+				callback(imageData);
+			};
+			img.src = url;
+		},
 		render: function render() {
 			var image;
 			var src = this.state.src;
@@ -52126,14 +52977,15 @@
 			}
 
 			if (src == null) {
-				image = React.createElement('div', { className: 'post-image-holder' });
+				image = React.createElement(PostDrop, { success: this.handleDropSuccess });
 			} else {
 				image = React.createElement(
 					'div',
 					{ className: 'post-image-holder' },
-					React.createElement('img', { src: src, className: 'post-image', style: { "opacity": opacity }, id: imgId })
+					React.createElement('img', { src: src, className: 'post-image', id: imgId })
 				);
 			}
+
 			return React.createElement(
 				'div',
 				{ className: 'post-section', id: sectionId },
@@ -52142,30 +52994,30 @@
 					{ className: 'header' },
 					React.createElement(
 						'div',
-						{ className: 'left' },
-						React.createElement(
-							'div',
-							{ className: 'title' },
-							'Version ' + sectionTitle
-						),
-						React.createElement(
-							'div',
-							{ className: 'guide' },
-							'Upload jpeg or png file'
-						),
-						React.createElement('div', { className: 'cb' })
+						{ className: 'category' },
+						sectionTitle
 					),
-					React.createElement(
-						'div',
-						{ className: 'submit', onClick: this.handleClick },
-						'+'
-					),
-					React.createElement('input', { type: 'file', className: 'post-image-input', onChange: this.handleChange })
+					React.createElement('div', { className: 'cb' })
 				),
 				image
 			);
 		}
 	});
+
+	var PostSections = React.createClass({
+		displayName: 'PostSections',
+
+		render: function render() {
+			return React.createElement(
+				'div',
+				{ id: 'post-sections' },
+				React.createElement(PostSection, { idx: 1, key: 1 }),
+				React.createElement(PostSection, { idx: 2, key: 2 }),
+				React.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
 	var PostTitle = React.createClass({
 		displayName: 'PostTitle',
 
@@ -52179,7 +53031,7 @@
 			if (title != null) {
 				AppAction.updatePostTitle(title);
 			}
-			$(e.target).attr('placeholder', 'Title of your AB test');
+			$(e.target).attr('placeholder', 'ex) Facebook layout vs Twitter layout');
 		},
 		handleEnter: function handleEnter(e) {
 			if (e.which == 13) {
@@ -52192,18 +53044,18 @@
 			});
 		},
 		changePlaceholder: function changePlaceholder(e) {
-			$(e.target).attr('placeholder', 'ex) Movie Poster AB test');
-		},
-		resize: function resize(e) {
-			var obj = $(e.target).context;
-			obj.style.height = "1px";
-			obj.style.height = 20 + obj.scrollHeight + "px";
+			$(e.target).attr('placeholder', 'How about font AB? "Helvetica vs Open Sans"');
 		},
 		render: function render() {
 			return React.createElement(
 				'div',
 				{ id: 'post-title' },
-				React.createElement('textarea', { type: 'text', id: 'post-title-input', name: 'post-title', placeholder: 'Title of your AB test', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyPress: this.handleEnter, onKeyUp: this.resize, onChange: this.handleChange, value: this.state.title, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
+				React.createElement(
+					'div',
+					{ className: 'category' },
+					'Title'
+				),
+				React.createElement('input', { type: 'text', id: 'post-title-input', name: 'post-title', placeholder: 'ex) Facebook layout vs Twitter layout', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyPress: this.handleEnter, onChange: this.handleChange, value: this.state.title, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
 			);
 		}
 	});
@@ -52251,6 +53103,11 @@
 			return React.createElement(
 				'div',
 				{ id: 'post-text' },
+				React.createElement(
+					'div',
+					{ className: 'category' },
+					'Description'
+				),
 				React.createElement('textarea', { id: 'post-text-input', name: 'post-text', placeholder: 'Detailed explanation of your test (optional)', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyUp: this.resize, onKeyPress: this.handleEnter, onChange: this.handleChange, value: this.state.text, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
 			);
 		}
@@ -52297,29 +53154,47 @@
 		}
 	});
 
-	var PostChart = React.createClass({
-		displayName: 'PostChart',
+	var PostDrag = React.createClass({
+		displayName: 'PostDrag',
+
+		onMouseDown: function onMouseDown(e) {
+			console.log(e);
+		},
+		onMouseUp: function onMouseUp(e) {
+			console.log(e);
+		},
+		closePost: function closePost() {
+			console.log('a');
+		},
+		render: function render() {
+			return React.createElement(
+				'div',
+				{ id: 'post-drag', onMouseDown: this.onMouseDown, onMouseUp: this.onMouseUp },
+				React.createElement(
+					'div',
+					{ id: 'title' },
+					'Create a New AB test'
+				),
+				React.createElement(
+					'div',
+					{ id: 'exp' },
+					'Create your ABs using your design or any other images'
+				),
+				React.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var PostForm = React.createClass({
+		displayName: 'PostForm',
 
 		render: function render() {
 			return React.createElement(
 				'div',
-				{ id: 'chart' },
-				React.createElement(
-					'div',
-					{ id: 'title-holder' },
-					React.createElement(
-						'div',
-						{ id: 'title' },
-						'Graph of likes'
-					),
-					React.createElement(
-						'div',
-						{ id: 'go-data' },
-						'Experience data-powered design'
-					),
-					React.createElement('div', { className: 'cb' })
-				),
-				React.createElement('div', { id: 'graph' })
+				{ id: 'post-form' },
+				React.createElement(PostTitle, null),
+				React.createElement(PostText, null),
+				React.createElement(PostSections, null)
 			);
 		}
 	});
@@ -52395,26 +53270,9 @@
 				{ id: 'post' },
 				React.createElement(
 					'div',
-					{ className: 'c1190' },
-					React.createElement(
-						'div',
-						{ id: 'post-header' },
-						React.createElement(
-							'div',
-							{ id: 'left' },
-							React.createElement(PostTitle, null),
-							React.createElement(PostText, null)
-						),
-						React.createElement(
-							'div',
-							{ id: 'right' },
-							React.createElement(PostChart, null)
-						),
-						React.createElement('div', { className: 'cb' })
-					),
-					React.createElement(PostSection, { idx: 1, key: 1, change: this.handleChange }),
-					React.createElement(PostSection, { idx: 2, key: 2, change: this.handleChange }),
-					React.createElement('div', { className: 'cb' })
+					{ id: 'post-body' },
+					React.createElement(PostDrag, null),
+					React.createElement(PostForm, null)
 				)
 			);
 		}
@@ -52423,7 +53281,7 @@
 	module.exports = Post;
 
 /***/ },
-/* 273 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52456,19 +53314,19 @@
 
 	var _CardAPI2 = _interopRequireDefault(_CardAPI);
 
-	var _UserAction = __webpack_require__(260);
+	var _UserAction = __webpack_require__(262);
 
 	var _UserAction2 = _interopRequireDefault(_UserAction);
 
-	var _UserStore = __webpack_require__(274);
+	var _UserStore = __webpack_require__(264);
 
 	var _UserStore2 = _interopRequireDefault(_UserStore);
 
-	var _UserAPI = __webpack_require__(275);
+	var _UserAPI = __webpack_require__(261);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
-	var _Right = __webpack_require__(261);
+	var _Right = __webpack_require__(266);
 
 	var _Right2 = _interopRequireDefault(_Right);
 
@@ -52476,7 +53334,7 @@
 
 	var _credentials2 = _interopRequireDefault(_credentials);
 
-	var _Cards = __webpack_require__(276);
+	var _Cards = __webpack_require__(281);
 
 	var _Cards2 = _interopRequireDefault(_Cards);
 
@@ -52541,7 +53399,7 @@
 		},
 		initCroppie: function initCroppie() {
 			var self = this;
-			var croppie = __webpack_require__(277);
+			var croppie = __webpack_require__(282);
 			this.croppie = new Croppie(document.getElementById('pic-edit-box'), {
 				viewport: {
 					width: 200,
@@ -52958,200 +53816,7 @@
 	module.exports = User;
 
 /***/ },
-/* 274 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var AppDispatcher = __webpack_require__(245);
-	var objectAssign = __webpack_require__(39);
-	var EventEmitter = __webpack_require__(249).EventEmitter;
-
-	var _cards;
-	var _mode;
-	var _published = {};
-	var _participated = {};
-
-	var sortByDate = function sortByDate(a, b) {
-		if (a.date < b.date) {
-			return 1;
-		}
-		if (a.date > b.date) {
-			return -1;
-		}
-		return 0;
-	};
-
-	var updateUserCards = function updateUserCards(data) {
-		if (data == null) {
-			_cards = null;
-		} else {
-			_cards = {};
-			_cards.published = data.published;
-			_cards.participated = data.participated;
-			_cards.published.sort(sortByDate);
-			_cards.participated.sort(sortByDate);
-		}
-	};
-
-	var updateUserImageLike = function updateUserImageLike(imageObj) {
-		var published = _cards.published;
-		var participated = _cards.participated;
-		for (var i = 0; i < published.length; i++) {
-			if (published[i].card.A._id == imageObj._id) {
-				published[i].card.A.like = imageObj.like;
-				break;
-			}
-			if (published[i].card.B._id == imageObj._id) {
-				published[i].card.B.like = imageObj.like;
-				break;
-			}
-		}
-		for (var i = 0; i < participated.length; i++) {
-			if (participated[i].card.A._id == imageObj._id) {
-				participated[i].card.A.like = imageObj.like;
-				break;
-			}
-			if (participated[i].card.B._id == imageObj._id) {
-				participated[i].card.B.like = imageObj.like;
-				break;
-			}
-		}
-	};
-
-	var updateParticipated = function updateParticipated(participated) {
-		_participated = participated;
-	};
-
-	var changeMode = function changeMode(mode) {
-		_mode = mode;
-	};
-
-	var UserStore = objectAssign({}, EventEmitter.prototype, {
-		addChangeListener: function addChangeListener(cb) {
-			this.on('change', cb);
-		},
-		removeChangeListener: function removeChangeListener(cb) {
-			this.removeListener('change', cb);
-		},
-		getUserCards: function getUserCards() {
-			return _cards;
-		},
-		getPublished: function getPublished() {
-			return _published;
-		},
-		getParticipated: function getParticipated() {
-			return _participated;
-		},
-		getMode: function getMode() {
-			return _mode;
-		}
-	});
-
-	AppDispatcher.register(function (payload) {
-		var action = payload.action;
-		switch (action.actionType) {
-			case 'UPDATE_USER_CARDS':
-				updateUserCards(action.data);
-				UserStore.emit('change');
-				break;
-			case 'UPDATE_USER_IMAGE_LIKE':
-				updateUserImageLike(action.data);
-				UserStore.emit('change');
-				break;
-			case 'UPDATE_PARTICIPATED':
-				updateParticipated(action.data);
-				UserStore.emit('change');
-				break;
-			case 'CHANGE_MODE':
-				changeMode(action.data);
-				UserStore.emit('change');
-				break;
-
-			default:
-				return true;
-		}
-	});
-
-	module.exports = UserStore;
-
-/***/ },
-/* 275 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _credentials = __webpack_require__(252);
-
-	var _credentials2 = _interopRequireDefault(_credentials);
-
-	var _UserAction = __webpack_require__(260);
-
-	var _UserAction2 = _interopRequireDefault(_UserAction);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	module.exports = {
-		receiveUserCards: function receiveUserCards(user_id) {
-			$.ajax({
-				url: _credentials2.default.api_server + '/users/cards/' + user_id,
-				type: 'GET',
-				success: function success(result) {
-					if (result.status) {
-						var participated = result.body.participated;
-						var published = result.body.published;
-						_UserAction2.default.updateUserCards(result.body);
-					} else {
-						console.log(result.body);
-					}
-				}
-
-			});
-		},
-		addLike: function addLike(session_id, image_id) {
-			var data = {
-				session_id: session_id,
-				image_id: image_id
-			};
-			$.ajax({
-				url: _credentials2.default.api_server + '/images/like',
-				type: 'POST',
-				data: data,
-				dataType: 'json',
-				success: function success(result) {
-					if (result.status) {
-						var imageObj = result.body;
-						_UserAction2.default.updateUserImageLike(imageObj);
-					} else {
-						console.log(result.body);
-					}
-				}
-			});
-		},
-		removeLike: function removeLike(image) {
-			var data = {
-				image_id: image._id,
-				likeObj: JSON.stringify(image.like)
-			};
-			$.ajax({
-				url: _credentials2.default.api_server + '/images/like/remove',
-				type: 'POST',
-				data: data,
-				dataType: 'json',
-				success: function success(result) {
-					if (result.status) {
-						var imageObj = result.body;
-						_UserAction2.default.updateUserImageLike(imageObj);
-					} else {
-						console.log(result.body);
-					}
-				}
-			});
-		}
-	};
-
-/***/ },
-/* 276 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -53178,7 +53843,7 @@
 
 	var _CardStore2 = _interopRequireDefault(_CardStore);
 
-	var _UserAPI = __webpack_require__(275);
+	var _UserAPI = __webpack_require__(261);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
@@ -53556,7 +54221,7 @@
 	module.exports = Cards;
 
 /***/ },
-/* 277 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(setImmediate) {/*************************
@@ -54598,10 +55263,10 @@
 	    }
 	}));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(278).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(283).setImmediate))
 
 /***/ },
-/* 278 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(4).nextTick;
@@ -54680,10 +55345,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(278).setImmediate, __webpack_require__(278).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(283).setImmediate, __webpack_require__(283).clearImmediate))
 
 /***/ },
-/* 279 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -54692,23 +55357,23 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _d = __webpack_require__(267);
+	var _d = __webpack_require__(274);
 
 	var _d2 = _interopRequireDefault(_d);
 
-	var _AnAPI = __webpack_require__(280);
+	var _AnAPI = __webpack_require__(285);
 
 	var _AnAPI2 = _interopRequireDefault(_AnAPI);
 
-	var _AnStore = __webpack_require__(282);
+	var _AnStore = __webpack_require__(287);
 
 	var _AnStore2 = _interopRequireDefault(_AnStore);
 
-	var _AnAction = __webpack_require__(281);
+	var _AnAction = __webpack_require__(286);
 
 	var _AnAction2 = _interopRequireDefault(_AnAction);
 
-	var _GeneralLikeGraph = __webpack_require__(283);
+	var _GeneralLikeGraph = __webpack_require__(288);
 
 	var _GeneralLikeGraph2 = _interopRequireDefault(_GeneralLikeGraph);
 
@@ -54918,12 +55583,12 @@
 	module.exports = Analysis;
 
 /***/ },
-/* 280 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _AnAction = __webpack_require__(281);
+	var _AnAction = __webpack_require__(286);
 
 	var _AnAction2 = _interopRequireDefault(_AnAction);
 
@@ -54965,7 +55630,7 @@
 	};
 
 /***/ },
-/* 281 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -54984,7 +55649,7 @@
 	module.exports = AnAction;
 
 /***/ },
-/* 282 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -55044,12 +55709,12 @@
 	module.exports = AnStore;
 
 /***/ },
-/* 283 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _d = __webpack_require__(267);
+	var _d = __webpack_require__(274);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -55127,180 +55792,6 @@
 	// }
 
 	module.exports = Chart;
-
-/***/ },
-/* 284 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	module.exports = {
-		getTimeStandard: function getTimeStandard() {
-			var res = {};
-			var today = new Date();
-			var lastYear = new Date(new Date().setFullYear(today.getFullYear() - 1));
-			var lastMonth = new Date(new Date().setMonth(today.getMonth() - 1));
-			var yesterday = new Date(new Date().setDate(today.getDate() - 1));
-			var hourAgo = new Date(new Date().setHours(today.getHours() - 1));
-			var minuteAgo = new Date(new Date().setMinutes(today.getMinutes() - 1));
-
-			res.today = today.getTime();
-			res.lastYear = lastYear.getTime();
-			res.lastMonth = lastMonth.getTime();
-			res.yesterday = yesterday.getTime();
-			res.hourAgo = hourAgo.getTime();
-			res.minuteAgo = minuteAgo.getTime();
-			return res;
-		},
-		getDateString: function getDateString(dateString) {
-			var self = this;
-			var date = new Date(dateString);
-			var time = this.getTimeStandard();
-			if (date.getTime() >= time.minuteAgo) {
-				// 바로 지금 업데이트 된 경우
-				return 'just now';
-			}
-			if (date.getTime() >= time.hourAgo) {
-				// 한 시간 전에 업데이트 된 경우
-				var diff = ((time.today - date.getTime()) / 1000 / 60).toFixed(0);
-				return diff + ' minutes ago';
-			}
-			if (date.getTime() >= time.yesterday) {
-				// 하루 전에 업데이트되거나 추가된 경우
-				var diff = ((time.today - date.getTime()) / 1000 / 60 / 60).toFixed(0);
-				if (diff == 1) {
-					return 'an hour ago';
-				} else {
-					return diff + ' hours ago';
-				}
-			}
-			if (date.getTime() < time.yesterday) {
-				// 오늘 해당되지 않는 경우
-				var month = self.getMonthOfDate(date);
-				var day = date.getDate();
-				return month + ' ' + day;
-			}
-			if (date.getTime() < time.lastYear) {
-				// 올해가 아닌 경우
-				var month = self.getMonthOfDate(date);
-				var day = date.getDate();
-				var year = date.getFullYear();
-				return day + ' ' + month + ' ' + year;
-			}
-		},
-		getMonthOfDate: function getMonthOfDate(date) {
-			var month;
-			switch ((date.getMonth() + 1).toString()) {
-				case '1':
-					month = 'Jan';
-					break;
-				case '2':
-					month = 'Feb';
-					break;
-				case '3':
-					month = 'Mar';
-					break;
-				case '4':
-					month = 'Apr';
-					break;
-				case '5':
-					month = 'May';
-					break;
-				case '6':
-					month = 'Jun';
-					break;
-				case '7':
-					month = 'Jul';
-					break;
-				case '8':
-					month = 'Aug';
-					break;
-				case '9':
-					month = 'Sept';
-					break;
-				case '10':
-					month = 'Oct';
-					break;
-				case '11':
-					month = 'Nov';
-					break;
-				case '12':
-					month = 'Dec';
-					break;
-				default:
-					return true;
-			}
-			return month;
-		},
-		getVersionDate: function getVersionDate(date) {
-			var date = new Date(date);
-			var month, AP, day;
-			var year = date.getFullYear();
-			var hour = date.getHours();
-			var minute = date.getMinutes();
-			day = date.getDate().toString();
-			if (hour == 0) {
-				hour = 12;
-				AP = 'AM';
-			} else if (hour > 12) {
-				hour = hour - 12;
-				AP = 'PM';
-			} else if (hour < 12) {
-				hour = hour;
-				AP = 'AM';
-			} else if (hour == 12) {
-				hour = hour;
-				AP = 'PM';
-			};
-
-			if (minute < 10) {
-				minute = '0' + minute;
-			}
-
-			switch ((date.getMonth() + 1).toString()) {
-				case '1':
-					month = 'Jan';
-					break;
-				case '2':
-					month = 'Feb';
-					break;
-				case '3':
-					month = 'Mar';
-					break;
-				case '4':
-					month = 'Apr';
-					break;
-				case '5':
-					month = 'May';
-					break;
-				case '6':
-					month = 'Jun';
-					break;
-				case '7':
-					month = 'Jul';
-					break;
-				case '8':
-					month = 'Aug';
-					break;
-				case '9':
-					month = 'Sept';
-					break;
-				case '10':
-					month = 'Oct';
-					break;
-				case '11':
-					month = 'Nov';
-					break;
-				case '12':
-					month = 'Dec';
-					break;
-				default:
-					return true;
-			}
-			var dateString = month + ' ' + day + ', ' + year + ', ' + hour + ':' + minute + ' ' + AP;
-			return dateString;
-		}
-	};
 
 /***/ }
 /******/ ]);

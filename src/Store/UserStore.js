@@ -1,5 +1,5 @@
-var AppDispatcher = require('../Dispatcher/AppDispatcher.js');
-var objectAssign = require('react/lib/Object.assign');
+var UserDispatcher = require('../Dispatcher/UserDispatcher.js');
+var objectAssign = require('object-assign');
 var EventEmitter = require('events').EventEmitter;
 
 var _cards;
@@ -13,16 +13,8 @@ var sortByDate = function(a,b){
 	return 0;
 }
 
-var updateUserCards = function(data){
-	if(data==null){
-		_cards = null;
-	} else {
-		_cards = {};
-		_cards.published = data.published;
-		_cards.participated = data.participated;
-		_cards.published.sort(sortByDate);
-		_cards.participated.sort(sortByDate);
-	}
+var updateUserCards = function(cards){
+	_cards = cards;
 }
 
 var updateUserImageLike = function(imageObj){
@@ -81,7 +73,7 @@ var UserStore = objectAssign({},EventEmitter.prototype,{
 	}
 });
 
-AppDispatcher.register(function(payload){
+UserDispatcher.register(function(payload){
 	var action = payload.action;
 	switch(action.actionType){
 		case 'UPDATE_USER_CARDS':

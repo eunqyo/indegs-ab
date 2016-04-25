@@ -24,6 +24,8 @@ var Analysis = require('./Component/Analysis.js');
 import Main from './Component/Main';
 import CardAPI from './API/CardAPI';
 
+import UserAPI from './API/UserAPI';
+
 AppAPI.getSession();
 
 const App = React.createClass({
@@ -35,7 +37,8 @@ const App = React.createClass({
 	componentDidMount:function(){
 		window.addEventListener('resize',this._onResize)
 		AppStore.addChangeListener(this._onChange);
-		this.layout()
+		this.layout();
+		this.preventDrop();
 	},
 	componentWillUnmount:function(){
 		window.removeEventListener('resize',this._onResize)
@@ -51,6 +54,23 @@ const App = React.createClass({
 		this.setState({
 			session:AppStore.getSession()
 		})
+	},
+	preventDrop:function(){
+		var holder = document.getElementById('app');
+		holder.ondragover = function () {
+			return false;
+		};
+		holder.ondragleave = function() {
+			return false;
+		};
+
+		holder.ondragend = function () {
+			return false;
+		};
+		holder.ondrop = function (e) {
+			e.preventDefault();
+			return false;
+		};
 	},
 	render:function(){
 		var session = this.state.session;

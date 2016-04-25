@@ -47,8 +47,6 @@ module.exports = {
 	},
 	updateSession:function(session){
 		var data = session;
-		data.participated = JSON.stringify(session.participated);
-		data.published = JSON.stringify(session.published);
 		$.ajax({
 			url:credentials.host_server + '/users/session',
 			type:'POST',

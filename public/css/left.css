@@ -1,0 +1,42 @@
+#left #user-ab{
+	margin-top: 10px;
+	border: 1px solid #d2d2d2;
+	border-radius: 3px;
+}
+#left #user-ab-header{
+	padding:5px 10px;
+    border-bottom:1px solid #d2d2d2;
+}
+#left #user-ab-header > #title{
+    font-weight: 400;
+    letter-spacing: -0.4px;
+    float: left;
+    line-height: 20px;
+}
+#left #user-ab-header #create{
+    background: linear-gradient(to left,#F51792,#FF4747);
+    border:1px solid #f51792;
+    line-height: 20px;
+    padding: 0 8px;
+    color: white;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+    float: right;
+}
+#left #user-ab-header #create:hover{
+    box-shadow: inset 0px 0px 4px 1px #ff4747;
+    background: #f51792;
+    cursor: pointer;
+}
+
+
+#left #user-ab-guide{
+    padding:10px;
+}
+
+#left #user-ab-guide #title{
+    text-align:center;
+    font-size:13px;
+}

@@ -9,6 +9,9 @@ var AppAPI = require('../API/AppAPI.js');
 
 var CardAPI = require('../API/CardAPI.js');
 
+import OnHeader from './Header/OnHeader';
+import OffHeader from './Header/OffHeader';
+
 
 const LoginBox = React.createClass({
 	getInitialState:function(){
@@ -43,8 +46,8 @@ const LoginBox = React.createClass({
 	submit:function(){
 		var self = this;
 		var json = {
-			email:$('#login-email-input').val(),
-			pw:$('#login-pw-input').val()
+			email:$('#login-email input').val(),
+			pw:$('#login-pw input').val()
 		};
 		AppAPI.handleLogin(json,function (message){
 			self.shakeForm()
@@ -68,6 +71,11 @@ const LoginBox = React.createClass({
 			value:value
 		})
 	},
+	handleFBLogin:function(){
+		FB.login(function(response){
+			console.log(response)
+		});
+	},
 	render:function(){
 		var message = this.state.message;
 		var title,titleStyle;
@@ -85,12 +93,13 @@ const LoginBox = React.createClass({
 				<div id="login-cover"></div>
 				<div id="login-title" style={titleStyle}>{title}</div>
 				<div id="login-email">
-					<input type="email" autoCorrect="off" spellCheck="false" name="email" id="login-email-input" placeholder="Email address" onChange={this.handleEmail} value={this.state.value} ></input>
+					<input type="email" autoCorrect="off" spellCheck="false" name="email" className="user" placeholder="Email address" onChange={this.handleEmail} value={this.state.value} autoComplete="off"></input>
 				</div>
 				<div id="login-pw">
-					<input type="password" name="pw" id="login-pw-input" placeholder="Password"></input>
+					<input type="password" name="pw" className="user" placeholder="Password"></input>
 				</div>
-				<div id="login-submit" onClick={this.submit}> Sign In ></div>
+				<input type="submit" id="login-submit" onClick={this.submit} value={'Signin'}></input>
+				<div id="fb-login" onClick={this.handleFBLogin}>Signin with facebook</div>
 			</div>
 		)
 	}
@@ -331,7 +340,7 @@ const Header = React.createClass({
 		if(session == false){
 			headerBtn = null;
 		} else if (session == null) {
-			headerBtn = <OffBtn />
+			headerBtn = <OffHeader />
 		} else {
 			if(location == '/post'){
 				headerBtn = <PostBtn session={session} />

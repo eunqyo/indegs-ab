@@ -1,9 +1,12 @@
 import React from 'react';
 
 import AppAPI from '../API/AppAPI';
+import UserAPI from '../API/UserAPI';
+import UserStore from '../Store/UserStore';
 import UserAction from '../Action/UserAction';
 import credentials from '../../credentials';
 import { Link, browserHistory } from 'react-router';
+import Post from './Post';
 
 
 
@@ -72,25 +75,84 @@ const UserCardPic = React.createClass({
 			</Link>
 		)
 	}
+});
+
+const UserABGuide = React.createClass({
+	render:function(){
+		var titleString = "Create your ABs using your design or any other images"
+		return (
+			<div id="user-ab-guide">
+				<div id="title">{titleString}</div>
+			</div>
+		)
+	}
+})
+
+const UserABHeader = React.createClass({
+	render:function(){
+		return (
+			<div id="user-ab-header">
+				<div id="title">Your ABs</div>
+				<Link to={'/post'}>
+					<div id="create"> New AB </div>
+				</Link>
+				<div className="cb"></div>
+			</div>
+		)
+	}
+});
+
+const UserAB = React.createClass({
+	render:function(){
+		var _cards = this.props._cards;
+		var body;
+		if(_cards.length == 0){
+			body = <UserABGuide />
+		} else {
+		}
+
+		return (
+			<div id="user-ab">
+				<UserABHeader />
+				{body}
+			</div>
+		)
+	}
 })
 
 const UserCard = React.createClass({
 	getInitialState:function(){
 		return ({
-			session:this.props.session
+			_cards:UserStore.getUserCards()
 		})
 	},
-	componentWillReceiveProps:function(nextProps){
+	componentDidMount:function(){
+		// 사용자가 생성한 테스트가 있는지 확인한다
+		var session = this.props.session;
+		UserStore.addChangeListener(this._onChange);
+		UserAPI.receiveUserCards(session._id);
+	},
+	componentWillUnmount:function(){
+		UserStore.removeChangeListener(this._onChange);
+	},
+	_onChange:function(){
 		this.setState({
-			session:nextProps.session
+			_cards:UserStore.getUserCards()
 		})
 	},
 	render:function(){
-		var session = this.state.session;
+		var session = this.props.session;
+		var _cards = this.state._cards;
+		var userAB;
+		if(_cards == null){
+			userAB = null;
+		} else {
+			userAB = <UserAB session={session} _cards={_cards} />
+		}
 		return (
 			<div id="user-card">
 				<UserCardPic session={session} />
-				<UserStatus session={session} />
+				{userAB}
 				<div className="cb"></div>
 			</div>
 		)
@@ -114,19 +176,8 @@ const DefaultCard = React.createClass({
 })
 
 const Left = React.createClass({
-	getInitialState:function(){
-		return ({
-			session:this.props.session
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			session:nextProps.session
-		})
-	},
 	render:function(){
-		var a;
-		var session = this.state.session;
+		var session = this.props.session;
 		var box;
 		if(session == false){
 			box = null;
