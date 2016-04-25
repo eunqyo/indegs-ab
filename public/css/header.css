@@ -1,0 +1,283 @@
+/*<Header />*/
+
+#header{
+	width:100%;
+	position:fixed;
+	z-index:1;
+	top:0;
+    background-color: rgba(255,255,255,0.9);
+    border-bottom:1px solid #efefef;
+}
+
+#header-wrapper{
+	height:46px;
+    padding:3px 0;
+}
+#header-right{
+    float:right;
+}
+
+#header #logo{
+    width: 30px;
+    height: 40px;
+    background: url('/images/icon.png') 50% 50% no-repeat;
+    background-size: contain;
+    float: left;
+    text-indent: -9999px;
+    cursor: pointer;
+    z-index: 1;
+}
+
+#header .btn{
+    font-size: 15px;
+    text-align: left;
+    line-height: 40px;
+    float: left;
+    cursor: pointer;
+    padding: 0 30px;
+    font-weight: 200;
+    font-family: 'Vegur';
+}
+
+#header .btn:hover{
+    color:#d3d3d3;
+    transition:0.5s color ease;
+}
+
+
+#header #go-mypage{
+    height:40px;
+    margin-left:10px;
+    float:left;
+    cursor:pointer;
+}
+
+/*<LoginBox /> stylesheets*/
+
+#login-holder{
+    position: absolute;
+    right: -80px;
+    left:200px;
+    top: 65px;
+    width: 240px;
+    padding: 0 20px;
+    background-color: white;
+    border: 1px solid #D8D8D8;
+}
+#login-tri{
+    border: 1px solid #d8d8d8;
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    margin-left: -7px;
+    width: 14px;
+    height: 14px;
+    transform: rotate(45deg);
+    z-index: 1;
+    background-color: white;
+}
+#login-cover{
+    width:30px;
+    height:10px;
+    position:absolute;
+    background-color:white;
+    z-index:2;
+    top:0;
+    left:50%;
+    margin-left:-15px;
+}
+
+#login-title{
+    padding: 30px 0;
+    font-size: 16px;
+    color: #5f5f5f;
+    text-align: center;
+    cursor:default;
+    border-bottom: 1px solid #E4E4E4;
+}
+#login-holder input{
+    width: 100%;
+    height: 45px;
+    line-height: 45px;
+    border: 0;
+    border-bottom: 1px solid #e2e2e2;
+    font-size: 14px;
+    display: block;
+    outline:none;
+}
+#login-holder input::-moz-placeholder{
+    font-weight:200;
+}
+#login-holder input:-webkit-input-placeholder{
+    font-weight:200;
+}
+
+#login-holder input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px white inset;
+    color: #42abff;
+}
+
+#login-submit{
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    color: black;
+    text-align: center;
+    margin: 10px 0;
+    font-weight: 300;
+    cursor: pointer;
+    font-size: 15px;
+}
+#login-submit:hover{
+    text-decoration: underline;
+    /*background:#efefef;*/
+}
+
+
+/*<UserPic /> stylesheet*/
+
+#header #image-holder{
+    padding-left: 10px;
+    width: 40px;
+    height: 30px;
+    margin-top: 5px;
+    border-radius: 1px;
+    overflow: hidden;
+    float: left;
+    border-left: 1px solid #CACACA;
+}
+
+#go-mypage #loader{
+    width:30px;
+    height:40px;
+    background-color:#f3f3f3;
+}
+#go-mypage #image{
+    width:100%;
+    height:auto;
+}
+
+
+
+
+#header #profile-box{
+    position: absolute;
+    right: -65px;
+    top: 65px;
+    width: 160px;
+    padding:0 20px;
+    background-color: white;
+    border: 1px solid #d8d8d8;
+}
+#header #profile-box #tri{
+    border: 1px solid #d8d8d8;
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    margin-left: -7px;
+    width: 14px;
+    height: 14px;
+    transform: rotate(45deg);
+    z-index: 1;
+    background-color: white;
+}
+#header #profile-box #cover{
+    width:30px;
+    height:10px;
+    position:absolute;
+    background-color:white;
+    z-index:2;
+    top:0;
+    left:50%;
+    margin-left:-15px;
+}
+#header #profile-box .item{
+    color:black;
+    cursor: pointer;
+    height:45px;
+    line-height:45px;
+    font-size:14px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#header #profile-box .item:hover{
+    text-decoration: underline;
+}
+
+#header #profile-box #logout{
+    border:none;
+}
+
+
+#header #create{
+    float:left;
+    height:40px;
+    padding-right:10px;
+    cursor:pointer;
+    border-radius:3px;
+}
+#header #create:hover #bar{
+    display:block;
+}
+
+#create #icon{
+    background: url('/images/create.png') 50% 54% no-repeat;
+    background-size: 28px;
+    width: 22px;
+    height: 40px;
+    float: left;
+}
+#create #btn{
+    font-weight: 300;
+    font-size: 15px;
+    color: black;
+    text-align: left;
+    line-height: 40px;
+    float: left;
+}
+#create #bar{
+    width: 64px;
+    margin-left: -32px;
+    left: 50%;
+    position: absolute;
+    display: none; 
+    height: 1px;
+    background: black;
+    bottom: 12px;
+}
+
+#header-publish{
+    font-size: 14px;
+    text-align: left;
+    line-height: 30px;
+    float: left;
+    cursor: pointer;
+    padding: 0 20px;
+    margin-top: 5px;
+    border-radius: 3px;
+    border: 1px solid #737373;
+}
+#header-publish:hover{
+    text-decoration:underline;
+    background:#f3f3f3;
+}
+
+#header-publish-message{
+    float: left;
+    font-size: 13px;
+    margin-right: 10px;
+    margin-top: 9px;
+    background-color: #FF2B2B;
+    padding: 4px 10px;
+    color: white;
+    border-radius: 3px;
+    cursor: default;
+}
+
+#header-publish-loading{
+    background:url('/images/loader.gif') 50% 50% no-repeat;
+    background-size:120px;
+    width:88.75px;
+    height:40px;
+    float:right;
+}

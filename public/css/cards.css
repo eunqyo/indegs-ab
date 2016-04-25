@@ -1,0 +1,95 @@
+#cards{
+    width: 600px;
+    float: left;
+    overflow: hidden;
+}
+
+.card{
+    margin-bottom:30px;
+    overflow: hidden;
+    padding: 15px;
+    padding-top:0px;
+    background-color: white;
+    cursor:pointer;
+}
+
+.card:hover{
+    background-color:#fafafa;
+}
+
+
+.card-title{
+	margin-bottom:-2px;
+}
+span.title{
+	text-align: left;
+    font-size: 14px;
+    line-height: 18px;
+    color: #191919;
+    cursor: pointer;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+}
+span.author{
+    text-align: left;
+    font-size: 12px;
+    line-height: 16px;
+    color: #909090;
+    font-weight:400;
+    letter-spacing: -0.2px;
+}
+span.date{
+    font-size: 12px;
+    line-height: 16px;
+    color: #909090;
+    font-weight: 400;
+}
+
+span.category{
+    font-size: 12px;
+    line-height: 14px;
+    margin-right: 3px;
+    color: #909090;
+    font-weight: 400;
+}
+
+.card-author{
+	margin-bottom:-1px;
+	float:left;
+}
+.card-date{
+	margin-left:5px;
+	float:left;
+}
+
+/*<CardLike />*/
+.card-like{
+    float:left;
+}
+.card-like:nth-child(2){
+    margin-left:30px;
+}
+.card-like .btn{
+    float: right;
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    background: url('/images/like-off.png') 50% 50% no-repeat;
+    background-size: contain;
+}
+.card-like .liked{
+    background: url('/images/like-on.png') 50% 50% no-repeat;
+    background-size: contain;
+}
+.card-like .count{
+    height: 15px;
+    line-height: 15px;
+    font-size: 13px;
+    width: 22px;
+    float: right;
+    text-align: right;
+}
+
+
+
+

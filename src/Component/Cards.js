@@ -12,6 +12,7 @@ import CardAction from '../Action/CardAction';
 import credentials from '../../credentials';
 import Util from '../Util/Util';
 import AppHistory from '../Util/AppHistory';
+import Dates from '../Util/Dates';
 
 const CardImage = React.createClass({
 	componentDidMount:function(){
@@ -209,6 +210,40 @@ const CardLike = React.createClass({
 	}
 });
 
+const CardTitle = React.createClass({
+	render:function(){
+		var card = this.props.card;
+		return (
+			<div className="card-title">
+				<span className="title">{card.title}</span>
+			</div>
+		)
+	}
+});
+
+const CardAuthor = React.createClass({
+	render:function(){
+		var card = this.props.card;
+		return (
+			<div className="card-author">
+				<span className="author">{'@' + card.author.name}</span>
+			</div>
+		)
+	}
+});
+
+const CardDate = React.createClass({
+	render:function(){
+		var card = this.props.card;
+		var date = Dates.getDateString(card.date)
+		return (
+			<div className="card-date">
+				<span className="date">{date}</span>
+			</div>
+		)
+	}
+})
+
 const Card = React.createClass({
 	getInitialState:function(){
 		return ({
@@ -263,13 +298,10 @@ const Card = React.createClass({
 					</div>
 					<div className="card-header-center" style={{'width':centerWidth}}>
 						<div className="card-info-holder">
-							<Link to={'/cards/'+card._id}>
-								<div className="card-title">{card.title}</div>
-							</Link>
-							<Link to={'/users/'+card.author._id}>
-								<span className="card-author" >{'@' + card.author.name}</span>
-							</Link>
-							<span className="card-date">{date}</span>
+							<CardTitle card={card}/>
+							<CardAuthor card={card}/>
+							<CardDate card={card} />
+							<div className="cb"></div>
 						</div>
 					</div>
 					<div className="card-header-right" style={{'width':rightWidth}}>
@@ -383,7 +415,7 @@ const Cards = React.createClass({
 		var endOfData = this.state.endOfData;
 		if(cards == null) return null;
 		card = cards.map(function(c,i){
-			return <Card key={i} card={c} session={session} rightWidth={rightWidth} centerWidth={centerWidth} imageWidth={imageWidth} />
+			return <Card key={c._id} card={c} session={session} rightWidth={rightWidth} centerWidth={centerWidth} imageWidth={imageWidth} />
 		});		
 
 		return (

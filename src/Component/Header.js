@@ -124,11 +124,10 @@ const OffBtn = React.createClass({
 		return (
 			<div id="login-off-btn">
 				<Link to={`/join`}>
-					<div className="btn" id="signup-btn">{string}</div>
+					<div className="btn" id="signup-btn">Signup</div>
 				</Link>
-				<div id="login-border"></div>
 				<div className="btn" id="login-btn" onClick={this.login}>
-					Sign In >
+					Signin
 				</div>
 				{loginBox}
 			</div>
@@ -349,7 +348,7 @@ const Header = React.createClass({
 					<div id="header-right">
 						{headerBtn}
 					</div>
-					<div style={{"clear":"both"}}></div>
+					<div className="cb"></div>
 				</div>
 			</div>
 		)

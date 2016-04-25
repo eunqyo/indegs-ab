@@ -27770,6 +27770,10 @@
 
 	var _AppHistory2 = _interopRequireDefault(_AppHistory);
 
+	var _Dates = __webpack_require__(284);
+
+	var _Dates2 = _interopRequireDefault(_Dates);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var CardImage = _react2.default.createClass({
@@ -27979,6 +27983,58 @@
 		}
 	});
 
+	var CardTitle = _react2.default.createClass({
+		displayName: 'CardTitle',
+
+		render: function render() {
+			var card = this.props.card;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-title' },
+				_react2.default.createElement(
+					'span',
+					{ className: 'title' },
+					card.title
+				)
+			);
+		}
+	});
+
+	var CardAuthor = _react2.default.createClass({
+		displayName: 'CardAuthor',
+
+		render: function render() {
+			var card = this.props.card;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-author' },
+				_react2.default.createElement(
+					'span',
+					{ className: 'author' },
+					'@' + card.author.name
+				)
+			);
+		}
+	});
+
+	var CardDate = _react2.default.createClass({
+		displayName: 'CardDate',
+
+		render: function render() {
+			var card = this.props.card;
+			var date = _Dates2.default.getDateString(card.date);
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-date' },
+				_react2.default.createElement(
+					'span',
+					{ className: 'date' },
+					date
+				)
+			);
+		}
+	});
+
 	var Card = _react2.default.createClass({
 		displayName: 'Card',
 
@@ -28052,29 +28108,10 @@
 						_react2.default.createElement(
 							'div',
 							{ className: 'card-info-holder' },
-							_react2.default.createElement(
-								_reactRouter.Link,
-								{ to: '/cards/' + card._id },
-								_react2.default.createElement(
-									'div',
-									{ className: 'card-title' },
-									card.title
-								)
-							),
-							_react2.default.createElement(
-								_reactRouter.Link,
-								{ to: '/users/' + card.author._id },
-								_react2.default.createElement(
-									'span',
-									{ className: 'card-author' },
-									'@' + card.author.name
-								)
-							),
-							_react2.default.createElement(
-								'span',
-								{ className: 'card-date' },
-								date
-							)
+							_react2.default.createElement(CardTitle, { card: card }),
+							_react2.default.createElement(CardAuthor, { card: card }),
+							_react2.default.createElement(CardDate, { card: card }),
+							_react2.default.createElement('div', { className: 'cb' })
 						)
 					),
 					_react2.default.createElement(
@@ -28196,7 +28233,7 @@
 			var endOfData = this.state.endOfData;
 			if (cards == null) return null;
 			card = cards.map(function (c, i) {
-				return _react2.default.createElement(Card, { key: i, card: c, session: session, rightWidth: rightWidth, centerWidth: centerWidth, imageWidth: imageWidth });
+				return _react2.default.createElement(Card, { key: c._id, card: c, session: session, rightWidth: rightWidth, centerWidth: centerWidth, imageWidth: imageWidth });
 			});
 
 			return _react2.default.createElement(
@@ -39435,14 +39472,13 @@
 					_react2.default.createElement(
 						'div',
 						{ className: 'btn', id: 'signup-btn' },
-						string
+						'Signup'
 					)
 				),
-				_react2.default.createElement('div', { id: 'login-border' }),
 				_react2.default.createElement(
 					'div',
 					{ className: 'btn', id: 'login-btn', onClick: this.login },
-					'Sign In >'
+					'Signin'
 				),
 				loginBox
 			);
@@ -39708,7 +39744,7 @@
 						{ id: 'header-right' },
 						headerBtn
 					),
-					_react2.default.createElement('div', { style: { "clear": "both" } })
+					_react2.default.createElement('div', { className: 'cb' })
 				)
 			);
 		}
@@ -55091,6 +55127,180 @@
 	// }
 
 	module.exports = Chart;
+
+/***/ },
+/* 284 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+		getTimeStandard: function getTimeStandard() {
+			var res = {};
+			var today = new Date();
+			var lastYear = new Date(new Date().setFullYear(today.getFullYear() - 1));
+			var lastMonth = new Date(new Date().setMonth(today.getMonth() - 1));
+			var yesterday = new Date(new Date().setDate(today.getDate() - 1));
+			var hourAgo = new Date(new Date().setHours(today.getHours() - 1));
+			var minuteAgo = new Date(new Date().setMinutes(today.getMinutes() - 1));
+
+			res.today = today.getTime();
+			res.lastYear = lastYear.getTime();
+			res.lastMonth = lastMonth.getTime();
+			res.yesterday = yesterday.getTime();
+			res.hourAgo = hourAgo.getTime();
+			res.minuteAgo = minuteAgo.getTime();
+			return res;
+		},
+		getDateString: function getDateString(dateString) {
+			var self = this;
+			var date = new Date(dateString);
+			var time = this.getTimeStandard();
+			if (date.getTime() >= time.minuteAgo) {
+				// 바로 지금 업데이트 된 경우
+				return 'just now';
+			}
+			if (date.getTime() >= time.hourAgo) {
+				// 한 시간 전에 업데이트 된 경우
+				var diff = ((time.today - date.getTime()) / 1000 / 60).toFixed(0);
+				return diff + ' minutes ago';
+			}
+			if (date.getTime() >= time.yesterday) {
+				// 하루 전에 업데이트되거나 추가된 경우
+				var diff = ((time.today - date.getTime()) / 1000 / 60 / 60).toFixed(0);
+				if (diff == 1) {
+					return 'an hour ago';
+				} else {
+					return diff + ' hours ago';
+				}
+			}
+			if (date.getTime() < time.yesterday) {
+				// 오늘 해당되지 않는 경우
+				var month = self.getMonthOfDate(date);
+				var day = date.getDate();
+				return month + ' ' + day;
+			}
+			if (date.getTime() < time.lastYear) {
+				// 올해가 아닌 경우
+				var month = self.getMonthOfDate(date);
+				var day = date.getDate();
+				var year = date.getFullYear();
+				return day + ' ' + month + ' ' + year;
+			}
+		},
+		getMonthOfDate: function getMonthOfDate(date) {
+			var month;
+			switch ((date.getMonth() + 1).toString()) {
+				case '1':
+					month = 'Jan';
+					break;
+				case '2':
+					month = 'Feb';
+					break;
+				case '3':
+					month = 'Mar';
+					break;
+				case '4':
+					month = 'Apr';
+					break;
+				case '5':
+					month = 'May';
+					break;
+				case '6':
+					month = 'Jun';
+					break;
+				case '7':
+					month = 'Jul';
+					break;
+				case '8':
+					month = 'Aug';
+					break;
+				case '9':
+					month = 'Sept';
+					break;
+				case '10':
+					month = 'Oct';
+					break;
+				case '11':
+					month = 'Nov';
+					break;
+				case '12':
+					month = 'Dec';
+					break;
+				default:
+					return true;
+			}
+			return month;
+		},
+		getVersionDate: function getVersionDate(date) {
+			var date = new Date(date);
+			var month, AP, day;
+			var year = date.getFullYear();
+			var hour = date.getHours();
+			var minute = date.getMinutes();
+			day = date.getDate().toString();
+			if (hour == 0) {
+				hour = 12;
+				AP = 'AM';
+			} else if (hour > 12) {
+				hour = hour - 12;
+				AP = 'PM';
+			} else if (hour < 12) {
+				hour = hour;
+				AP = 'AM';
+			} else if (hour == 12) {
+				hour = hour;
+				AP = 'PM';
+			};
+
+			if (minute < 10) {
+				minute = '0' + minute;
+			}
+
+			switch ((date.getMonth() + 1).toString()) {
+				case '1':
+					month = 'Jan';
+					break;
+				case '2':
+					month = 'Feb';
+					break;
+				case '3':
+					month = 'Mar';
+					break;
+				case '4':
+					month = 'Apr';
+					break;
+				case '5':
+					month = 'May';
+					break;
+				case '6':
+					month = 'Jun';
+					break;
+				case '7':
+					month = 'Jul';
+					break;
+				case '8':
+					month = 'Aug';
+					break;
+				case '9':
+					month = 'Sept';
+					break;
+				case '10':
+					month = 'Oct';
+					break;
+				case '11':
+					month = 'Nov';
+					break;
+				case '12':
+					month = 'Dec';
+					break;
+				default:
+					return true;
+			}
+			var dateString = month + ' ' + day + ', ' + year + ', ' + hour + ':' + minute + ' ' + AP;
+			return dateString;
+		}
+	};
 
 /***/ }
 /******/ ]);
