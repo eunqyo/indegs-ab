@@ -75,7 +75,7 @@ module.exports = {
 			}
 		});
 	},
-	handleLogout:function(){
+	handleSignout:function(){
 		$.ajax({
 			url: credentials.host_server + '/users/logout',
 			type: 'POST',

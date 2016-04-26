@@ -1,92 +1,87 @@
-@font-face {
-    font-family: 'lato';
-    src: url('/font/Lato-Hairline.ttf') format('truetype');
-    font-weight: 100;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'lato';
-    src: url('/font/Lato-Light.ttf') format('truetype');
-    font-weight: 200;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'lato';
-    src: url('/font/Lato-Regular.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'lato';
-    src: url('/font/Lato-Bold.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'lato';
-    src: url('/font/Lato-Bold.ttf') format('truetype');
-    font-weight: bold;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'Lato';
-    src: url('/font/Lato-Black.ttf') format('truetype');
-    font-weight: 800;
-    font-style: normal;
-}
-
 /*KOREAN FONT FACE*/
 
+/*나눔고딕*/
 @font-face {
-    font-family: 'SpoqaHanSans';
-    src: url('/font/SpoqaHanSans-Thin.ttf') format('truetype');
-    font-weight: 200;
-    font-style: normal;
-    letter-spacing: -0.3px;
-}
-@font-face {
-    font-family: 'SpoqaHanSans';
-    src: url('/font/SpoqaHanSans-Regular.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-    letter-spacing: -0.3px;
-}
-@font-face {
-    font-family: 'SpoqaHanSans';
-    src: url('/font/SpoqaHanSans-Bold.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    letter-spacing: -0.3px;
-}
-
-@font-face {
-    font-family: 'OpenSans';
-    src: url('/font/OpenSans-Light.ttf') format('truetype');
+    font-family: 'NanumGothic';
+    src: url('/fonts/NanumGothic/NanumGothicLight.ttf') format('truetype');
     font-weight: 200;
     font-style: normal;
 }
 @font-face {
-    font-family: 'OpenSans';
-    src: url('/font/OpenSans-Regular.ttf') format('truetype');
+    font-family: 'NanumGothic';
+    src: url('/fonts/NanumGothic/NanumGothic.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
 }
 @font-face {
+    font-family: 'Nanum Gothic';
+    src: url('/fonts/NanumGothic/NanumGothicBold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Nanum Gothic';
+    src: url('/fonts/NanumGothic/NanumGothicExtraBold.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+/*나눔바른고딕*/
+@font-face {
+    font-family: 'NanumBarunGothic';
+    src: url('/fonts/NanumBarunGothic/NanumBarunGothicUltraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'NanumBarunGothic';
+    src: url('/fonts/NanumBarunGothic/NanumBarunGothicLight.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'NanumBarunGothic';
+    src: url('/fonts/NanumBarunGothic/NanumBarunGothic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'NanumBarunGothic';
+    src: url('/fonts/NanumBarunGothic/NanumBarunGothicBold.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+/*오픈 산스*/
+@font-face {
     font-family: 'OpenSans';
-    src: url('/font/OpenSans-SemiBold.ttf') format('truetype');
+    src: url('/fonts/OpenSans-Light.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'OpenSans';
+    src: url('/fonts/OpenSans-Regular.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'OpenSans';
+    src: url('/fonts/OpenSans-SemiBold.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
 
+/*베구르*/
 @font-face {
     font-family: 'Vegur';
-    src: url('/font/Vegur-Light.otf') format('opentype');
+    src: url('/fonts/Vegur-Light.otf') format('opentype');
     font-weight: 200;
     font-style: normal;
 }
 @font-face {
     font-family: 'Vegur';
-    src: url('/font/Vegur-Regular.otf') format('opentype');
+    src: url('/fonts/Vegur-Regular.otf') format('opentype');
     font-weight: 300;
     font-style: normal;
 }

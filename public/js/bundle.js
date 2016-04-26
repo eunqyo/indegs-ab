@@ -86,15 +86,15 @@
 
 	// 'use strict';
 
-	window.$ = window.jQuery = __webpack_require__(267);
+	window.$ = window.jQuery = __webpack_require__(268);
 
 
-	var Header = __webpack_require__(268);
-	var Banner = __webpack_require__(271);
+	var Header = __webpack_require__(269);
+	var Banner = __webpack_require__(272);
 	var Cards = __webpack_require__(254);
-	var AB = __webpack_require__(272);
-	var Join = __webpack_require__(275);
-	var Post = __webpack_require__(279);
+	var AB = __webpack_require__(273);
+	var Join = __webpack_require__(276);
+	var Post = __webpack_require__(266);
 	var User = __webpack_require__(280);
 	var Analysis = __webpack_require__(284);
 
@@ -27425,7 +27425,7 @@
 				}
 			});
 		},
-		handleLogout: function handleLogout() {
+		handleSignout: function handleSignout() {
 			$.ajax({
 				url: credentials.host_server + '/users/logout',
 				type: 'POST',
@@ -27680,7 +27680,7 @@
 
 	var _Left2 = _interopRequireDefault(_Left);
 
-	var _Right = __webpack_require__(266);
+	var _Right = __webpack_require__(267);
 
 	var _Right2 = _interopRequireDefault(_Right);
 
@@ -27778,9 +27778,9 @@
 
 	var _CardAction2 = _interopRequireDefault(_CardAction);
 
-	var _credentials = __webpack_require__(252);
+	var _Servers = __webpack_require__(289);
 
-	var _credentials2 = _interopRequireDefault(_credentials);
+	var _Servers2 = _interopRequireDefault(_Servers);
 
 	var _Util = __webpack_require__(258);
 
@@ -27814,8 +27814,8 @@
 			var imageWidth = this.props.imageWidth;
 			var A = card.A;
 			var B = card.B;
-			var thumbA = _credentials2.default.image_server + '/thumbs/' + A.url.slice(7, A.url.length);
-			var thumbB = _credentials2.default.image_server + '/thumbs/' + B.url.slice(7, B.url.length);
+			var thumbA = _Servers2.default.s3Thumb + A.hash;
+			var thumbB = _Servers2.default.s3Thumb + B.hash;
 			var styleA = { 'width': imageWidth, 'height': (imageWidth * A.height / A.width).toFixed(0) };
 			var styleB = { 'width': imageWidth, 'height': (imageWidth * B.height / B.width).toFixed(0) };
 			if ((imageWidth * A.height / A.width).toFixed(0) > (imageWidth * B.height / B.width).toFixed(0)) {
@@ -27881,7 +27881,7 @@
 			var author = this.state.author;
 			var src;
 			if (author.pic != null) {
-				src = _credentials2.default.image_server + '/' + author.pic;
+				src = _Servers2.default.s3 + author.pic;
 			} else {
 				src = null;
 			}
@@ -28253,6 +28253,7 @@
 			var endOfData = this.state.endOfData;
 			if (cards == null) return null;
 			card = cards.map(function (c, i) {
+				console.log(c);
 				return _react2.default.createElement(Card, { key: c._id, card: c, session: session, rightWidth: rightWidth, centerWidth: centerWidth, imageWidth: imageWidth });
 			});
 
@@ -29319,7 +29320,7 @@
 
 	var _reactRouter = __webpack_require__(159);
 
-	var _Post = __webpack_require__(279);
+	var _Post = __webpack_require__(266);
 
 	var _Post2 = _interopRequireDefault(_Post);
 
@@ -29872,6 +29873,579 @@
 /* 266 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _AppAPI = __webpack_require__(251);
+
+	var _AppAPI2 = _interopRequireDefault(_AppAPI);
+
+	var _AppAction = __webpack_require__(250);
+
+	var _AppAction2 = _interopRequireDefault(_AppAction);
+
+	var _AppStore = __webpack_require__(244);
+
+	var _AppStore2 = _interopRequireDefault(_AppStore);
+
+	var _PostStore = __webpack_require__(291);
+
+	var _PostStore2 = _interopRequireDefault(_PostStore);
+
+	var _PostAction = __webpack_require__(293);
+
+	var _PostAction2 = _interopRequireDefault(_PostAction);
+
+	var _PostAPI = __webpack_require__(290);
+
+	var _PostAPI2 = _interopRequireDefault(_PostAPI);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var PostDrop = _react2.default.createClass({
+		displayName: 'PostDrop',
+
+		handleClick: function handleClick(e) {
+			if ($(e.target).hasClass('drop-title')) {
+				$(e.target).parent().children('.image-input').click();
+			} else {
+				$(e.target).children('.image-input').click();
+			}
+		},
+		handleChange: function handleChange(e) {
+			var self = this;
+			var file = e.target.files[0];
+			var tmpPath = URL.createObjectURL(file);
+			this.checkImage(tmpPath, function (res) {
+				if (res.status) {
+					self.props.onLocalSuccess(file, res.body);
+				} else {
+					self.props.onLocalFailure(file);
+				}
+			});
+			e.target.value = null;
+		},
+		onFileDrop: function onFileDrop(e) {
+			var self = this;
+			e.preventDefault();
+			$(e.target).hide();
+
+			var isFromLocal, isFromBrowser;
+			var nativeEvent = e.nativeEvent;
+			var localFile = nativeEvent.dataTransfer.files[0];
+			if (localFile != null) {
+				var tmpPath = URL.createObjectURL(localFile);
+				self.checkImage(tmpPath, function (res) {
+					if (res.status) {
+						self.props.onLocalSuccess(localFile, res.body);
+					} else {
+						self.props.onLocalFailure(localFile);
+					}
+				});
+			} else {
+				// 브라우저에서 가져온 경우
+				var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
+				self.checkImage(url, function (res) {
+					if (res.status) {
+						self.props.onBrowserSuccess(res.body);
+					} else {
+						self.props.onBrowserFailure(url);
+					}
+				});
+			}
+		},
+		checkImage: function checkImage(url, callback, timeout) {
+			timeout = timeout || 5000;
+			var timedOut = false,
+			    timer;
+			var img = new Image();
+			img.onerror = img.onabort = function () {
+				if (!timedOut) {
+					clearTimeout(timer);
+					callback({ status: false });
+				}
+			};
+			img.onload = function () {
+				var image = this;
+				if (!timedOut) {
+					clearTimeout(timer);
+
+					var res = {
+						status: true,
+						body: {
+							url: url,
+							width: image.width,
+							height: image.height
+						}
+					};
+
+					callback(res);
+				}
+			};
+			img.src = url;
+		},
+		onFileDragOver: function onFileDragOver(e) {
+			$(e.target).children('.drop-box').show();
+		},
+		onFileDragLeave: function onFileDragLeave(e) {
+			$(e.target).hide();
+		},
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ className: 'drop', onClick: this.handleClick, onDrop: this.onFileDrop, onDragOver: this.onFileDragOver },
+				_react2.default.createElement(
+					'div',
+					{ className: 'drop-title' },
+					'Click this box or drag an image from your PC or browser.'
+				),
+				_react2.default.createElement('div', { className: 'drop-box', onDragLeave: this.onFileDragLeave }),
+				_react2.default.createElement('input', { type: 'file', className: 'image-input', onChange: this.handleChange })
+			);
+		}
+	});
+
+	var PostImage = _react2.default.createClass({
+		displayName: 'PostImage',
+
+		handleClick: function handleClick(e) {
+			$(e.target).parent().children('.image-input').click();
+		},
+		handleChange: function handleChange(e) {
+			var self = this;
+			var file = e.target.files[0];
+			var tmpPath = URL.createObjectURL(file);
+			this.checkImage(tmpPath, function (res) {
+				if (res.status) {
+					self.props.onLocalSuccess(file, res.body);
+				} else {
+					self.props.onLocalFailure(file);
+				}
+			});
+			e.target.value = null;
+		},
+		onFileDrop: function onFileDrop(e) {
+			var self = this;
+			e.preventDefault();
+			$(e.target).hide();
+
+			var isFromLocal, isFromBrowser;
+			var nativeEvent = e.nativeEvent;
+			var localFile = nativeEvent.dataTransfer.files[0];
+			if (localFile != null) {
+				var tmpPath = URL.createObjectURL(localFile);
+				self.checkImage(tmpPath, function (res) {
+					if (res.status) {
+						self.props.onLocalSuccess(localFile, res.body);
+					} else {
+						self.props.onLocalFailure(localFile);
+					}
+				});
+			} else {
+				// 브라우저에서 가져온 경우
+				var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
+				self.checkImage(url, function (res) {
+					if (res.status) {
+						self.props.onBrowserSuccess(res.body);
+					} else {
+						self.props.onBrowserFailure(url);
+					}
+				});
+			}
+		},
+		checkImage: function checkImage(url, callback, timeout) {
+			timeout = timeout || 5000;
+			var timedOut = false,
+			    timer;
+			var img = new Image();
+			img.onerror = img.onabort = function () {
+				if (!timedOut) {
+					clearTimeout(timer);
+					callback({ status: false });
+				}
+			};
+			img.onload = function () {
+				var image = this;
+				if (!timedOut) {
+					clearTimeout(timer);
+
+					var res = {
+						status: true,
+						body: {
+							url: url,
+							width: image.width,
+							height: image.height
+						}
+					};
+
+					callback(res);
+				}
+			};
+			img.src = url;
+		},
+		onFileDragOver: function onFileDragOver(e) {
+			$(e.target).prev().show();
+		},
+		onFileDragLeave: function onFileDragLeave(e) {
+			$(e.target).hide();
+		},
+		render: function render() {
+			var src = this.props.src;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'post-image', onClick: this.handleClick, onDrop: this.onFileDrop, onDragOver: this.onFileDragOver },
+				_react2.default.createElement('div', { className: 'drop-box', onDragLeave: this.onFileDragLeave }),
+				_react2.default.createElement('img', { src: src }),
+				_react2.default.createElement('input', { type: 'file', className: 'image-input', onChange: this.handleChange })
+			);
+		}
+	});
+
+	var PostSection = _react2.default.createClass({
+		displayName: 'PostSection',
+
+		getInitialState: function getInitialState() {
+			return {
+				src: null
+			};
+		},
+		handleDropSuccess: function handleDropSuccess(url) {
+			var self = this;
+			this.setState({
+				src: url
+			});
+			this.getImageData(url, function (imageData) {
+				console.log(imageData);
+			});
+		},
+		handleDropFail: function handleDropFail(file) {
+			console.log(file);
+		},
+		getImageData: function getImageData(url, callback) {
+			var img = new Image();
+			img.onload = function () {
+				var imageData = {};
+				imageData.width = this.width;
+				imageData.height = this.height;
+				callback(imageData);
+				URL.revokeObjectURL(url);
+			};
+			img.src = url;
+		},
+		handleLocalSuccess: function handleLocalSuccess(file, image) {
+			var idx = this.props.idx;
+			this.setState({
+				src: image.url
+			});
+			var data = {
+				idx: idx,
+				file: file,
+				image: image
+			};
+			_PostAction2.default.updatePostSection(data);
+		},
+		handleLocalFailure: function handleLocalFailure(file) {
+			console.log(file);
+		},
+		handleBrowserSuccess: function handleBrowserSuccess(image) {
+			var idx = this.props.idx;
+			this.setState({
+				src: image.url
+			});
+			var data = {
+				idx: idx,
+				image: image
+			};
+			_PostAction2.default.updatePostSection(data);
+		},
+		handleBrowserFailure: function handleBrowserFailure(url) {
+			console.log(url);
+		},
+		render: function render() {
+			var body;
+			var src = this.state.src;
+
+			if (this.props.idx == 1) {
+				var imgId = "post-image-a";
+				var sectionId = "post-section-a";
+				var sectionTitle = "A";
+			} else {
+				var imgId = "post-image-b";
+				var sectionId = "post-section-b";
+				var sectionTitle = "B";
+			}
+
+			if (src == null) {
+				body = _react2.default.createElement(PostDrop, { onLocalSuccess: this.handleLocalSuccess, onLocalFailure: this.handleLocalFailure, onBrowserSuccess: this.handleBrowserSuccess, onBrowserFailure: this.handleBrowserFailure });
+			} else {
+				body = _react2.default.createElement(PostImage, { src: src, onLocalSuccess: this.handleLocalSuccess, onLocalFailure: this.handleLocalFailure, onBrowserSuccess: this.handleBrowserSuccess, onBrowserFailure: this.handleBrowserFailure });
+			}
+
+			return _react2.default.createElement(
+				'div',
+				{ className: 'post-section', id: sectionId },
+				_react2.default.createElement(
+					'div',
+					{ className: 'header' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'category' },
+						sectionTitle
+					),
+					_react2.default.createElement('div', { className: 'cb' })
+				),
+				body
+			);
+		}
+	});
+
+	var PostSections = _react2.default.createClass({
+		displayName: 'PostSections',
+
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'post-sections' },
+				_react2.default.createElement(PostSection, { idx: 1, key: 1 }),
+				_react2.default.createElement(PostSection, { idx: 2, key: 2 }),
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var PostTitle = _react2.default.createClass({
+		displayName: 'PostTitle',
+
+		getInitialState: function getInitialState() {
+			return {
+				title: null
+			};
+		},
+		submitInput: function submitInput(e) {
+			var title = this.state.title;
+			if (title != null) {
+				_PostAction2.default.updatePostTitle(title);
+			}
+			$(e.target).attr('placeholder', 'ex) Facebook layout vs Twitter layout');
+		},
+		handleEnter: function handleEnter(e) {
+			if (e.which == 13) {
+				$(e.target).blur();
+			}
+		},
+		handleChange: function handleChange(e) {
+			this.setState({
+				title: e.target.value
+			});
+		},
+		changePlaceholder: function changePlaceholder(e) {
+			$(e.target).attr('placeholder', 'How about font AB? "Helvetica vs Open Sans"');
+		},
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'post-title' },
+				_react2.default.createElement(
+					'div',
+					{ className: 'category' },
+					'Title'
+				),
+				_react2.default.createElement('input', { type: 'text', id: 'post-title-input', name: 'post-title', placeholder: 'ex) Facebook layout vs Twitter layout', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyPress: this.handleEnter, onChange: this.handleChange, value: this.state.title, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
+			);
+		}
+	});
+
+	var PostDescription = _react2.default.createClass({
+		displayName: 'PostDescription',
+
+		getInitialState: function getInitialState() {
+			return {
+				text: null
+			};
+		},
+		submitInput: function submitInput(e) {
+			var text = this.state.text;
+			if (text != null) {
+				var replaceAll = function replaceAll(str, target, replacement) {
+					return str.split(target).join(replacement);
+				};
+
+				;
+				var replacement = replaceAll(text, '\n', '<br/>');
+				_PostAction2.default.updatePostDescription(replacement);
+			}
+			$(e.target).attr('placeholder', 'Detailed explanation of your test (optional)');
+		},
+		handleChange: function handleChange(e) {
+			this.setState({
+				text: e.target.value
+			});
+		},
+		changePlaceholder: function changePlaceholder(e) {
+			$(e.target).attr('placeholder', 'I want to see how you think on two versions of my movie poster.');
+		},
+		resize: function resize(e) {
+			var obj = $(e.target).context;
+			obj.style.height = "1px";
+			obj.style.height = 20 + obj.scrollHeight + "px";
+		},
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'post-description' },
+				_react2.default.createElement(
+					'div',
+					{ className: 'category' },
+					'Description'
+				),
+				_react2.default.createElement('textarea', { name: 'post-description', placeholder: 'Detailed explanation of your test (optional)', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyUp: this.resize, onChange: this.handleChange, value: this.state.text, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
+			);
+		}
+	});
+
+	var PostForm = _react2.default.createClass({
+		displayName: 'PostForm',
+
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'post-form' },
+				_react2.default.createElement(PostTitle, null),
+				_react2.default.createElement(PostDescription, null),
+				_react2.default.createElement(PostSections, null)
+			);
+		}
+	});
+
+	var PostSubmit = _react2.default.createClass({
+		displayName: 'PostSubmit',
+
+		getInitialState: function getInitialState() {
+			return {
+				title: 'Create',
+				_post: _PostStore2.default.getPost(),
+				_session: _AppStore2.default.getSession(),
+				canPost: false
+			};
+		},
+		componentDidMount: function componentDidMount() {
+			_AppStore2.default.addChangeListener(this._onSessionChange);
+			_PostStore2.default.addChangeListener(this._onChange);
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			_AppStore2.default.removeChangeListener(this._onSessionChange);
+			_PostStore2.default.removeChangeListener(this._onChange);
+		},
+		_onChange: function _onChange() {
+			var self = this;
+			this.setState({
+				_post: _PostStore2.default.getPost()
+			}, function () {
+				self.checkStatus();
+			});
+		},
+		_onSessionChange: function _onSessionChange() {
+			var self = this;
+			this.setState({
+				_session: _AppStore2.default.getSession()
+			}, function () {
+				self.checkStatus();
+			});
+		},
+		checkStatus: function checkStatus() {
+			var self = this;
+			var _session = this.state._session;
+			var _post = this.state._post;
+			if (_session == false || _session == null) {
+				return null;
+			} else {
+				if (_post == null || _post.A == null || _post.B == null || _post.title == null) {
+					return null;
+				} else {
+					self.setState({
+						canPost: true
+					});
+				}
+			}
+		},
+		handleSubmit: function handleSubmit() {
+			var canPost = this.state.canPost;
+			if (!canPost) return null;
+
+			var _session = this.state._session;
+			var _post = this.state._post;
+			this.setState({
+				title: 'Creating ...'
+			});
+			_PostAPI2.default.post(_post, _session);
+		},
+		render: function render() {
+			var id;
+			var canPost = this.state.canPost;
+			var title = this.state.title;
+			if (canPost) id = "post-submit";else id = "post-submit-disabled";
+
+			return _react2.default.createElement(
+				'div',
+				{ id: id, onClick: this.handleSubmit },
+				title
+			);
+		}
+	});
+
+	var PostHeader = _react2.default.createClass({
+		displayName: 'PostHeader',
+
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ id: 'post-header' },
+				_react2.default.createElement(
+					'div',
+					{ id: 'title' },
+					'Create a New AB test'
+				),
+				_react2.default.createElement(
+					'div',
+					{ id: 'exp' },
+					'Create your ABs using your design or any other images'
+				),
+				_react2.default.createElement(PostSubmit, null),
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var Post = _react2.default.createClass({
+		displayName: 'Post',
+
+		componentWillUnmount: function componentWillUnmount() {
+			_PostAction2.default.emptyPost();
+		},
+		render: function render() {
+			var self = this;
+			return _react2.default.createElement(
+				'div',
+				{ id: 'post' },
+				_react2.default.createElement(
+					'div',
+					{ id: 'post-body' },
+					_react2.default.createElement(PostHeader, null),
+					_react2.default.createElement(PostForm, null)
+				)
+			);
+		}
+	});
+
+	module.exports = Post;
+
+/***/ },
+/* 267 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use strict";
 
 	var _react = __webpack_require__(1);
@@ -29997,7 +30571,7 @@
 	module.exports = Right;
 
 /***/ },
-/* 267 */
+/* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -39834,7 +40408,7 @@
 
 
 /***/ },
-/* 268 */
+/* 269 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39853,11 +40427,11 @@
 
 	var _credentials2 = _interopRequireDefault(_credentials);
 
-	var _OnHeader = __webpack_require__(269);
+	var _OnHeader = __webpack_require__(270);
 
 	var _OnHeader2 = _interopRequireDefault(_OnHeader);
 
-	var _OffHeader = __webpack_require__(270);
+	var _OffHeader = __webpack_require__(271);
 
 	var _OffHeader2 = _interopRequireDefault(_OffHeader);
 
@@ -39868,296 +40442,6 @@
 	var AppAPI = __webpack_require__(251);
 
 	var CardAPI = __webpack_require__(255);
-
-	var LoginBox = _react2.default.createClass({
-		displayName: 'LoginBox',
-
-		getInitialState: function getInitialState() {
-			return {
-				message: null
-			};
-		},
-		componentDidMount: function componentDidMount() {
-			var self = this;
-			document.body.addEventListener('click', this.handleBodyClick);
-			document.body.addEventListener('keypress', this.handleEnter);
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			document.body.removeEventListener('click', this.handleBodyClick);
-			document.body.removeEventListener('keypress', this.handleEnter);
-		},
-		handleBodyClick: function handleBodyClick(e) {
-			var self = this;
-			var a = $('#login-holder');
-			if (!a.is(e.target) && a.has(e.target).length == 0) {
-				self.props.toggle(false);
-			}
-		},
-		handleEnter: function handleEnter(e) {
-			// e.preventDefault()
-			var self = this;
-			if (e.which == 13) {
-				self.submit();
-			}
-		},
-		submit: function submit() {
-			var self = this;
-			var json = {
-				email: $('#login-email input').val(),
-				pw: $('#login-pw input').val()
-			};
-			AppAPI.handleLogin(json, function (message) {
-				self.shakeForm();
-				self.setState({
-					message: message
-				});
-			});
-		},
-		shakeForm: function shakeForm(e) {
-			var l = 10;
-			for (var i = 0; i < 8; i++) {
-				$("#login-holder").animate({
-					'left': "+=" + (l = -l) + 'px',
-					'right': "-=" + l + 'px'
-				}, 50);
-			}
-		},
-		handleEmail: function handleEmail(e) {
-			var value = $(e.target).val();
-			this.setState({
-				value: value
-			});
-		},
-		handleFBLogin: function handleFBLogin() {
-			FB.login(function (response) {
-				console.log(response);
-			});
-		},
-		render: function render() {
-			var message = this.state.message;
-			var title, titleStyle;
-			if (message != null) {
-				title = message;
-				titleStyle = { 'color': '#ff4242' };
-			} else {
-				title = 'Welcome Back !';
-				titleStyle = null;
-			}
-
-			return _react2.default.createElement(
-				'div',
-				{ id: 'login-holder' },
-				_react2.default.createElement('div', { id: 'login-tri' }),
-				_react2.default.createElement('div', { id: 'login-cover' }),
-				_react2.default.createElement(
-					'div',
-					{ id: 'login-title', style: titleStyle },
-					title
-				),
-				_react2.default.createElement(
-					'div',
-					{ id: 'login-email' },
-					_react2.default.createElement('input', { type: 'email', autoCorrect: 'off', spellCheck: 'false', name: 'email', className: 'user', placeholder: 'Email address', onChange: this.handleEmail, value: this.state.value, autoComplete: 'off' })
-				),
-				_react2.default.createElement(
-					'div',
-					{ id: 'login-pw' },
-					_react2.default.createElement('input', { type: 'password', name: 'pw', className: 'user', placeholder: 'Password' })
-				),
-				_react2.default.createElement('input', { type: 'submit', id: 'login-submit', onClick: this.submit, value: 'Signin' }),
-				_react2.default.createElement(
-					'div',
-					{ id: 'fb-login', onClick: this.handleFBLogin },
-					'Signin with facebook'
-				)
-			);
-		}
-	});
-
-	var OffBtn = _react2.default.createClass({
-		displayName: 'OffBtn',
-
-		getInitialState: function getInitialState() {
-			return {
-				loginToggle: false
-			};
-		},
-		login: function login() {
-			this.setState({
-				loginToggle: true
-			});
-		},
-		onToggle: function onToggle(bool) {
-			this.setState({
-				loginToggle: bool
-			});
-		},
-		render: function render() {
-			var self = this;
-			var loginToggle = this.state.loginToggle;
-			if (loginToggle) {
-				var loginBox = _react2.default.createElement(LoginBox, { toggle: self.onToggle });
-			} else {
-				var loginBox = null;
-			}
-			var string = "Don't have an Indegs ID? Create one now. >";
-			return _react2.default.createElement(
-				'div',
-				{ id: 'login-off-btn' },
-				_react2.default.createElement(
-					_reactRouter.Link,
-					{ to: '/join' },
-					_react2.default.createElement(
-						'div',
-						{ className: 'btn', id: 'signup-btn' },
-						'Signup'
-					)
-				),
-				_react2.default.createElement(
-					'div',
-					{ className: 'btn', id: 'login-btn', onClick: this.login },
-					'Signin'
-				),
-				loginBox
-			);
-		}
-	});
-
-	var ProfileBox = _react2.default.createClass({
-		displayName: 'ProfileBox',
-
-		componentDidMount: function componentDidMount() {
-			var self = this;
-			document.body.addEventListener('click', this.handleBodyClick);
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			document.body.removeEventListener('click', this.handleBodyClick);
-		},
-		handleBodyClick: function handleBodyClick(e) {
-			var self = this;
-			var a = $('#profile-box');
-			if (!a.is(e.target) && a.has(e.target).length == 0) {
-				self.props.toggle(false);
-			}
-		},
-		handleLogout: function handleLogout() {
-			AppAPI.handleLogout();
-		},
-		toggleBox: function toggleBox() {
-			this.props.toggle(false);
-		},
-		render: function render() {
-			var session = this.props.session;
-
-			return _react2.default.createElement(
-				'div',
-				{ id: 'profile-box' },
-				_react2.default.createElement('div', { id: 'tri' }),
-				_react2.default.createElement('div', { id: 'cover' }),
-				_react2.default.createElement(
-					_reactRouter.Link,
-					{ to: '/users/' + session._id },
-					_react2.default.createElement(
-						'div',
-						{ className: 'item', id: 'mypage', onClick: this.toggleBox },
-						'@' + session.name
-					)
-				),
-				_react2.default.createElement(
-					'div',
-					{ className: 'item', id: 'logout', onClick: this.handleLogout },
-					'Log out'
-				)
-			);
-		}
-	});
-
-	var UserPic = _react2.default.createClass({
-		displayName: 'UserPic',
-
-		handleImageLoad: function handleImageLoad(e) {
-			var image = $(e.target);
-			image.parent().children('#loader').css('display', 'none');
-		},
-		render: function render() {
-			var session = this.props.session;
-			var src;
-			if (session.pic != null) {
-				src = _credentials2.default.image_server + '/' + session.pic;
-			} else {
-				src = null;
-			}
-			return _react2.default.createElement(
-				'div',
-				{ id: 'image-holder' },
-				_react2.default.createElement('div', { id: 'loader' }),
-				_react2.default.createElement('img', { src: src, id: 'image', onLoad: this.handleImageLoad })
-			);
-		}
-	});
-	var OnBtn = _react2.default.createClass({
-		displayName: 'OnBtn',
-
-		getInitialState: function getInitialState() {
-			return {
-				session: this.props.session,
-				toggle: false
-			};
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				session: nextProps.session
-			});
-		},
-		toggleProfile: function toggleProfile() {
-			this.setState({
-				toggle: true
-			});
-		},
-		onToggle: function onToggle(bool) {
-			this.setState({
-				toggle: false
-			});
-		},
-		render: function render() {
-			var self = this;
-			var session = this.state.session;
-			var toggle = this.state.toggle;
-			var userPicStyle;
-
-			if (toggle) {
-				var profileBox = _react2.default.createElement(ProfileBox, { session: session, toggle: self.onToggle });
-			} else {
-				var profileBox = null;
-			}
-
-			return _react2.default.createElement(
-				'div',
-				{ id: 'login-on-btn' },
-				_react2.default.createElement(
-					_reactRouter.Link,
-					{ to: '/post' },
-					_react2.default.createElement(
-						'div',
-						{ id: 'create' },
-						_react2.default.createElement('div', { id: 'icon' }),
-						_react2.default.createElement(
-							'div',
-							{ id: 'btn' },
-							'Create'
-						),
-						_react2.default.createElement('div', { id: 'bar' })
-					)
-				),
-				_react2.default.createElement(
-					'div',
-					{ id: 'go-mypage', onClick: this.toggleProfile },
-					_react2.default.createElement(UserPic, { session: session })
-				),
-				profileBox
-			);
-		}
-	});
 
 	var PostBtn = _react2.default.createClass({
 		displayName: 'PostBtn',
@@ -40255,11 +40539,7 @@
 			} else if (session == null) {
 				headerBtn = _react2.default.createElement(_OffHeader2.default, null);
 			} else {
-				if (location == '/post') {
-					headerBtn = _react2.default.createElement(PostBtn, { session: session });
-				} else {
-					headerBtn = _react2.default.createElement(OnBtn, { session: session });
-				}
+				headerBtn = _react2.default.createElement(_OnHeader2.default, { session: session });
 			}
 
 			return _react2.default.createElement(
@@ -40291,7 +40571,7 @@
 	module.exports = Header;
 
 /***/ },
-/* 269 */
+/* 270 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40300,20 +40580,175 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactRouter = __webpack_require__(159);
+
+	var _Servers = __webpack_require__(289);
+
+	var _Servers2 = _interopRequireDefault(_Servers);
+
+	var _AppAPI = __webpack_require__(251);
+
+	var _AppAPI2 = _interopRequireDefault(_AppAPI);
+
+	var _UserAPI = __webpack_require__(261);
+
+	var _UserAPI2 = _interopRequireDefault(_UserAPI);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var UserMenuTitle = _react2.default.createClass({
+		displayName: 'UserMenuTitle',
+
+		render: function render() {
+			var session = this.props.session;
+			return _react2.default.createElement(
+				'div',
+				{ id: 'user-menu-title' },
+				_react2.default.createElement(
+					'span',
+					{ id: 'welcome' },
+					'Welcome, '
+				),
+				_react2.default.createElement(
+					'span',
+					{ id: 'name' },
+					'@' + session.name
+				)
+			);
+		}
+	});
+
+	var UserMenu = _react2.default.createClass({
+		displayName: 'UserMenu',
+
+		componentDidMount: function componentDidMount() {
+			var self = this;
+			document.body.addEventListener('click', this.handleBodyClick);
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			document.body.removeEventListener('click', this.handleBodyClick);
+		},
+		handleBodyClick: function handleBodyClick(e) {
+			this.props.toggle(e);
+		},
+		handleSignout: function handleSignout() {
+			_AppAPI2.default.handleSignout();
+		},
+		render: function render() {
+			var session = this.props.session;
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'user-menu', className: 'modal' },
+				_react2.default.createElement('div', { className: 'modal-top-arrow' }),
+				_react2.default.createElement('div', { className: 'modal-top-cover' }),
+				_react2.default.createElement(UserMenuTitle, { session: session }),
+				_react2.default.createElement(
+					'div',
+					{ className: 'item', onClick: this.goMypage },
+					'Your page'
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'item', onClick: this.goMyLike },
+					'Your likes'
+				),
+				_react2.default.createElement('div', { className: 'bar' }),
+				_react2.default.createElement(
+					'div',
+					{ className: 'item', id: 'logout', onClick: this.handleSignout },
+					'Sign out'
+				)
+			);
+		}
+	});
+
+	var UserPic = _react2.default.createClass({
+		displayName: 'UserPic',
+
+		getInitialState: function getInitialState() {
+			return {
+				toggle: false
+			};
+		},
+		toggleMenu: function toggleMenu(e) {
+			var a = $('#user-menu');
+			if (a.is(e.target) || a.has(e.target).length > 0) return null;
+			var toggle = this.state.toggle;
+			this.setState({
+				toggle: !toggle
+			});
+		},
+		render: function render() {
+			var session = this.props.session;
+			var toggle = this.state.toggle;
+			var menu, src;
+			if (session.pic != null) src = _Servers2.default.s3 + session.pic;else src = null;
+
+			if (toggle) menu = _react2.default.createElement(UserMenu, { session: session, toggle: this.toggleMenu });else menu = null;
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'user-pic', onClick: this.toggleMenu },
+				_react2.default.createElement('img', { src: src }),
+				menu
+			);
+		}
+	});
+
+	var NewAB = _react2.default.createClass({
+		displayName: 'NewAB',
+
+		render: function render() {
+			return _react2.default.createElement(
+				_reactRouter.Link,
+				{ to: '/post' },
+				_react2.default.createElement(
+					'div',
+					{ id: 'new-ab' },
+					'How about \'Helvetica\' vs \'Open Sans\''
+				)
+			);
+		}
+	});
 
 	var OnHeader = _react2.default.createClass({
 		displayName: 'OnHeader',
 
+		getInitialState: function getInitialState() {
+			return {
+				toggle: false
+			};
+		},
+		toggleProfile: function toggleProfile() {
+			this.setState({
+				toggle: true
+			});
+		},
+		onToggle: function onToggle(bool) {
+			this.setState({
+				toggle: false
+			});
+		},
 		render: function render() {
-			return _react2.default.createElement('div', null);
+			var self = this;
+			var session = this.props.session;
+			var toggle = this.state.toggle;
+			var userPicStyle;
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'login-on-header' },
+				_react2.default.createElement(NewAB, null),
+				_react2.default.createElement(UserPic, { session: session })
+			);
 		}
 	});
 
 	module.exports = OnHeader;
 
 /***/ },
-/* 270 */
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40500,7 +40935,7 @@
 	module.exports = OffHeader;
 
 /***/ },
-/* 271 */
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -40531,7 +40966,7 @@
 	module.exports = Banner;
 
 /***/ },
-/* 272 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40574,7 +41009,7 @@
 
 	var _Util2 = _interopRequireDefault(_Util);
 
-	var _LikeGraph = __webpack_require__(273);
+	var _LikeGraph = __webpack_require__(274);
 
 	var _LikeGraph2 = _interopRequireDefault(_LikeGraph);
 
@@ -41361,12 +41796,12 @@
 	module.exports = AB;
 
 /***/ },
-/* 273 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _d = __webpack_require__(274);
+	var _d = __webpack_require__(275);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -41505,7 +41940,7 @@
 	module.exports = Chart;
 
 /***/ },
-/* 274 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
@@ -51064,7 +51499,7 @@
 	}();
 
 /***/ },
-/* 275 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51336,7 +51771,7 @@
 		},
 		submitInput: function submitInput(e) {
 			var self = this;
-			var vd = __webpack_require__(276);
+			var vd = __webpack_require__(277);
 			var value = $(e.target).val();
 			if (value.length == 0 || value == null) {
 				self.props.answer({
@@ -51693,7 +52128,7 @@
 	module.exports = Join;
 
 /***/ },
-/* 276 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module, process) {/*!
@@ -51863,7 +52298,7 @@
 	            if (!validator.isServerSide()) {
 	                return;
 	            }
-	            depd = __webpack_require__(278)('validator');
+	            depd = __webpack_require__(279)('validator');
 	        }
 	        depd(msg);
 	    };
@@ -52679,10 +53114,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(277)(module), __webpack_require__(4)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(278)(module), __webpack_require__(4)))
 
 /***/ },
-/* 277 */
+/* 278 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -52698,7 +53133,7 @@
 
 
 /***/ },
-/* 278 */
+/* 279 */
 /***/ function(module, exports) {
 
 	/*!
@@ -52783,504 +53218,6 @@
 
 
 /***/ },
-/* 279 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var AppAPI = __webpack_require__(251);
-	var AppAction = __webpack_require__(250);
-	var AppStore = __webpack_require__(244);
-
-	var DropCenter = React.createClass({
-		displayName: 'DropCenter',
-
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ className: 'drop-center' },
-				React.createElement(
-					'div',
-					{ className: 'image-btn', onClick: this.handleClick },
-					'Add image'
-				),
-				React.createElement('input', { type: 'file', className: 'image-input', onChange: this.handleChange }),
-				React.createElement(
-					'span',
-					{ className: 'drop-title' },
-					'Drop an image from your hard drive or right from a browser.'
-				),
-				React.createElement('div', { className: 'cb' })
-			);
-		}
-	});
-	var PostDrop = React.createClass({
-		displayName: 'PostDrop',
-
-		onFileDrop: function onFileDrop(e) {
-			var self = this;
-			e.preventDefault();
-			$(e.target).hide();
-
-			var isFromLocal, isFromBrowser;
-			var nativeEvent = e.nativeEvent;
-			var localFile = nativeEvent.dataTransfer.files[0];
-			if (localFile != null) {} else {}
-
-			// var files = e.dataTransfer.files;
-			// if(files.length == 0){
-			// 	var url = e.dataTransfer.getData(e.dataTransfer.types[0]);
-			// 	self.checkImage(url,function (url,status){
-			// 		if(status){
-			// 			// 이미지다
-			// 			self.props.success(url);
-			// 		} else {
-			// 			// 이미지가 아니다
-			// 			url = e.dataTransfer.getData('Text');
-			// 			console.log(url)
-			// 		}
-			// 	},false)
-			// }
-		},
-		checkImage: function checkImage(url, callback, timeout) {
-			timeout = timeout || 5000;
-			var timedOut = false,
-			    timer;
-			var img = new Image();
-			img.onerror = img.onabort = function () {
-				if (!timedOut) {
-					clearTimeout(timer);
-					callback(url, false);
-				}
-			};
-			img.onload = function () {
-				if (!timedOut) {
-					clearTimeout(timer);
-					callback(url, true);
-				}
-			};
-			img.src = url;
-		},
-		onFileDragOver: function onFileDragOver(e) {
-			$(e.target).children('.drop-box').show();
-		},
-		onFileDragLeave: function onFileDragLeave(e) {
-			$(e.target).hide();
-		},
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ className: 'drop', onDrop: this.onFileDrop, onDragOver: this.onFileDragOver },
-				React.createElement(DropCenter, null),
-				React.createElement('div', { className: 'drop-box', onDragLeave: this.onFileDragLeave })
-			);
-		}
-	});
-
-	var PostSection = React.createClass({
-		displayName: 'PostSection',
-
-		getInitialState: function getInitialState() {
-			return {
-				opacity: 0,
-				src: null,
-				srcHeight: null,
-				srcWidth: null,
-				classStyle: 'w'
-			};
-		},
-		handleClick: function handleClick(e) {
-			$(e.target).next().click();
-		},
-		handleChange: function handleChange(e) {
-			var self = this;
-			var file = e.target.files[0];
-			this.checkExtension(file);
-			e.target.value = null;
-		},
-		checkExtension: function checkExtension(file) {
-			var self = this;
-			var extObj = file.name.split('.');
-			var ext = extObj[extObj.length - 1];
-			var lower = ext.toLowerCase(ext);
-			if (lower == 'png' || lower == 'jpg' || lower == 'jpeg') {
-				self.checkImage(file);
-			} else {}
-		},
-		checkImage: function checkImage(file) {
-			var self = this;
-			var tmpPath = URL.createObjectURL(file);
-			var obj = {};
-			if (this.props.idx == 1) {
-				AppAction.updatePostImage(file, 'a');
-			} else {
-				AppAction.updatePostImage(file, 'b');
-			}
-			var img = new Image();
-			img.onload = function () {
-				var imgWidth = this.width;
-				var imgHeight = this.height;
-				self.setState({
-					opacity: 0,
-					src: null,
-					srcWidth: imgWidth,
-					srcHeight: imgHeight
-				}, function () {
-					self.setState({
-						opacity: 1,
-						src: tmpPath
-					}, function () {
-						URL.revokeObjectURL(tmpPath);
-						self.props.change({
-							section: self.props.idx,
-							width: imgWidth,
-							height: imgHeight
-						});
-					});
-				});
-			};
-			img.src = tmpPath;
-		},
-		handleDropSuccess: function handleDropSuccess(url) {
-			var self = this;
-			this.setState({
-				src: url
-			});
-			this.getImageData(url, function (imageData) {
-				console.log(imageData);
-			});
-		},
-		getImageData: function getImageData(url, callback) {
-			var img = new Image();
-			img.onload = function () {
-				var imageData = {};
-				imageData.width = this.width;
-				imageData.height = this.height;
-				callback(imageData);
-			};
-			img.src = url;
-		},
-		render: function render() {
-			var image;
-			var src = this.state.src;
-			var opacity = this.state.opacity;
-
-			if (this.props.idx == 1) {
-				var imgId = "post-image-a";
-				var sectionId = "post-section-a";
-				var sectionTitle = "A";
-			} else {
-				var imgId = "post-image-b";
-				var sectionId = "post-section-b";
-				var sectionTitle = "B";
-			}
-
-			if (src == null) {
-				image = React.createElement(PostDrop, { success: this.handleDropSuccess });
-			} else {
-				image = React.createElement(
-					'div',
-					{ className: 'post-image-holder' },
-					React.createElement('img', { src: src, className: 'post-image', id: imgId })
-				);
-			}
-
-			return React.createElement(
-				'div',
-				{ className: 'post-section', id: sectionId },
-				React.createElement(
-					'div',
-					{ className: 'header' },
-					React.createElement(
-						'div',
-						{ className: 'category' },
-						sectionTitle
-					),
-					React.createElement('div', { className: 'cb' })
-				),
-				image
-			);
-		}
-	});
-
-	var PostSections = React.createClass({
-		displayName: 'PostSections',
-
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ id: 'post-sections' },
-				React.createElement(PostSection, { idx: 1, key: 1 }),
-				React.createElement(PostSection, { idx: 2, key: 2 }),
-				React.createElement('div', { className: 'cb' })
-			);
-		}
-	});
-
-	var PostTitle = React.createClass({
-		displayName: 'PostTitle',
-
-		getInitialState: function getInitialState() {
-			return {
-				title: null
-			};
-		},
-		submitInput: function submitInput(e) {
-			var title = this.state.title;
-			if (title != null) {
-				AppAction.updatePostTitle(title);
-			}
-			$(e.target).attr('placeholder', 'ex) Facebook layout vs Twitter layout');
-		},
-		handleEnter: function handleEnter(e) {
-			if (e.which == 13) {
-				$(e.target).blur();
-			}
-		},
-		handleChange: function handleChange(e) {
-			this.setState({
-				title: e.target.value
-			});
-		},
-		changePlaceholder: function changePlaceholder(e) {
-			$(e.target).attr('placeholder', 'How about font AB? "Helvetica vs Open Sans"');
-		},
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ id: 'post-title' },
-				React.createElement(
-					'div',
-					{ className: 'category' },
-					'Title'
-				),
-				React.createElement('input', { type: 'text', id: 'post-title-input', name: 'post-title', placeholder: 'ex) Facebook layout vs Twitter layout', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyPress: this.handleEnter, onChange: this.handleChange, value: this.state.title, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
-			);
-		}
-	});
-
-	var PostText = React.createClass({
-		displayName: 'PostText',
-
-		getInitialState: function getInitialState() {
-			return {
-				text: null
-			};
-		},
-		submitInput: function submitInput(e) {
-			var text = this.state.text;
-			if (text != null) {
-				var replaceAll = function replaceAll(str, target, replacement) {
-					return str.split(target).join(replacement);
-				};
-
-				;
-				var replacement = replaceAll(text, '\n', '<br/>');
-				AppAction.updatePostText(replacement);
-			}
-			$(e.target).attr('placeholder', 'Detailed explanation of your test (optional)');
-		},
-		handleEnter: function handleEnter(e) {
-			// if(e.which == 13){
-			// 	$(e.target).blur()
-			// }
-		},
-		handleChange: function handleChange(e) {
-			this.setState({
-				text: e.target.value
-			});
-		},
-		changePlaceholder: function changePlaceholder(e) {
-			$(e.target).attr('placeholder', 'I want to see how you think on two versions of my movie poster.');
-		},
-		resize: function resize(e) {
-			var obj = $(e.target).context;
-			obj.style.height = "1px";
-			obj.style.height = 20 + obj.scrollHeight + "px";
-		},
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ id: 'post-text' },
-				React.createElement(
-					'div',
-					{ className: 'category' },
-					'Description'
-				),
-				React.createElement('textarea', { id: 'post-text-input', name: 'post-text', placeholder: 'Detailed explanation of your test (optional)', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyUp: this.resize, onKeyPress: this.handleEnter, onChange: this.handleChange, value: this.state.text, spellCheck: 'false', autoCorrect: 'off', autoComplete: 'off' })
-			);
-		}
-	});
-
-	var PostAlert = React.createClass({
-		displayName: 'PostAlert',
-
-		getInitialState: function getInitialState() {
-			return {
-				message: this.props.message
-			};
-		},
-		handleClick: function handleClick() {
-			this.props.alertAnswer(true);
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			this.setState({
-				message: null
-			});
-		},
-		render: function render() {
-			var message = this.state.message;
-			return React.createElement(
-				'div',
-				{ id: 'post-alert-holder' },
-				React.createElement('div', { id: 'post-alert-drag' }),
-				React.createElement(
-					'div',
-					{ id: 'post-alert-info' },
-					React.createElement('div', { id: 'post-alert-logo' }),
-					React.createElement(
-						'div',
-						{ id: 'post-alert-message' },
-						message
-					)
-				),
-				React.createElement(
-					'div',
-					{ id: 'post-alert-btn', onClick: this.handleClick },
-					'Okay'
-				)
-			);
-		}
-	});
-
-	var PostDrag = React.createClass({
-		displayName: 'PostDrag',
-
-		onMouseDown: function onMouseDown(e) {
-			console.log(e);
-		},
-		onMouseUp: function onMouseUp(e) {
-			console.log(e);
-		},
-		closePost: function closePost() {
-			console.log('a');
-		},
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ id: 'post-drag', onMouseDown: this.onMouseDown, onMouseUp: this.onMouseUp },
-				React.createElement(
-					'div',
-					{ id: 'title' },
-					'Create a New AB test'
-				),
-				React.createElement(
-					'div',
-					{ id: 'exp' },
-					'Create your ABs using your design or any other images'
-				),
-				React.createElement('div', { className: 'cb' })
-			);
-		}
-	});
-
-	var PostForm = React.createClass({
-		displayName: 'PostForm',
-
-		render: function render() {
-			return React.createElement(
-				'div',
-				{ id: 'post-form' },
-				React.createElement(PostTitle, null),
-				React.createElement(PostText, null),
-				React.createElement(PostSections, null)
-			);
-		}
-	});
-
-	var Post = React.createClass({
-		displayName: 'Post',
-
-		getInitialState: function getInitialState() {
-			return {
-				a: null,
-				b: null
-			};
-		},
-		componentDidMount: function componentDidMount() {
-			window.addEventListener('resize', this._onResize);
-			this.layout();
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			window.removeEventListener('resize', this._onResize);
-		},
-		_onResize: function _onResize() {
-			this.layout();
-		},
-		layout: function layout() {
-			var windowHeight = $(window).outerHeight();
-			$('#post').css('min-height', windowHeight);
-		},
-		handleChange: function handleChange(data) {
-			var self = this;
-			if (data.section == 1) {
-				self.setState({
-					a: data
-				}, function () {
-					self.changeBorder();
-				});
-			} else {
-				self.setState({
-					b: data
-				}, function () {
-					self.changeBorder();
-				});
-			}
-		},
-		changeBorder: function changeBorder() {
-			var a = this.state.a;
-			var b = this.state.b;
-			if (a != null) {
-				if (b == null) {
-					$('#post-section-b').css('border', 'none');
-					$('#post-section-a').css('border-right', '1px solid #efefef');
-				} else {
-					var aRatio = a.width / a.height;
-					var bRatio = b.width / b.height;
-					if (aRatio > bRatio) {
-						$('#post-section-a').css('border', 'none');
-						$('#post-section-b').css('border-left', '1px solid #efefef');
-					} else {
-						$('#post-section-b').css('border', 'none');
-						$('#post-section-a').css('border-right', '1px solid #efefef');
-					}
-				}
-			} else {
-				if (b = !null) {
-					$('#post-section-a').css('border', 'none');
-					$('#post-section-b').css('border-left', '1px solid #efefef');
-				}
-			}
-		},
-		render: function render() {
-			var self = this;
-			return React.createElement(
-				'div',
-				{ id: 'post' },
-				React.createElement(
-					'div',
-					{ id: 'post-body' },
-					React.createElement(PostDrag, null),
-					React.createElement(PostForm, null)
-				)
-			);
-		}
-	});
-
-	module.exports = Post;
-
-/***/ },
 /* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -53326,7 +53263,7 @@
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
-	var _Right = __webpack_require__(266);
+	var _Right = __webpack_require__(267);
 
 	var _Right2 = _interopRequireDefault(_Right);
 
@@ -55357,7 +55294,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _d = __webpack_require__(274);
+	var _d = __webpack_require__(275);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -55714,7 +55651,7 @@
 
 	"use strict";
 
-	var _d = __webpack_require__(274);
+	var _d = __webpack_require__(275);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -55792,6 +55729,346 @@
 	// }
 
 	module.exports = Chart;
+
+/***/ },
+/* 289 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+		s3: 'https://dhl5t9nj7h6c1.cloudfront.net/',
+		s3Thumb: 'https://dhl5t9nj7h6c1.cloudfront.net/thumbs/',
+		s3Image: 'https://dhl5t9nj7h6c1.cloudfront.net/images/',
+		host: 'http://localhost:3030',
+		api: 'http://localhost:3333'
+	};
+
+	// module.exports = {
+	// 	s3:'https://dhl5t9nj7h6c1.cloudfront.net/',
+	// 	host:'http://indegs.com',
+	// 	api: 'http://indegs.com:3333'
+	// }
+
+/***/ },
+/* 290 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _Servers = __webpack_require__(289);
+
+	var _Servers2 = _interopRequireDefault(_Servers);
+
+	var _AppHistory = __webpack_require__(216);
+
+	var _AppHistory2 = _interopRequireDefault(_AppHistory);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	module.exports = {
+		post: function post(_post, _session) {
+			var self = this;
+			var date = new Date();
+
+			_post.A.author_id = _session._id;
+			_post.B.author_id = _session._id;
+
+			var card = {
+				title: _post.title,
+				description: _post.description,
+				author_id: _session._id,
+				A: {
+					width: _post.A.image.width,
+					height: _post.A.image.height
+				},
+				B: {
+					width: _post.B.image.width,
+					height: _post.B.image.height
+				}
+			};
+			console.log(card);
+
+			self.getSectionFormData(_post.A, function (A) {
+				self.getSectionFormData(_post.B, function (B) {
+					var formData = new FormData();
+					formData.append('A', A, A.name);
+					formData.append('B', B, B.name);
+					formData.append('card', JSON.stringify(card));
+					self.postCard(formData);
+				});
+			});
+		},
+		postCard: function postCard(formData) {
+			$.ajax({
+				url: _Servers2.default.api + '/cards',
+				type: 'POST',
+				contentType: false,
+				processData: false,
+				data: formData,
+				success: function success(result) {
+					if (result.status) {
+						location.href = 'http://localhost:3030';
+					} else {
+						console.log(result.body);
+					}
+				}
+			});
+		},
+		createFileObject: function createFileObject(path, name, callback) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", path);
+			xhr.responseType = "blob";
+			xhr.addEventListener('load', function () {
+				var blob = xhr.response;
+				blob.name = name;
+				blob.lastModifiedDate = new Date();
+				callback(blob);
+			});
+			xhr.send();
+		},
+		getSectionFormData: function getSectionFormData(section, callback) {
+			var self = this;
+			var file = section.file;
+			var image = section.image;
+
+			// 브라우저에서 전송된 경우
+			if (file == null) {
+				var formData = new FormData();
+
+				var origin = {
+					type: 'web',
+					url: image.url
+				};
+
+				var salt = (Math.round(new Date().valueOf() * Math.random()) + "").slice(0, 6);
+				var image = self.createFileObject(image.url, salt, function (data) {
+					data.origin = origin;
+					callback(data);
+				});
+			} else {
+				var formData = new FormData();
+				var data = file;
+				var origin = {
+					type: 'local',
+					url: file.path
+				};
+				data.width = image.width;
+				data.height = image.height;
+				data.origin = origin;
+				callback(data);
+			}
+
+			// var split = obj.image.split('/');
+			// var name = split[split.length-1];
+			// this.createFileObject(obj.image,name, function(image){
+			// 	var formData = new FormData();
+			// 	formData.append('image',image,image.name);
+			// 	$.ajax({
+			// 		url:credentials.api_server + '/cards/image',
+			// 		type:'POST',
+			// 		contentType:false,
+			// 		processData:false,
+			// 		data:formData,
+			// 		success:function(result){
+			// 			if(result.status){
+			// 				callback(result.body);
+			// 			} else {
+			// 				console.log(result.body);
+			// 			}
+			// 		}
+			// 	})	
+			// })
+		},
+		postImage: function postImage(obj, callback) {
+			var split = obj.image.split('/');
+			var name = split[split.length - 1];
+			this.createFileObject(obj.image, name, function (image) {
+				var formData = new FormData();
+				formData.append('image', image, image.name);
+				$.ajax({
+					url: credentials.api_server + '/cards/image',
+					type: 'POST',
+					contentType: false,
+					processData: false,
+					data: formData,
+					success: function success(result) {
+						if (result.status) {
+							callback(result.body);
+						} else {
+							console.log(result.body);
+						}
+					}
+				});
+			});
+		},
+		postCompare: function postCompare(postObj, callback) {
+			var self = this;
+			var date = new Date();
+			postObj.A.authorId = postObj.session._id;
+			postObj.B.authorId = postObj.session._id;
+			postObj.A.date = date;
+			postObj.B.date = date;
+
+			var data = {
+				title: postObj.title,
+				text: postObj.text,
+				authorId: postObj.session._id,
+				date: date
+			};
+			self.postImage(postObj.A, function (A) {
+				data.A = A._id;
+				self.postImage(postObj.B, function (B) {
+					data.B = B._id;
+					$.ajax({
+						url: credentials.api_server + '/cards',
+						type: 'POST',
+						data: data,
+						dataType: 'json',
+						success: function success(result) {
+							if (result.status) {
+								callback(result.body);
+								// AppAPI.updatePublished(result.body);
+								// CardAction.updateCard(result.body);
+								// AppHistory.push('/')
+							} else {
+									console.log(result.body);
+								}
+						}
+					});
+				});
+			});
+		}
+	};
+
+/***/ },
+/* 291 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var PostDispatcher = __webpack_require__(292);
+	var objectAssign = __webpack_require__(265);
+	var EventEmitter = __webpack_require__(249).EventEmitter;
+
+	var _post;
+
+	var updatePostSection = function updatePostSection(data) {
+		if (_post == null) _post = {};
+		if (data.idx == 1) {
+			_post.A = data;
+		} else {
+			_post.B = data;
+		}
+	};
+
+	var updatePostTitle = function updatePostTitle(title) {
+		if (_post == null) _post = {};
+		_post.title = title;
+	};
+
+	var updatePostDescription = function updatePostDescription(description) {
+		if (_post == null) _post = {};
+		_post.description = description;
+	};
+
+	var emptyPost = function emptyPost() {
+		_post = null;
+	};
+
+	var PostStore = objectAssign({}, EventEmitter.prototype, {
+		addChangeListener: function addChangeListener(cb) {
+			this.on('change', cb);
+		},
+		removeChangeListener: function removeChangeListener(cb) {
+			this.removeListener('change', cb);
+		},
+		getPost: function getPost() {
+			return _post;
+		}
+	});
+
+	PostDispatcher.register(function (payload) {
+		var action = payload.action;
+		switch (action.actionType) {
+			case 'UPDATE_POST_SECTION':
+				updatePostSection(action.data);
+				PostStore.emit('change');
+				break;
+			case 'UPDATE_POST_TITLE':
+				updatePostTitle(action.data);
+				PostStore.emit('change');
+				break;
+			case 'UPDATE_POST_DESCRIPTION':
+				updatePostDescription(action.data);
+				PostStore.emit('change');
+				break;
+			case 'EMPTY_POST':
+				emptyPost();
+				PostStore.emit('change');
+				break;
+
+			default:
+				return true;
+		}
+	});
+
+	module.exports = PostStore;
+
+/***/ },
+/* 292 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Dispatcher = __webpack_require__(246).Dispatcher;
+
+	var PostDispatcher = new Dispatcher();
+
+	PostDispatcher.handleAction = function (action) {
+		this.dispatch({
+			source: 'VIEW_ACTION',
+			action: action
+		});
+	};
+
+	module.exports = PostDispatcher;
+
+/***/ },
+/* 293 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var PostDispatcher = __webpack_require__(292);
+
+	var PostAction = {
+		updatePostSection: function updatePostSection(data) {
+			PostDispatcher.handleAction({
+				actionType: 'UPDATE_POST_SECTION',
+				data: data
+			});
+		},
+		updatePostTitle: function updatePostTitle(data) {
+			PostDispatcher.handleAction({
+				actionType: 'UPDATE_POST_TITLE',
+				data: data
+			});
+		},
+		updatePostDescription: function updatePostDescription(data) {
+			PostDispatcher.handleAction({
+				actionType: 'UPDATE_POST_DESCRIPTION',
+				data: data
+			});
+		},
+		emptyPost: function emptyPost() {
+			PostDispatcher.handleAction({
+				actionType: 'EMPTY_POST'
+			});
+		}
+	};
+
+	module.exports = PostAction;
 
 /***/ }
 /******/ ]);

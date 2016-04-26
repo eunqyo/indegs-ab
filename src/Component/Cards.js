@@ -9,7 +9,7 @@ import CardAPI from '../API/CardAPI';
 import CardStore from '../Store/CardStore';
 import CardAction from '../Action/CardAction';
 
-import credentials from '../../credentials';
+import Servers from '../Util/Servers';
 import Util from '../Util/Util';
 import AppHistory from '../Util/AppHistory';
 import Dates from '../Util/Dates';
@@ -30,8 +30,8 @@ const CardImage = React.createClass({
 		var imageWidth = this.props.imageWidth;
 		var A = card.A;
 		var B = card.B;
-		var thumbA = credentials.image_server + '/thumbs/' + A.url.slice(7,A.url.length);
-		var thumbB = credentials.image_server + '/thumbs/' + B.url.slice(7,B.url.length);
+		var thumbA = Servers.s3Thumb + A.hash;
+		var thumbB = Servers.s3Thumb + B.hash
 		var styleA = {'width':imageWidth,'height':(imageWidth*A.height/A.width).toFixed(0)}
 		var styleB = {'width':imageWidth,'height':(imageWidth*B.height/B.width).toFixed(0)}
 		if((imageWidth*A.height/A.width).toFixed(0)>(imageWidth*B.height/B.width).toFixed(0)){
@@ -94,7 +94,7 @@ const CardUserPic = React.createClass({
 		var author = this.state.author;
 		var src;
 		if(author.pic!=null){
-			src = credentials.image_server + '/' + author.pic;
+			src = Servers.s3 + author.pic;
 		} else {
 			src = null;
 		}
@@ -415,6 +415,7 @@ const Cards = React.createClass({
 		var endOfData = this.state.endOfData;
 		if(cards == null) return null;
 		card = cards.map(function(c,i){
+			console.log(c)
 			return <Card key={c._id} card={c} session={session} rightWidth={rightWidth} centerWidth={centerWidth} imageWidth={imageWidth} />
 		});		
 

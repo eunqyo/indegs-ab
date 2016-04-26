@@ -1,24 +1,34 @@
-var React = require('react');
-var AppAPI = require('../API/AppAPI.js');
-var AppAction = require('../Action/AppAction.js');
-var AppStore = require('../Store/AppStore.js');
+import React from 'react';
+import AppAPI from '../API/AppAPI';
+import AppAction from '../Action/AppAction';
+import AppStore from '../Store/AppStore';
+
+import PostStore from '../Store/PostStore';
+import PostAction from '../Action/PostAction';
+import PostAPI from '../API/PostAPI';
 
 
-const DropCenter = React.createClass({
-	render:function(){
-		return (
-			<div className="drop-center">
-				<div className="image-btn" onClick={this.handleClick}>Add image</div>
-				<input type="file" className="image-input" onChange={this.handleChange} />
-				<span className="drop-title">
-					Drop an image from your hard drive or right from a browser.
-				</span>
-				<div className="cb"></div>
-			</div>
-		)
-	}
-})
 const PostDrop = React.createClass({
+	handleClick:function(e){
+		if($(e.target).hasClass('drop-title')){
+			$(e.target).parent().children('.image-input').click()
+		} else {
+			$(e.target).children('.image-input').click()
+		}
+	},
+	handleChange:function(e){
+		var self = this;
+		var file = e.target.files[0];
+		var tmpPath = URL.createObjectURL(file);
+		this.checkImage(tmpPath,function (res){
+			if(res.status){
+				self.props.onLocalSuccess(file,res.body);
+			} else {
+				self.props.onLocalFailure(file);
+			}
+		})
+		e.target.value = null;
+	},
 	onFileDrop:function(e){
 		var self = this;
 		e.preventDefault();
@@ -28,25 +38,25 @@ const PostDrop = React.createClass({
 		var nativeEvent = e.nativeEvent;
 		var localFile = nativeEvent.dataTransfer.files[0];
 		if(localFile != null){
-
+			var tmpPath = URL.createObjectURL(localFile);
+			self.checkImage(tmpPath,function (res){
+				if(res.status){
+					self.props.onLocalSuccess(localFile,res.body);
+				} else {
+					self.props.onLocalFailure(localFile);
+				}
+			});
 		} else {
-
+			// 브라우저에서 가져온 경우
+			var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
+			self.checkImage(url,function (res){
+				if(res.status){
+					self.props.onBrowserSuccess(res.body);
+				} else {
+					self.props.onBrowserFailure(url);
+				}
+			})
 		}
-
-		// var files = e.dataTransfer.files;
-		// if(files.length == 0){
-		// 	var url = e.dataTransfer.getData(e.dataTransfer.types[0]);
-		// 	self.checkImage(url,function (url,status){
-		// 		if(status){
-		// 			// 이미지다
-		// 			self.props.success(url);
-		// 		} else {
-		// 			// 이미지가 아니다
-		// 			url = e.dataTransfer.getData('Text');
-		// 			console.log(url)
-		// 		}
-		// 	},false)
-		// }
 	},
 	checkImage:function(url,callback,timeout){
 		timeout = timeout || 5000;
@@ -55,13 +65,24 @@ const PostDrop = React.createClass({
 	    img.onerror = img.onabort = function() {
 	        if (!timedOut) {
 	            clearTimeout(timer);
-	            callback(url, false);
+	            callback({status:false});
 	        }
 	    };
 	    img.onload = function() {
+	    	var image = this;
 	        if (!timedOut) {
 	            clearTimeout(timer);
-	            callback(url, true);
+
+	            var res = {
+	            	status:true,
+	            	body:{
+		            	url:url,
+		            	width:image.width,
+		            	height:image.height
+	            	}
+	            }
+
+	            callback(res);
 	        }
 	    };
 	    img.src = url;
@@ -74,9 +95,103 @@ const PostDrop = React.createClass({
 	},
 	render:function(){
 		return (
-			<div className="drop" onDrop={this.onFileDrop} onDragOver={this.onFileDragOver}>
-				<DropCenter />
+			<div className="drop" onClick={this.handleClick} onDrop={this.onFileDrop} onDragOver={this.onFileDragOver}>
+				<div className="drop-title">Click this box or drag an image from your PC or browser.</div>
 				<div className="drop-box" onDragLeave={this.onFileDragLeave}></div>
+				<input type="file" className="image-input" onChange={this.handleChange} />
+			</div>
+		)
+	}
+});
+
+const PostImage = React.createClass({
+	handleClick:function(e){
+		$(e.target).parent().children('.image-input').click();
+	},
+	handleChange:function(e){
+		var self = this;
+		var file = e.target.files[0];
+		var tmpPath = URL.createObjectURL(file);
+		this.checkImage(tmpPath,function (res){
+			if(res.status){
+				self.props.onLocalSuccess(file,res.body);
+			} else {
+				self.props.onLocalFailure(file);
+			}
+		})
+		e.target.value = null;
+	},
+	onFileDrop:function(e){
+		var self = this;
+		e.preventDefault();
+		$(e.target).hide();
+
+		var isFromLocal,isFromBrowser;
+		var nativeEvent = e.nativeEvent;
+		var localFile = nativeEvent.dataTransfer.files[0];
+		if(localFile != null){
+			var tmpPath = URL.createObjectURL(localFile);
+			self.checkImage(tmpPath,function (res){
+				if(res.status){
+					self.props.onLocalSuccess(localFile,res.body);
+				} else {
+					self.props.onLocalFailure(localFile);
+				}
+			});
+		} else {
+			// 브라우저에서 가져온 경우
+			var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
+			self.checkImage(url,function (res){
+				if(res.status){
+					self.props.onBrowserSuccess(res.body);
+				} else {
+					self.props.onBrowserFailure(url);
+				}
+			})
+		}
+	},
+	checkImage:function(url,callback,timeout){
+		timeout = timeout || 5000;
+	    var timedOut = false, timer;
+	    var img = new Image();
+	    img.onerror = img.onabort = function() {
+	        if (!timedOut) {
+	            clearTimeout(timer);
+	            callback({status:false});
+	        }
+	    };
+	    img.onload = function() {
+	    	var image = this;
+	        if (!timedOut) {
+	            clearTimeout(timer);
+
+	            var res = {
+	            	status:true,
+	            	body:{
+		            	url:url,
+		            	width:image.width,
+		            	height:image.height
+	            	}
+	            }
+
+	            callback(res);
+	        }
+	    };
+	    img.src = url;
+	},
+	onFileDragOver:function(e){
+		$(e.target).prev().show();
+	},
+	onFileDragLeave:function(e){
+		$(e.target).hide();
+	},
+	render:function(){
+		var src = this.props.src;
+		return (
+			<div className="post-image" onClick={this.handleClick} onDrop={this.onFileDrop} onDragOver={this.onFileDragOver}>
+				<div className="drop-box" onDragLeave={this.onFileDragLeave}></div>
+				<img src={src} />
+				<input type="file" className="image-input" onChange={this.handleChange} />
 			</div>
 		)
 	}
@@ -85,66 +200,8 @@ const PostDrop = React.createClass({
 const PostSection = React.createClass({
 	getInitialState:function(){
 		return({
-			opacity:0,
-			src:null,
-			srcHeight:null,
-			srcWidth:null,
-			classStyle:'w'
+			src:null
 		})
-	},
-	handleClick:function(e){
-		$(e.target).next().click()
-	},
-	handleChange:function(e){
-		var self = this;
-		var file = e.target.files[0];
-		this.checkExtension(file)
-		e.target.value = null;
-	},
-	checkExtension:function(file){
-		var self = this;
-		var extObj = file.name.split('.');
-		var ext = extObj[extObj.length-1];
-		var lower = ext.toLowerCase(ext);
-		if(lower == 'png' || lower == 'jpg' || lower == 'jpeg'){
-			self.checkImage(file)
-		} else {
-
-		}
-	},
-	checkImage:function(file){
-		var self = this;
-		var tmpPath = URL.createObjectURL(file);
-		var obj = {};
-		if(this.props.idx == 1){
-			AppAction.updatePostImage(file,'a')
-		} else {
-			AppAction.updatePostImage(file,'b')
-		}
-		var img = new Image();
-	    img.onload = function(){
-	    	var imgWidth = this.width;
-	    	var imgHeight = this.height;
-	    	self.setState({
-	    		opacity:0,
-	    		src:null,
-	    		srcWidth:imgWidth,
-	    		srcHeight:imgHeight
-	    	},function(){
-				self.setState({
-					opacity:1,
-					src:tmpPath
-				},function(){
-					URL.revokeObjectURL(tmpPath)
-					self.props.change({
-						section:self.props.idx,
-						width:imgWidth,
-						height:imgHeight
-					})
-				});
-	    	})
-	    };
-	    img.src = tmpPath;
 	},
 	handleDropSuccess:function(url){
 		var self = this;
@@ -155,20 +212,52 @@ const PostSection = React.createClass({
 			console.log(imageData)
 		})
 	},
+	handleDropFail:function(file){
+		console.log(file)
+	},
 	getImageData:function(url,callback){
 		var img = new Image();
 		img.onload = function(){
 			var imageData = {}
 			imageData.width = this.width;
 			imageData.height = this.height;
-			callback(imageData)
+			callback(imageData);
+			URL.revokeObjectURL(url);
 		}
 		img.src = url;
 	},
+	handleLocalSuccess:function(file,image){
+		var idx = this.props.idx;
+		this.setState({
+			src:image.url
+		});
+		var data = {
+			idx:idx,
+			file:file,
+			image:image
+		}
+		PostAction.updatePostSection(data);
+	},
+	handleLocalFailure:function(file){
+		console.log(file);
+	},
+	handleBrowserSuccess:function(image){
+		var idx = this.props.idx;
+		this.setState({
+			src:image.url
+		});
+		var data = {
+			idx:idx,
+			image:image
+		}
+		PostAction.updatePostSection(data);
+	},
+	handleBrowserFailure:function(url){
+		console.log(url)
+	},
 	render:function(){
-		var image;
+		var body;
 		var src = this.state.src;
-		var opacity = this.state.opacity;
 
 		if(this.props.idx == 1){
 			var imgId = "post-image-a"
@@ -181,9 +270,9 @@ const PostSection = React.createClass({
 		}
 
 		if(src == null){
-			image = <PostDrop success={this.handleDropSuccess} />;
+			body = <PostDrop onLocalSuccess={this.handleLocalSuccess} onLocalFailure={this.handleLocalFailure} onBrowserSuccess={this.handleBrowserSuccess} onBrowserFailure={this.handleBrowserFailure} />;
 		} else {
-			image = <div className="post-image-holder"><img src={src} className="post-image" id={imgId} /></div>
+			body = <PostImage src={src} onLocalSuccess={this.handleLocalSuccess} onLocalFailure={this.handleLocalFailure} onBrowserSuccess={this.handleBrowserSuccess} onBrowserFailure={this.handleBrowserFailure} />;
 		}
 
 		return (
@@ -192,7 +281,7 @@ const PostSection = React.createClass({
 					<div className="category">{sectionTitle}</div>
 					<div className="cb"></div>
 				</div>
-				{image}
+				{body}
 			</div>
 		)
 	}
@@ -221,7 +310,7 @@ const PostTitle = React.createClass({
 	submitInput:function(e){
 		var title = this.state.title;
 		if(title != null){
-			AppAction.updatePostTitle(title);
+			PostAction.updatePostTitle(title);
 		}
 		$(e.target).attr('placeholder','ex) Facebook layout vs Twitter layout');
 	},
@@ -248,7 +337,7 @@ const PostTitle = React.createClass({
 	}
 });
 
-const PostText = React.createClass({
+const PostDescription = React.createClass({
 	getInitialState:function(){
 		return({
 			text:null
@@ -261,14 +350,9 @@ const PostText = React.createClass({
 			    return str.split(target).join(replacement);
 			};
 			var replacement = replaceAll(text, '\n', '<br/>');
-			AppAction.updatePostText(replacement)
+			PostAction.updatePostDescription(replacement);
 		}
 		$(e.target).attr('placeholder','Detailed explanation of your test (optional)');
-	},
-	handleEnter:function(e){
-		// if(e.which == 13){
-		// 	$(e.target).blur()
-		// }
 	},
 	handleChange:function(e){
 		this.setState({
@@ -285,146 +369,125 @@ const PostText = React.createClass({
 	},	
 	render:function(){
 		return (
-			<div id="post-text">
+			<div id="post-description">
 				<div className="category">Description</div>
-				<textarea id="post-text-input" name="post-text" placeholder="Detailed explanation of your test (optional)" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyUp={this.resize} onKeyPress={this.handleEnter} onChange={this.handleChange} value={this.state.text} spellCheck="false" autoCorrect="off" autoComplete="off"/>
+				<textarea name="post-description" placeholder="Detailed explanation of your test (optional)" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyUp={this.resize} onChange={this.handleChange} value={this.state.text} spellCheck="false" autoCorrect="off" autoComplete="off"/>
 			</div>
 		)
 	}
 })
 
-
-const PostAlert = React.createClass({
-	getInitialState:function(){
-		return ({
-			message:this.props.message
-		})
-	},
-	handleClick:function(){
-		this.props.alertAnswer(true)
-	},
-	componentWillUnmount:function(){
-		this.setState({
-			message:null
-		})
-	},
-	render:function(){
-		var message = this.state.message;
-		return (
-			<div id="post-alert-holder">
-				<div id="post-alert-drag"></div>
-				<div id="post-alert-info">
-					<div id="post-alert-logo"></div>
-					<div id="post-alert-message">{message}</div>
-				</div>
-				<div id="post-alert-btn" onClick={this.handleClick} >Okay</div>
-			</div>
-		)
-	}
-});
-
-
-const PostDrag = React.createClass({
-	onMouseDown:function(e){
-		console.log(e)
-	},
-	onMouseUp:function(e){
-		console.log(e)
-	},
-	closePost:function(){
-		console.log('a')
-	},
-	render:function(){
-		return (
-			<div id="post-drag" onMouseDown={this.onMouseDown} onMouseUp={this.onMouseUp}>
-				<div id="title">Create a New AB test</div>
-				<div id="exp">Create your ABs using your design or any other images</div>
-				<div className="cb"></div>
-			</div>
-		)
-	}
-});
 
 const PostForm = React.createClass({
 	render:function(){
 		return (
 			<div id="post-form">
 				<PostTitle />
-				<PostText />
+				<PostDescription />
 				<PostSections />
 			</div>
 		)
 	}
-})
+});
 
-const Post = React.createClass({
+
+
+const PostSubmit = React.createClass({
 	getInitialState:function(){
 		return ({
-			a:null,
-			b:null
+			title:'Create',
+			_post:PostStore.getPost(),
+			_session:AppStore.getSession(),
+			canPost:false
 		})
 	},
 	componentDidMount:function(){
-		window.addEventListener('resize',this._onResize);
-		this.layout()
+		AppStore.addChangeListener(this._onSessionChange);
+		PostStore.addChangeListener(this._onChange);
 	},
 	componentWillUnmount:function(){
-		window.removeEventListener('resize',this._onResize);
+		AppStore.removeChangeListener(this._onSessionChange);
+		PostStore.removeChangeListener(this._onChange);
 	},
-	_onResize:function(){
-		this.layout()
-	},
-	layout:function(){
-		var windowHeight = $(window).outerHeight();
-		$('#post').css('min-height',windowHeight);
-	},
-	handleChange:function(data){
+	_onChange:function(){
 		var self = this;
-		if(data.section == 1){
-			self.setState({
-				a:data
-			},function(){
-				self.changeBorder()
-			})
+		this.setState({
+			_post:PostStore.getPost()
+		},function(){
+			self.checkStatus()
+		})
+	},
+	_onSessionChange:function(){
+		var self = this;
+		this.setState({
+			_session:AppStore.getSession()
+		},function(){
+			self.checkStatus()
+		})
+	},
+	checkStatus:function(){
+		var self = this;
+		var _session = this.state._session;
+		var _post = this.state._post;
+		if(_session == false || _session == null){
+			return null;
 		} else {
-			self.setState({
-				b:data
-			},function(){
-				self.changeBorder()
-			})
+			if(_post == null || _post.A == null || _post.B == null || _post.title == null){
+				return null;
+			} else {
+				self.setState({
+					canPost:true
+				})
+			}
 		}
 	},
-	changeBorder:function(){
-		var a = this.state.a;
-		var b = this.state.b;
-		if(a!=null){
-			if(b==null){
-				$('#post-section-b').css('border','none');
-				$('#post-section-a').css('border-right','1px solid #efefef');
-			} else {
-				var aRatio = a.width/a.height;
-				var bRatio = b.width/b.height;
-				if(aRatio>bRatio){
-					$('#post-section-a').css('border','none')
-					$('#post-section-b').css('border-left','1px solid #efefef')
-				} else {
-					$('#post-section-b').css('border','none');
-					$('#post-section-a').css('border-right','1px solid #efefef');
-				}
-			}
-		} else {
-			if(b=!null){
-				$('#post-section-a').css('border','none')
-				$('#post-section-b').css('border-left','1px solid #efefef')
-			}
-		}
+	handleSubmit:function(){
+		var canPost = this.state.canPost;
+		if(!canPost) return null;
+
+		var _session = this.state._session;
+		var _post = this.state._post;
+		this.setState({
+			title:'Creating ...'
+		})
+		PostAPI.post(_post,_session);
+	},
+	render:function(){
+		var id;
+		var canPost = this.state.canPost;
+		var title = this.state.title;
+		if(canPost) id = "post-submit";
+		else id = "post-submit-disabled";
+
+		return (
+			<div id={id} onClick={this.handleSubmit}>{title}</div>
+		)
+	}
+})
+
+const PostHeader = React.createClass({
+	render:function(){
+		return (
+			<div id="post-header">
+				<div id="title">Create a New AB test</div>
+				<div id="exp">Create your ABs using your design or any other images</div>
+				<PostSubmit />
+				<div className="cb"></div>
+			</div>
+		)
+	}
+});
+
+const Post = React.createClass({
+	componentWillUnmount:function(){
+		PostAction.emptyPost();
 	},
 	render:function(){
 		var self = this;
 		return (
 			<div id="post">
 				<div id="post-body">
-					<PostDrag />
+					<PostHeader />
 					<PostForm />
 				</div>
 			</div>

@@ -1,6 +1,7 @@
 
 #post{
     width:100%;
+    padding-bottom:100px;
 }
 #post-body{
     width: 900px;
@@ -8,20 +9,57 @@
     margin-top:100px;
 }
 
-#post-drag{
-    width: 100%;
-    /* background: linear-gradient(to right,#585858,#FFFFFF); */
+/*<PostHeader />*/
+
+#post-header{
+    width:100%;
     border-bottom: 1px solid #d2d2d2;
+    margin-bottom: 70px;
 }
-#post-drag #title{
+#post-header #title{
     line-height: 50px;
     font-weight: 400;
     font-size: 25px;
 }
-#post-drag #exp{
+#post-header #exp{
     color: #6B6B6B;
     margin-top: -5px;
     margin-bottom: 15px;
+}
+
+/*<PostSubmit />*/
+
+#post-submit{
+    position: absolute;
+    right: 0;
+    top: 20px;
+    width: 110px;
+    line-height: 35px;
+    border-radius: 5px;
+    color: white;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #f51792;
+    background: linear-gradient(to left,#F51792,#FF4747);
+    background-color: #f51792;
+    cursor:pointer;
+}
+
+#post-submit-disabled{
+    position: absolute;
+    right: 0;
+    top: 20px;
+    width: 110px;
+    line-height: 35px;
+    border-radius: 5px;
+    color: white;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #f51792;
+    background: linear-gradient(to left,#F51792,#FF4747);
+    background-color: #f51792;
+    opacity:0.2;
+    cursor:default;
 }
 
 
@@ -30,52 +68,6 @@
 
 }
 
-/*<PostHeader />*/
-#post-header{
-    padding:10px;
-}
-
-#post-header #left{
-    float: left;
-    width: 640px;
-    padding-right: 79px;
-    margin-right: 20px;
-}
-
-#post-header #right{
-    float:left;
-    width:530px;
-    padding-left:70px;
-}
-
-#post-header #right #chart{
-    opacity: 0.5;
-}
-
-#post-header #chart #title-holder{
-    border-bottom:1px solid #bfbfbf;
-}
-#post-header #chart #title{
-    line-height: 30px;
-    font-size:15px;
-    color:#313131;
-    float:left;
-}
-
-#post-header #chart #go-data{
-    float:right;
-    line-height:30px;
-    font-size:13px;
-    text-align:center;
-    border-radius:3px;
-}
-
-#post-header #graph{
-    width:100%;
-    margin-top:10px;
-    border-bottom:3px solid #d3d3d3;
-    height:90px;
-}
 
 /*<PostTitle />*/
 #post-title{
@@ -101,15 +93,6 @@
     border-bottom: 1px solid;
 }
 #post-title > input:focus{
-    width: 100%;
-    font-size: 21px;
-    line-height: 32px;
-    font-weight: 400;
-    letter-spacing: -0.5px;
-    padding: 10px 0;
-    background: transparent;
-    border:none;
-    border-radius:0;
     border-bottom: 1px solid #51a7e8;
 }
 #post-title > input::-webkit-scrollbar { 
@@ -121,31 +104,35 @@
     font-weight:200;
 }
 
-#post-text{
+/*<PostText />*/
+
+#post-description{
     margin-top:30px;
 }
-#post-text > .category{
+#post-description > .category{
     font-size: 12px;
     font-weight: 400;
     margin-bottom: 6px;
     color: #707070;
 }
 
-#post-text > textarea{
+#post-description > textarea{
     width: 100%;
-    line-height: 22px;
-    font-size: 15px;
+    line-height: 20px;
+    font-size: 14px;
     padding: 10px;
-    border: 1px solid #424242;
-    font-weight: 200;
-    height: 62px;
+    border: 1px solid #f2f2f2;
+    background: #f2f2f2;
+    font-weight: 300;
+    letter-spacing: -0.2px;
+    height: 60px;
 }
 
-#post-text > textarea::-webkit-scrollbar { 
+#post-description > textarea::-webkit-scrollbar { 
     display: none; 
 }
 
-#post-text > textarea::-webkit-input-placeholder{
+#post-description > textarea::-webkit-input-placeholder{
     color:#bababa;
     font-weight:200;
 }
@@ -201,15 +188,25 @@
     margin-bottom:30px;
 }
 
-.post-image-holder{
-    width:100%;
-    height:400px;
-}
+/*<PostImage />*/
+
 .post-image{
+    width:99%;
+    border-radius:3px;
+    overflow:hidden;
+    cursor:pointer;
+    border:1px solid #c5c5c5;
+}
+.post-image:hover{
+    border: 1px solid #51a7e8;
+}
+.post-image:hover > img{
+    opacity:0.7;
+}
+
+.post-image > img{
     margin:0 auto;
     display:block;
-    opacity:0;
-    border:1px solid #f2f2f2;
     width:100%;
     height:auto;
     transition:0.5s opacity ease;
@@ -219,15 +216,25 @@
 .drop{
     width: 99%;
     height: 300px;
-    border: 1px solid;
+    border: 1px solid #c5c5c5;
     border-radius: 3px;
     overflow:hidden;
+    cursor:pointer;
 }
+.drop:hover{
+    border: 1px solid #51a7e8;
+}
+.drop:hover .drop-title{
+    color: #51a7e8;
+}
+
 .drop-box{
-    position:absolute;
-    width:100%;
-    height:300px;
-    z-index:1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left:0;
+    z-index: 2;
     background: rgba(174, 199, 255, 0.27);
     border: 1px solid #51a7e8;
     display:none;
@@ -244,8 +251,9 @@
     color: #B1B1B1;
     letter-spacing: -0.2px;
     text-align: center;
-    margin-left: 10px;
-    float:left;
+    /* margin-top: 150px; */
+    margin: 0 auto;
+    margin-top: 136px;
 }
 
 .post-section .image-input{
@@ -265,6 +273,7 @@
     font-weight: 400;
     letter-spacing: -0.2px;
     float:left;
+    display:none;
 }
 .post-section .image-btn:hover{
     box-shadow: inset 0px 0px 4px 1px #ff4747;
