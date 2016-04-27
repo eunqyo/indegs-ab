@@ -7,14 +7,17 @@
 .card{
     margin-bottom: 30px;
     overflow: hidden;
-    padding-top: 10px;
+    padding-top: 15px;
     background-color: white;
     border-top: 1px solid #d3d3d3;
-    cursor: pointer;
+}
+
+.card:hover span.title{
+    text-decoration: underline;
 }
 
 .card-title{
-	margin-bottom:-1px;
+	margin-top:2px;
 }
 span.title{
     text-align: left;
@@ -25,6 +28,11 @@ span.title{
     cursor: pointer;
     font-weight: 400;
     letter-spacing: -0.3px;
+}
+
+
+.card-author:hover span.author{
+    text-decoration: underline;
 }
 span.author{
     text-align: left;
@@ -52,7 +60,7 @@ span.category{
 .card-author{
 	margin-bottom:-1px;
 	float:left;
-    display:none;
+    /*display:none;*/
 }
 .card-dot{
     float: left;
@@ -62,7 +70,7 @@ span.category{
     margin: 0 5px;
     margin-top: 10px;
     background: #909090;
-    display:none;
+    /*display:none;*/
 }
 
 .card-date{
@@ -71,11 +79,6 @@ span.category{
 
 /*<CardHeader />*/
 
-.card-header{
-    padding-top:15px;
-    padding-bottom:10px;
-    cursor:default;
-}
 .card-header-left{
     float:left;
     /*display:none;*/
@@ -151,7 +154,9 @@ span.category{
 
 /*<CardInfo />*/
 .card-info{
-    margin-bottom:2px;
+    float:left;
+    width:440px;
+    padding-right:20px;
 }
 
 
@@ -221,7 +226,10 @@ span.category{
 
 /*<CardLike />*/
 .card-likes{
-    margin: 15px 0;
+    width: 95px;
+    float: right;
+    padding: 7px 0;
+    cursor: default;
 }
 .card-like{
     float:left;
@@ -233,23 +241,27 @@ span.category{
 .card-like .btn{
     float:left;
     cursor: pointer;
-    width: 15px;
+    width: 13px;
     height: 20px;
-    background: url('/images/like-off.png') 50% 50% no-repeat;
+    background: url('/images/like-on.png') 50% 50% no-repeat;
     background-size: contain;
-    opacity:0.8;
+    opacity:0.2;
 }
-.card-like .btn.liked{
-    background: url('/images/like-red.png') 50% 50% no-repeat;
+.card-like.liked .btn{
+    background: url('/images/like-on.png') 50% 50% no-repeat;
     background-size: contain;
     opacity:1;
 }
 .card-like .count{
-    margin-left:10px;
-    height: 15px;
     line-height: 20px;
-    font-size: 13px;
-    width: 22px;
+    font-size: 12px;
+    color:#a9a9a9;
+    margin-left:5px;
+}
+.card-like.liked .count{
+    /*color:#ff2d2d;*/
+    color:black;
+    font-weight:400;
 }
 
 

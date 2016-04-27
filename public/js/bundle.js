@@ -27799,56 +27799,24 @@
 	var CardLike = _react2.default.createClass({
 		displayName: 'CardLike',
 
-		handleLike: function handleLike() {
-			var self = this;
-			var session = this.state.session;
-			var image = this.state.image;
-			var other = this.state.other;
-			var liked = this.state.liked;
-			if (session != null) {
-				if (liked) {
-					for (var i = 0; i < image.like.length; i++) {
-						if (image.like[i].author == session._id) {
-							image.like.splice(i, 1);
-							_CardAction2.default.updateImageLike(image);
-							_CardAPI2.default.removeLike(image);
-							_AppAPI2.default.removeParticipated(session, image.card_id);
-							break;
-						}
-					}
-				} else {
-					var likeObj = {
-						date: new Date(),
-						author: session._id
-					};
-					image.like.push(likeObj);
-					_CardAction2.default.updateImageLike(image);
-					_CardAPI2.default.addLike(session._id, image._id);
-					_AppAPI2.default.addParticipated(session._id, image.card_id);
-					for (var i = 0; i < other.like.length; i++) {
-						if (other.like[i].author == session._id) {
-							other.like.splice(i, 1);
-							_CardAction2.default.updateImageLike(other);
-							_CardAPI2.default.removeLike(other);
-							break;
-						}
-					}
-				}
-			}
+		handleClick: function handleClick() {
+			var section = this.props.section;
+			this.props.onLikeClick(section);
 		},
 		render: function render() {
 			var likeCnt = this.props.likeCnt;
 			var liked = this.props.liked;
-			var btnClass;
+			var section = this.props.section;
+			var likeClass;
 			if (liked) {
-				btnClass = "btn liked";
+				likeClass = "card-like liked";
 			} else {
-				btnClass = "btn";
+				likeClass = "card-like";
 			}
 			return _react2.default.createElement(
 				'div',
-				{ className: 'card-like' },
-				_react2.default.createElement('div', { className: btnClass }),
+				{ className: likeClass, onClick: this.handleClick },
+				_react2.default.createElement('div', { className: 'btn' }),
 				_react2.default.createElement(
 					'span',
 					{ className: 'count' },
@@ -27870,6 +27838,9 @@
 		componentDidMount: function componentDidMount() {
 			this.checkUserLike();
 		},
+		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+			this.checkUserLike();
+		},
 		checkUserLike: function checkUserLike() {
 			var self = this;
 			var card = this.props.card;
@@ -27886,7 +27857,7 @@
 			});
 		},
 		checkSectionLike: function checkSectionLike(section, callback) {
-			if (section.like.length == 0) return false;
+			if (section.like.length == 0) callback(false);
 
 			var session = this.props.session;
 			for (var i = 0; i < section.like.length; i++) {
@@ -27895,20 +27866,90 @@
 				}
 			}
 			if (i == section.like.length) {
-				return false;
+				callback(false);
 			} else {
-				return true;
+				callback(true);
 			}
 		},
-		handleLike: function handleLike() {},
+		handleLike: function handleLike(section) {
+			var session = this.props.session;
+			if (session == null) return null;
+			var self = this;
+			var card = this.props.card;
+			var ALike = this.state.ALike;
+			var BLike = this.state.BLike;
+			if (section == 'a') {
+				if (ALike) {
+					self.removeLike(card.A, function (A) {
+						card.A = A;
+						_CardAction2.default.updateCard(card);
+					});
+				} else {
+					self.addLike(card.A, function (A) {
+						if (BLike) {
+							self.removeLike(card.B, function (B) {
+								card.A = A;
+								card.B = B;
+								_CardAction2.default.updateCard(card);
+							});
+						} else {
+							card.A = A;
+							_CardAction2.default.updateCard(card);
+						}
+					});
+				}
+			} else {
+				if (BLike) {
+					self.removeLike(card.B, function (B) {
+						card.B = B;
+						_CardAction2.default.updateCard(card);
+					});
+				} else {
+					self.addLike(card.B, function (B) {
+						if (ALike) {
+							self.removeLike(card.A, function (A) {
+								card.A = A;
+								card.B = B;
+								_CardAction2.default.updateCard(card);
+							});
+						} else {
+							card.B = B;
+							_CardAction2.default.updateCard(card);
+						}
+					});
+				}
+			}
+			_CardAPI2.default.updateImageLike(card.A, card.B);
+		},
+		addLike: function addLike(section, callback) {
+			var session = this.props.session;
+			var likeObj = {
+				date: new Date(),
+				author: session._id
+			};
+			section.like.push(likeObj);
+			callback(section);
+		},
+		removeLike: function removeLike(section, callback) {
+			var session = this.props.session;
+			for (var i = 0; i < section.like.length; i++) {
+				if (section.like[i].author == session._id) {
+					section.like.splice(i, 1);
+					break;
+				}
+			}
+			callback(section);
+		},
 		render: function render() {
 			var session = this.props.session;
 			var card = this.props.card;
+			var ALike = this.state.ALike;
+			var BLike = this.state.BLike;
 			return _react2.default.createElement(
 				'div',
 				{ className: 'card-likes' },
-				_react2.default.createElement(CardLike, { likeCnt: card.A.like.length, liked: this.state.ALike, onLikeClick: this.handleLike }),
-				_react2.default.createElement(CardLike, { likeCnt: card.B.like.length, liked: this.state.BLike, onLikeClick: this.handleLike }),
+				_react2.default.createElement(CardLike, { section: 'a', likeCnt: card.A.like.length, liked: ALike, onLikeClick: this.handleLike }),
+				_react2.default.createElement(CardLike, { section: 'b', likeCnt: card.B.like.length, liked: BLike, onLikeClick: this.handleLike }),
 				_react2.default.createElement('div', { className: 'cb' })
 			);
 		}
@@ -27937,12 +27978,16 @@
 		render: function render() {
 			var card = this.props.card;
 			return _react2.default.createElement(
-				'div',
-				{ className: 'card-author' },
+				_reactRouter.Link,
+				{ to: '/users/' + card.author._id },
 				_react2.default.createElement(
-					'span',
-					{ className: 'author' },
-					'@' + card.author.name
+					'div',
+					{ className: 'card-author' },
+					_react2.default.createElement(
+						'span',
+						{ className: 'author' },
+						'@' + card.author.name
+					)
 				)
 			);
 		}
@@ -28057,15 +28102,20 @@
 				{ className: 'card-body' },
 				_react2.default.createElement(
 					'div',
-					{ className: 'card-info' },
-					_react2.default.createElement(CardAuthor, { card: card }),
-					_react2.default.createElement('div', { className: 'card-dot' }),
-					_react2.default.createElement(CardDate, { card: card }),
+					{ className: 'card-header' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'card-info' },
+						_react2.default.createElement(CardAuthor, { card: card }),
+						_react2.default.createElement('div', { className: 'card-dot' }),
+						_react2.default.createElement(CardDate, { card: card }),
+						_react2.default.createElement('div', { className: 'cb' }),
+						_react2.default.createElement(CardTitle, { card: card })
+					),
+					_react2.default.createElement(CardLikes, { card: card, session: session }),
 					_react2.default.createElement('div', { className: 'cb' })
 				),
-				_react2.default.createElement(CardTitle, { card: card }),
 				_react2.default.createElement(CardDescription, { description: card.description }),
-				_react2.default.createElement(CardLikes, { card: card, session: session }),
 				_react2.default.createElement(CardImages, { card: card })
 			);
 		}
@@ -28074,9 +28124,6 @@
 	var Card = _react2.default.createClass({
 		displayName: 'Card',
 
-		shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-			return nextProps.session !== this.props.session;
-		},
 		render: function render() {
 			var card = this.props.card;
 			var session = this.props.session;
@@ -28406,6 +28453,25 @@
 				dataType: 'json',
 				success: function success(result) {
 					console.log(result);
+				}
+			});
+		},
+		updateImageLike: function updateImageLike(A, B) {
+			var data = {
+				A: JSON.stringify(A),
+				B: JSON.stringify(B)
+			};
+			$.ajax({
+				url: credentials.api_server + '/images/like',
+				type: 'POST',
+				data: data,
+				dataType: 'json',
+				success: function success(result) {
+					if (result.status) {
+						console.log(result.body);
+					} else {
+						console.log(result.body);
+					}
 				}
 			});
 		},

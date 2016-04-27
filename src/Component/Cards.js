@@ -15,55 +15,23 @@ import AppHistory from '../Util/AppHistory';
 import Dates from '../Util/Dates';
 
 const CardLike = React.createClass({
-	handleLike:function(){
-		var self = this;
-		var session = this.state.session;
-		var image = this.state.image;
-		var other = this.state.other;
-		var liked = this.state.liked;
-		if(session != null){
-			if(liked){
-				for(var i=0;i<image.like.length;i++){
-					if(image.like[i].author == session._id){
-						image.like.splice(i,1);
-						CardAction.updateImageLike(image);
-						CardAPI.removeLike(image);
-						AppAPI.removeParticipated(session,image.card_id)
-						break;
-					}
-				}
-			} else {
-				var likeObj = {
-					date:new Date(),
-					author:session._id
-				}
-				image.like.push(likeObj);
-				CardAction.updateImageLike(image)
-				CardAPI.addLike(session._id,image._id);
-				AppAPI.addParticipated(session._id,image.card_id)
-				for(var i=0;i<other.like.length; i++){
-					if(other.like[i].author == session._id){
-						other.like.splice(i,1);
-						CardAction.updateImageLike(other)
-						CardAPI.removeLike(other);
-						break;
-					}
-				}
-			}
-		}
+	handleClick:function(){
+		var section = this.props.section;
+		this.props.onLikeClick(section)
 	},
 	render:function(){
 		var likeCnt = this.props.likeCnt;
 		var liked = this.props.liked;
-		var btnClass;
+		var section = this.props.section;
+		var likeClass;
 		if(liked){
-			btnClass = "btn liked"
+			likeClass = "card-like liked"
 		} else {
-			btnClass = "btn"
+			likeClass = "card-like"
 		}
 		return (
-			<div className="card-like">
-				<div className={btnClass}></div>
+			<div className={likeClass} onClick={this.handleClick}>
+				<div className="btn"></div>
 				<span className="count">{likeCnt}</span>
 			</div>
 		)
@@ -78,6 +46,9 @@ const CardLikes = React.createClass({
 		})
 	},
 	componentDidMount:function(){
+		this.checkUserLike()
+	},
+	componentWillReceiveProps:function(nextProps){
 		this.checkUserLike()
 	},
 	checkUserLike:function(){
@@ -96,7 +67,7 @@ const CardLikes = React.createClass({
 		});	
 	},
 	checkSectionLike:function(section,callback){
-		if(section.like.length == 0) return false;
+		if(section.like.length == 0) callback(false);
 
 		var session = this.props.session;
 		for(var i=0;i<section.like.length;i++){
@@ -105,21 +76,89 @@ const CardLikes = React.createClass({
 			}
 		}
 		if(i == section.like.length){
-			return false;
+			callback(false);
 		} else {
-			return true;
+			callback(true);
 		}
 	},
-	handleLike:function(){
-
+	handleLike:function(section){
+		var session = this.props.session;
+		if(session==null) return null;
+		var self =this;
+		var card = this.props.card;
+		var ALike = this.state.ALike;
+		var BLike = this.state.BLike;
+		if(section=='a'){
+			if(ALike){
+				self.removeLike(card.A,function (A){
+					card.A = A;
+					CardAction.updateCard(card);
+				});
+			} else {
+				self.addLike(card.A,function (A){
+					if(BLike){
+						self.removeLike(card.B,function (B){
+							card.A = A;
+							card.B = B;
+							CardAction.updateCard(card);
+						})
+					} else {
+						card.A = A;
+						CardAction.updateCard(card);
+					}
+				})
+			}
+		} else {
+			if(BLike){
+				self.removeLike(card.B,function (B){
+					card.B = B;
+					CardAction.updateCard(card);
+				});
+			} else {
+				self.addLike(card.B,function (B){
+					if(ALike){
+						self.removeLike(card.A,function (A){
+							card.A = A;
+							card.B = B;
+							CardAction.updateCard(card);
+						})
+					} else {
+						card.B = B;
+						CardAction.updateCard(card);
+					}
+				})
+			}
+		}
+		CardAPI.updateImageLike(card.A,card.B);
+	},
+	addLike:function(section,callback){
+		var session = this.props.session;
+		var likeObj = {
+			date:new Date(),
+			author:session._id
+		}
+		section.like.push(likeObj);
+		callback(section);
+	},
+	removeLike:function(section,callback){
+		var session = this.props.session;
+		for(var i=0;i<section.like.length;i++){
+			if(section.like[i].author == session._id){
+				section.like.splice(i,1);
+				break;
+			}
+		}
+		callback(section);
 	},
 	render:function(){
 		var session = this.props.session;
 		var card = this.props.card;
+		var ALike = this.state.ALike;
+		var BLike = this.state.BLike;
 		return (
 			<div className="card-likes">
-				<CardLike likeCnt={card.A.like.length} liked={this.state.ALike} onLikeClick={this.handleLike} />
-				<CardLike likeCnt={card.B.like.length} liked={this.state.BLike} onLikeClick={this.handleLike} />
+				<CardLike section={'a'} likeCnt={card.A.like.length} liked={ALike} onLikeClick={this.handleLike} />
+				<CardLike section={'b'} likeCnt={card.B.like.length} liked={BLike} onLikeClick={this.handleLike} />
 				<div className="cb"></div>
 			</div>
 		)
@@ -141,9 +180,11 @@ const CardAuthor = React.createClass({
 	render:function(){
 		var card = this.props.card;
 		return (
-			<div className="card-author">
-				<span className="author">{'@' + card.author.name}</span>
-			</div>
+			<Link to={'/users/'+card.author._id}>
+				<div className="card-author">
+					<span className="author">{'@' + card.author.name}</span>
+				</div>
+			</Link>
 		)
 	}
 });
@@ -181,7 +222,7 @@ const CardAuthorPic = React.createClass({
 		}
 
 		return (
-			<Link to={'/users/'+author._id}>
+			<Link to={'/users/'+author._id} >
 				<div className="card-authorpic">
 					<img src={src} />
 				</div>
@@ -236,15 +277,18 @@ const CardBody = React.createClass({
 		var session = this.props.session;
 		return (
 			<div className="card-body">
-				<div className="card-info">
-					<CardAuthor card={card}/>
-					<div className="card-dot"></div>
-					<CardDate card={card} />
+				<div className="card-header">
+					<div className="card-info">
+						<CardAuthor card={card}/>
+						<div className="card-dot"></div>
+						<CardDate card={card} />
+						<div className="cb"></div>
+						<CardTitle card={card}/>
+					</div>
+					<CardLikes card={card} session={session} />
 					<div className="cb"></div>
 				</div>
-				<CardTitle card={card}/>
 				<CardDescription description={card.description}/>
-				<CardLikes card={card} session={session} />
 				<CardImages card={card} />
 			</div>
 		)
@@ -252,9 +296,6 @@ const CardBody = React.createClass({
 })
 
 const Card = React.createClass({
-	shouldComponentUpdate:function(nextProps,nextState){
-		return nextProps.session !== this.props.session;
-	},
 	render:function(){
 		var card = this.props.card;
 		var session = this.props.session;

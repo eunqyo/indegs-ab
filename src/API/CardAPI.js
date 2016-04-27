@@ -184,6 +184,25 @@ module.exports ={
 			}
 		})
 	},
+	updateImageLike:function(A,B){
+		var data = {
+			A:JSON.stringify(A),
+			B:JSON.stringify(B)
+		}
+		$.ajax({
+			url:credentials.api_server + '/images/like',
+			type:'POST',
+			data:data,
+			dataType:'json',
+			success:function(result){
+				if(result.status){
+					console.log(result.body)
+				} else {
+					console.log(result.body)
+				}
+			}
+		})
+	},
 	addLike:function(session_id,image_id){
 		var data = {
 			session_id:session_id,
