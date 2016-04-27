@@ -22,8 +22,6 @@ module.exports = {
 				height:_post.B.image.height
 			}
 		}
-		console.log(card)
-
 		self.getSectionFormData(_post.A,function (A){
 			self.getSectionFormData(_post.B,function (B){
 				var formData = new FormData();
@@ -36,6 +34,26 @@ module.exports = {
 	},
 	postCard:function(formData){
 		$.ajax({
+			xhr: function(){
+				var xhr = new window.XMLHttpRequest();
+				//Upload progress
+				xhr.upload.addEventListener("progress", function(evt){
+					if (evt.lengthComputable) {
+						var percentComplete = evt.loaded / evt.total;
+						//Do something with upload progress
+						console.log(percentComplete);
+					}
+				}, false);
+				//Download progress
+				xhr.addEventListener("progress", function(evt){
+					if (evt.lengthComputable) {
+						var percentComplete = evt.loaded / evt.total;
+						//Do something with download progress
+						console.log(percentComplete);
+					}
+				}, false);
+				return xhr;
+			},
 			url:Servers.api + '/cards',
 			type:'POST',
 			contentType:false,

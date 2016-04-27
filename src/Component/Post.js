@@ -7,6 +7,8 @@ import PostStore from '../Store/PostStore';
 import PostAction from '../Action/PostAction';
 import PostAPI from '../API/PostAPI';
 
+import Files from '../Util/Files';
+
 
 const PostDrop = React.createClass({
 	handleClick:function(e){
@@ -19,10 +21,10 @@ const PostDrop = React.createClass({
 	handleChange:function(e){
 		var self = this;
 		var file = e.target.files[0];
-		var tmpPath = URL.createObjectURL(file);
-		this.checkImage(tmpPath,function (res){
-			if(res.status){
-				self.props.onLocalSuccess(file,res.body);
+		var url = URL.createObjectURL(file);
+		Files.validateImageFromUrl(url,function (result){
+			if(result.status){
+				self.props.onLocalSuccess(file,result.body);
 			} else {
 				self.props.onLocalFailure(file);
 			}
@@ -34,58 +36,19 @@ const PostDrop = React.createClass({
 		e.preventDefault();
 		$(e.target).hide();
 
-		var isFromLocal,isFromBrowser;
 		var nativeEvent = e.nativeEvent;
-		var localFile = nativeEvent.dataTransfer.files[0];
-		if(localFile != null){
-			var tmpPath = URL.createObjectURL(localFile);
-			self.checkImage(tmpPath,function (res){
-				if(res.status){
-					self.props.onLocalSuccess(localFile,res.body);
+		var file = nativeEvent.dataTransfer.files[0];
+
+		if(file != null){
+			var url = URL.createObjectURL(file);
+			Files.validateImageFromUrl(url,function (result){
+				if(result.status){
+					self.props.onLocalSuccess(file,result.body);
 				} else {
-					self.props.onLocalFailure(localFile);
+					self.props.onLocalFailure(file);
 				}
 			});
-		} else {
-			// 브라우저에서 가져온 경우
-			var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
-			self.checkImage(url,function (res){
-				if(res.status){
-					self.props.onBrowserSuccess(res.body);
-				} else {
-					self.props.onBrowserFailure(url);
-				}
-			})
 		}
-	},
-	checkImage:function(url,callback,timeout){
-		timeout = timeout || 5000;
-	    var timedOut = false, timer;
-	    var img = new Image();
-	    img.onerror = img.onabort = function() {
-	        if (!timedOut) {
-	            clearTimeout(timer);
-	            callback({status:false});
-	        }
-	    };
-	    img.onload = function() {
-	    	var image = this;
-	        if (!timedOut) {
-	            clearTimeout(timer);
-
-	            var res = {
-	            	status:true,
-	            	body:{
-		            	url:url,
-		            	width:image.width,
-		            	height:image.height
-	            	}
-	            }
-
-	            callback(res);
-	        }
-	    };
-	    img.src = url;
 	},
 	onFileDragOver:function(e){
 		$(e.target).children('.drop-box').show();
@@ -96,7 +59,7 @@ const PostDrop = React.createClass({
 	render:function(){
 		return (
 			<div className="drop" onClick={this.handleClick} onDrop={this.onFileDrop} onDragOver={this.onFileDragOver}>
-				<div className="drop-title">Click this box or drag an image from your PC or browser.</div>
+				<div className="drop-title">Click this box or drag an image from your PC</div>
 				<div className="drop-box" onDragLeave={this.onFileDragLeave}></div>
 				<input type="file" className="image-input" onChange={this.handleChange} />
 			</div>
@@ -111,10 +74,10 @@ const PostImage = React.createClass({
 	handleChange:function(e){
 		var self = this;
 		var file = e.target.files[0];
-		var tmpPath = URL.createObjectURL(file);
-		this.checkImage(tmpPath,function (res){
-			if(res.status){
-				self.props.onLocalSuccess(file,res.body);
+		var url = URL.createObjectURL(file);
+		Files.validateImageFromUrl(url,function (result){
+			if(result.status){
+				self.props.onLocalSuccess(file,result.body);
 			} else {
 				self.props.onLocalFailure(file);
 			}
@@ -126,58 +89,19 @@ const PostImage = React.createClass({
 		e.preventDefault();
 		$(e.target).hide();
 
-		var isFromLocal,isFromBrowser;
 		var nativeEvent = e.nativeEvent;
-		var localFile = nativeEvent.dataTransfer.files[0];
-		if(localFile != null){
-			var tmpPath = URL.createObjectURL(localFile);
-			self.checkImage(tmpPath,function (res){
-				if(res.status){
-					self.props.onLocalSuccess(localFile,res.body);
+		var file = nativeEvent.dataTransfer.files[0];
+
+		if(file != null){
+			var url = URL.createObjectURL(file);
+			Files.validateImageFromUrl(url,function (result){
+				if(result.status){
+					self.props.onLocalSuccess(file,result.body);
 				} else {
-					self.props.onLocalFailure(localFile);
+					self.props.onLocalFailure(file);
 				}
 			});
-		} else {
-			// 브라우저에서 가져온 경우
-			var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
-			self.checkImage(url,function (res){
-				if(res.status){
-					self.props.onBrowserSuccess(res.body);
-				} else {
-					self.props.onBrowserFailure(url);
-				}
-			})
 		}
-	},
-	checkImage:function(url,callback,timeout){
-		timeout = timeout || 5000;
-	    var timedOut = false, timer;
-	    var img = new Image();
-	    img.onerror = img.onabort = function() {
-	        if (!timedOut) {
-	            clearTimeout(timer);
-	            callback({status:false});
-	        }
-	    };
-	    img.onload = function() {
-	    	var image = this;
-	        if (!timedOut) {
-	            clearTimeout(timer);
-
-	            var res = {
-	            	status:true,
-	            	body:{
-		            	url:url,
-		            	width:image.width,
-		            	height:image.height
-	            	}
-	            }
-
-	            callback(res);
-	        }
-	    };
-	    img.src = url;
 	},
 	onFileDragOver:function(e){
 		$(e.target).prev().show();

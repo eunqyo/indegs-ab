@@ -27,6 +27,27 @@ a{
     color:black;
 }
 
+
+.button{
+    background: linear-gradient(to left,black,#3c3c3c);
+    background-color: black;
+    color:white;
+    font-weight:400;
+    border-radius:3px;
+    cursor:pointer;
+    padding:0 20px;
+    line-height:28px;
+    font-size:13px;
+    letter-spacing: -0.2px;
+}
+.button:hover{
+    background:black;
+    transition:background 0.5s ease;
+}
+
+
+
+
 /*<Modal />*/
 .modal{
     position:absolute;
@@ -182,10 +203,11 @@ input[type='submit']:focus{
 }
 
 
+/*<Main />*/
 
 #main{
-    padding:80px 0px;
-    /*background-color: #E7EAEC;*/
+    padding: 60px 0px;
+    /*background-color: #F3F6F9;*/
 }
 
 /*<Main /> <Left />*/
@@ -317,120 +339,6 @@ input[type='submit']:focus{
 
 /*Cards CSS*/
 
-/*<CardHeader />*/
-
-.card-header{
-    padding-top:15px;
-    padding-bottom:10px;
-    cursor:default;
-}
-.card-header-left{
-    float:left;
-    /*display:none;*/
-}
-.card-header-center{
-    float:left;
-    padding-right:30px;
-}
-.card-header-right{
-    float:left;
-    padding-left:30px;
-    border-left:1px solid #c5c5c5;
-}
-
-.card-info-holder{
-    float: left;
-}
-
-/*<CardUserPic />*/
-
-.card-userpic-holder{
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-    border: 1px solid #D4D4D4;
-    border-radius: 3px;
-    overflow: hidden;
-    cursor:pointer;
-}
-
-.card-userpic-loader{
-    width:45px;
-    height:45px;
-    background-color: #dcdcdc;
-}
-.card-userpic{
-    width:40px;
-    height:40px;
-}
-
-
-
-.card-header .session-message{
-    font-size: 12px;
-    /* text-decoration: underline; */
-    color: #333333;
-    text-align: right;
-    width: 100%;
-}
-
-.card-text{
-    color: #020202;
-    font-weight: 300;
-    margin-bottom: 20px;
-    font-size: 14px;
-    line-height: 21px;
-}
-
-.card-a-holder{
-    float:left;
-    width:50%;
-    height:100%;
-    background-color:#f1f1f1;
-    background-size:cover;
-    background-position:50% 50%;
-    border-right: 1px solid white;
-}
-.card-b-holder{
-    float:left;
-    width:50%;
-    height:100%;
-    background-size:cover;
-    background-color:#f1f1f1;
-    background-position:50% 50%;
-    /*transition:0.3s background ease;*/
-}
-
-.card-img-holder{
-    overflow: hidden;
-    background: #efefef;
-    border-radius: 5px;
-}
-.card-img-holder img{
-    background:white;
-    display:block;
-    float:left;
-    border:1px solid #efefef;
-}
-.card-a-img{
-    margin-right:0.5px;
-}
-.card-b-img{
-
-}
-.card-img-loader{
-/*    position:absolute;
-    top:0;
-    left:0;*/
-}
-.card-img-loader div{
-    float:left;
-    border: 1px solid #efefef;
-    background-color: #F9F9F9;
-}
-.card-a-loader{
-    margin-right:1px;
-}
 
 /*<Join /> stylesheets*/
 

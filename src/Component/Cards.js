@@ -14,146 +14,7 @@ import Util from '../Util/Util';
 import AppHistory from '../Util/AppHistory';
 import Dates from '../Util/Dates';
 
-const CardImage = React.createClass({
-	componentDidMount:function(){
-		this.counter = 0;
-	},
-	onImageLoad:function(e){
-		var image = $(e.target);
-		this.counter ++;
-		if(this.counter == 2){
-			$(e.target).parent().children('.card-img-loader').css('display','none')
-		}
-	},
-	render:function(){
-		var card = this.props.card;
-		var imageWidth = this.props.imageWidth;
-		var A = card.A;
-		var B = card.B;
-		var thumbA = Servers.s3Thumb + A.hash;
-		var thumbB = Servers.s3Thumb + B.hash
-		var styleA = {'width':imageWidth,'height':(imageWidth*A.height/A.width).toFixed(0)}
-		var styleB = {'width':imageWidth,'height':(imageWidth*B.height/B.width).toFixed(0)}
-		if((imageWidth*A.height/A.width).toFixed(0)>(imageWidth*B.height/B.width).toFixed(0)){
-			var holderStyle = {'height':(imageWidth*A.height/A.width).toFixed(0)}
-		} else {
-			var holderStyle = {'height':(imageWidth*B.height/B.width).toFixed(0)}
-		}
-
-		return (
-			<div className="card-img-holder" style={holderStyle}>
-				<div className="card-img-loader">
-					<div style={styleA} className="card-a-loader"></div>
-					<div style={styleB} className="card-b-loader"></div>
-				</div>
-				<img className="card-a-img" style={styleA} src={thumbA} onLoad={this.onImageLoad} />
-				<img className="card-b-img" style={styleB} src={thumbB} onLoad={this.onImageLoad} />
-				<div className="cb"></div>
-			</div>
-		)
-	}
-});
-
-
-const CardUserPic = React.createClass({
-	getInitialState:function(){
-		return ({
-			author:this.props.author,
-			session:this.props.session
-		})
-	},
-	componentDidMount:function(){
-		this.checkSession()
-	},
-	componentWillReceiveProps:function(nextProps){
-		var self = this;
-		this.setState({
-			author:nextProps.author,
-			session:nextProps.session
-		},function(){
-			self.checkSession()
-		})
-	},
-	checkSession:function(){
-		var self = this;
-		var author = this.state.author;
-		var session = this.state.session;
-		if(session!=null){
-			if(session._id==author._id){
-				self.setState({
-					author:session
-				})
-			}
-		}
-	},
-	handleImageLoad:function(e){
-		var image = $(e.target);
-		image.parent().children('.card-userpic-loader').css('display','none');
-	},
-	render:function(){
-		var author = this.state.author;
-		var src;
-		if(author.pic!=null){
-			src = Servers.s3 + author.pic;
-		} else {
-			src = null;
-		}
-
-		return (
-			<div className="card-userpic-holder">
-				<div className="card-userpic-loader"></div>
-				<img className="card-userpic" src={src} onLoad={this.handleImageLoad} />
-			</div>
-		)
-	}
-})
-
 const CardLike = React.createClass({
-	getInitialState:function(){
-		return ({
-			image:this.props.image,
-			other:this.props.other,
-			session:this.props.session,
-			liked:false
-		})
-	},
-	componentDidMount:function(){
-		this.findLiker()
-	},
-	componentWillReceiveProps:function(nextProps){
-		var self = this;
-		this.setState({
-			image:this.props.image,
-			other:this.props.other,
-			session:nextProps.session
-		},function(){
-			self.findLiker();
-		})
-	},
-	findLiker:function(){
-		var self = this;
-		var session = this.state.session;
-		var image = this.state.image;
-		if(session!=null&&image.like.length!=0){
-			for(var i=0;i<image.like.length;i++){
-				if(image.like[i].author == session._id){
-					self.setState({
-						liked:true
-					});
-					break;
-				}
-			}
-			if(i == image.like.length){
-				self.setState({
-					liked:false
-				})
-			}
-		} else {
-			self.setState({
-				liked:false
-			})
-		}
-	},
 	handleLike:function(){
 		var self = this;
 		var session = this.state.session;
@@ -192,9 +53,8 @@ const CardLike = React.createClass({
 		}
 	},
 	render:function(){
-		var image = this.state.image;
-		var liked = this.state.liked;
-		var session = this.state.session;
+		var likeCnt = this.props.likeCnt;
+		var liked = this.props.liked;
 		var btnClass;
 		if(liked){
 			btnClass = "btn liked"
@@ -203,12 +63,68 @@ const CardLike = React.createClass({
 		}
 		return (
 			<div className="card-like">
-				<div className="count">{image.like.length}</div>
-				<div className={btnClass} onClick={this.handleLike}></div>
+				<div className={btnClass}></div>
+				<span className="count">{likeCnt}</span>
 			</div>
 		)
 	}
 });
+
+const CardLikes = React.createClass({
+	getInitialState:function(){
+		return ({
+			ALike:null,
+			BLike:null
+		})
+	},
+	componentDidMount:function(){
+		this.checkUserLike()
+	},
+	checkUserLike:function(){
+		var self = this;
+		var card = this.props.card;
+		var session = this.props.session;
+
+		if(!session) return null;
+		this.checkSectionLike(card.A,function (ALike){
+			self.checkSectionLike(card.B,function (BLike){
+				self.setState({
+					ALike:ALike,
+					BLike:BLike
+				})
+			})
+		});	
+	},
+	checkSectionLike:function(section,callback){
+		if(section.like.length == 0) return false;
+
+		var session = this.props.session;
+		for(var i=0;i<section.like.length;i++){
+			if(section.like[i].author == session._id){
+				break;
+			}
+		}
+		if(i == section.like.length){
+			return false;
+		} else {
+			return true;
+		}
+	},
+	handleLike:function(){
+
+	},
+	render:function(){
+		var session = this.props.session;
+		var card = this.props.card;
+		return (
+			<div className="card-likes">
+				<CardLike likeCnt={card.A.like.length} liked={this.state.ALike} onLikeClick={this.handleLike} />
+				<CardLike likeCnt={card.B.like.length} liked={this.state.BLike} onLikeClick={this.handleLike} />
+				<div className="cb"></div>
+			</div>
+		)
+	}
+})
 
 const CardTitle = React.createClass({
 	render:function(){
@@ -242,79 +158,114 @@ const CardDate = React.createClass({
 			</div>
 		)
 	}
-})
+});
 
-const Card = React.createClass({
-	getInitialState:function(){
-		return ({
-			card:this.props.card,
-			session:this.props.session
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			card:nextProps.card,
-			session:nextProps.session
-		})
-	},
-	handleCardClink:function(e){
-		var card = this.state.card;
-		var header = $('.card-header');
-		if(!header.is(e.target)&&header.has(e.target).length == 0){
-			AppHistory.push('/cards/'+card._id)
-		}
-	},
+const CardDescription = React.createClass({
 	render:function(){
-		var card = this.state.card;
-		var session = this.state.session;
-		var date = Util.getParsedDate(card.date);
-		var cardText;
-		var centerWidth = this.props.centerWidth;
-		var rightWidth = this.props.rightWidth;
-		var imageWidth = this.props.imageWidth;
-		if(session!=null){
-			var like = 	<div className="card-like-holder">
-							<CardLike session={session} image={card.A} other={card.B} />
-							<CardLike session={session} image={card.B} other={card.A} />
-							<div className="cb"></div>
-						</div>
-		} else {
-			var like = <div className="session-message">Sign-in first</div>
-		}
+		var description = this.props.description;
+		if(description == null) return null;
+		return (
+			<div className="card-description" dangerouslySetInnerHTML = {{__html:description}} ></div>
+		)
+	}
+});
 
-		if(card.text != null&& card.text.length > 0){
-			cardText = <div className="card-text" dangerouslySetInnerHTML={{__html:card.text}}></div>;
+const CardAuthorPic = React.createClass({
+	render:function(){
+		var author = this.props.author;
+		var src;
+		if(author.pic!=null){
+			src = Servers.s3 + author.pic;
 		} else {
-			cardText = null;
+			src = null;
 		}
 
 		return (
-			<div className="card" onClick={this.handleCardClink}>
-				<div className="card-header">
-					<div className="card-header-left">
-						<Link to={'/users/'+card.author._id}>
-							<CardUserPic author={card.author} session={session} />
-						</Link>
-					</div>
-					<div className="card-header-center" style={{'width':centerWidth}}>
-						<div className="card-info-holder">
-							<CardTitle card={card}/>
-							<CardAuthor card={card}/>
-							<CardDate card={card} />
-							<div className="cb"></div>
-						</div>
-					</div>
-					<div className="card-header-right" style={{'width':rightWidth}}>
-						{like}
-					</div>
-					<div className="cb"></div>
+			<Link to={'/users/'+author._id}>
+				<div className="card-authorpic">
+					<img src={src} />
 				</div>
-				{cardText}
-				<CardImage card={card} imageWidth={imageWidth} />
+			</Link>
+		)
+	}
+})
+
+const CardLeft = React.createClass({
+	render:function(){
+		var author = this.props.author;
+		return (
+			<div className="card-left">
+				<CardAuthorPic author={author} />
+			</div>
+		)
+	}
+});
+
+const CardImage = React.createClass({
+	render:function(){
+		var src = this.props.src;
+		return (
+			<div className="card-image">
+				<img src={src} />
 			</div>
 		)
 	}
 })
+
+const CardImages = React.createClass({
+	render:function(){
+		var card = this.props.card;
+		var A = card.A;
+		var B = card.B;
+		var thumbA = Servers.s3Thumb + A.hash;
+		var thumbB = Servers.s3Thumb + B.hash;
+
+		return (
+			<div className="card-images">
+				<CardImage src={thumbA} />
+				<CardImage src={thumbB} />
+				<div className="cb"></div>
+			</div>
+		)
+	}
+});
+
+const CardBody = React.createClass({
+	render:function(){
+		var card = this.props.card;
+		var session = this.props.session;
+		return (
+			<div className="card-body">
+				<div className="card-info">
+					<CardTitle card={card}/>
+					<CardAuthor card={card}/>
+					<div className="card-dot"></div>
+					<CardDate card={card} />
+					<div className="cb"></div>
+				</div>
+				<CardDescription description={card.description}/>
+				<CardLikes card={card} session={session} />
+				<CardImages card={card} />
+			</div>
+		)
+	}
+})
+
+const Card = React.createClass({
+	shouldComponentUpdate:function(nextProps,nextState){
+		return nextProps.session !== this.props.session;
+	},
+	render:function(){
+		var card = this.props.card;
+		var session = this.props.session;
+		return (
+			<div className="card">
+				<CardLeft author={card.author} />
+				<CardBody card={card} session={session} />
+			</div>
+		)
+	}
+});
 
 const NewCard = React.createClass({
 	handleClick:function(){
@@ -384,7 +335,7 @@ const Cards = React.createClass({
 	layout:function(){
 		var self = this;
 		var cardWidth = $('.card').innerWidth();
-		var cardPadding = 30;
+		var cardPadding = 5*2;
 		var leftWidth = 50;
 		var rightWidth = 140;
 		var rightPadding = 20;
@@ -415,7 +366,6 @@ const Cards = React.createClass({
 		var endOfData = this.state.endOfData;
 		if(cards == null) return null;
 		card = cards.map(function(c,i){
-			console.log(c)
 			return <Card key={c._id} card={c} session={session} rightWidth={rightWidth} centerWidth={centerWidth} imageWidth={imageWidth} />
 		});		
 

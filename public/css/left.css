@@ -14,10 +14,10 @@
     line-height: 20px;
 }
 #left #user-ab-header #create{
-    background: linear-gradient(to left,#F51792,#FF4747);
-    border:1px solid #f51792;
-    line-height: 20px;
-    padding: 0 8px;
+    background: linear-gradient(to left,#000000,#2F2F2F);
+    /* border: 1px solid #f51792; */
+    line-height: 23px;
+    padding: 0 12px;
     color: white;
     border-radius: 3px;
     font-size: 11px;
@@ -26,8 +26,7 @@
     float: right;
 }
 #left #user-ab-header #create:hover{
-    box-shadow: inset 0px 0px 4px 1px #ff4747;
-    background: #f51792;
+    background: black;
     cursor: pointer;
 }
 

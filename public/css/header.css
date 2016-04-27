@@ -1,12 +1,12 @@
 /*<Header />*/
 
 #header{
-	width:100%;
-	position:fixed;
-	z-index:1;
-	top:0;
-    background-color: rgba(255,255,255,0.9);
-    border-bottom:1px solid #d2d2d2;
+    width: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    background-color: #F3F3F3;
+    border-bottom: 1px solid #d2d2d2;
 }
 
 #header-wrapper{
@@ -29,14 +29,12 @@
 }
 
 #header .btn{
-    font-size: 16px;
+    font-size: 15px;
     text-align: left;
     line-height: 40px;
     float: left;
     cursor: pointer;
     padding: 0 30px;
-    font-weight: 200;
-    font-family: 'Vegur';
 }
 
 #header .btn:hover{
@@ -218,25 +216,10 @@
 /*<Create />*/
 #header #new-ab{
     float: left;
-    cursor: pointer;
-    border-radius: 3px;
     font-size: 13px;
-    font-weight: 400;
-    letter-spacing: -0.2px;
     padding: 0 20px;
-    line-height: 26px;
+    line-height: 28px;
     margin-top: 6px;
-    color: white;
-    border: 1px solid #f51792;
-    background: linear-gradient(to left,#F51792,#FF4747);
-    background-color: #f51792;
-}
-
-#header #new-ab:hover{
-    box-shadow: inset 50px 0px 70px 0px #FF2173;
-    background: #FF0606;
-    cursor: pointer;
-    transition: background 0.5s ease, box-shadow 0.6s ease;
 }
 
 

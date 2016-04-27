@@ -78,7 +78,7 @@
 
 	var _CardAPI2 = _interopRequireDefault(_CardAPI);
 
-	var _UserAPI = __webpack_require__(261);
+	var _UserAPI = __webpack_require__(262);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
@@ -86,17 +86,17 @@
 
 	// 'use strict';
 
-	window.$ = window.jQuery = __webpack_require__(268);
+	window.$ = window.jQuery = __webpack_require__(274);
 
 
-	var Header = __webpack_require__(269);
-	var Banner = __webpack_require__(272);
+	var Header = __webpack_require__(275);
+	var Banner = __webpack_require__(278);
 	var Cards = __webpack_require__(254);
-	var AB = __webpack_require__(273);
-	var Join = __webpack_require__(276);
-	var Post = __webpack_require__(266);
-	var User = __webpack_require__(280);
-	var Analysis = __webpack_require__(284);
+	var AB = __webpack_require__(279);
+	var Join = __webpack_require__(282);
+	var Post = __webpack_require__(267);
+	var User = __webpack_require__(286);
+	var Analysis = __webpack_require__(290);
 
 	_AppAPI2.default.getSession();
 
@@ -27676,11 +27676,11 @@
 
 	var _Cards2 = _interopRequireDefault(_Cards);
 
-	var _Left = __webpack_require__(260);
+	var _Left = __webpack_require__(261);
 
 	var _Left2 = _interopRequireDefault(_Left);
 
-	var _Right = __webpack_require__(267);
+	var _Right = __webpack_require__(273);
 
 	var _Right2 = _interopRequireDefault(_Right);
 
@@ -27778,11 +27778,11 @@
 
 	var _CardAction2 = _interopRequireDefault(_CardAction);
 
-	var _Servers = __webpack_require__(289);
+	var _Servers = __webpack_require__(258);
 
 	var _Servers2 = _interopRequireDefault(_Servers);
 
-	var _Util = __webpack_require__(258);
+	var _Util = __webpack_require__(259);
 
 	var _Util2 = _interopRequireDefault(_Util);
 
@@ -27790,159 +27790,15 @@
 
 	var _AppHistory2 = _interopRequireDefault(_AppHistory);
 
-	var _Dates = __webpack_require__(259);
+	var _Dates = __webpack_require__(260);
 
 	var _Dates2 = _interopRequireDefault(_Dates);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var CardImage = _react2.default.createClass({
-		displayName: 'CardImage',
-
-		componentDidMount: function componentDidMount() {
-			this.counter = 0;
-		},
-		onImageLoad: function onImageLoad(e) {
-			var image = $(e.target);
-			this.counter++;
-			if (this.counter == 2) {
-				$(e.target).parent().children('.card-img-loader').css('display', 'none');
-			}
-		},
-		render: function render() {
-			var card = this.props.card;
-			var imageWidth = this.props.imageWidth;
-			var A = card.A;
-			var B = card.B;
-			var thumbA = _Servers2.default.s3Thumb + A.hash;
-			var thumbB = _Servers2.default.s3Thumb + B.hash;
-			var styleA = { 'width': imageWidth, 'height': (imageWidth * A.height / A.width).toFixed(0) };
-			var styleB = { 'width': imageWidth, 'height': (imageWidth * B.height / B.width).toFixed(0) };
-			if ((imageWidth * A.height / A.width).toFixed(0) > (imageWidth * B.height / B.width).toFixed(0)) {
-				var holderStyle = { 'height': (imageWidth * A.height / A.width).toFixed(0) };
-			} else {
-				var holderStyle = { 'height': (imageWidth * B.height / B.width).toFixed(0) };
-			}
-
-			return _react2.default.createElement(
-				'div',
-				{ className: 'card-img-holder', style: holderStyle },
-				_react2.default.createElement(
-					'div',
-					{ className: 'card-img-loader' },
-					_react2.default.createElement('div', { style: styleA, className: 'card-a-loader' }),
-					_react2.default.createElement('div', { style: styleB, className: 'card-b-loader' })
-				),
-				_react2.default.createElement('img', { className: 'card-a-img', style: styleA, src: thumbA, onLoad: this.onImageLoad }),
-				_react2.default.createElement('img', { className: 'card-b-img', style: styleB, src: thumbB, onLoad: this.onImageLoad }),
-				_react2.default.createElement('div', { className: 'cb' })
-			);
-		}
-	});
-
-	var CardUserPic = _react2.default.createClass({
-		displayName: 'CardUserPic',
-
-		getInitialState: function getInitialState() {
-			return {
-				author: this.props.author,
-				session: this.props.session
-			};
-		},
-		componentDidMount: function componentDidMount() {
-			this.checkSession();
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			var self = this;
-			this.setState({
-				author: nextProps.author,
-				session: nextProps.session
-			}, function () {
-				self.checkSession();
-			});
-		},
-		checkSession: function checkSession() {
-			var self = this;
-			var author = this.state.author;
-			var session = this.state.session;
-			if (session != null) {
-				if (session._id == author._id) {
-					self.setState({
-						author: session
-					});
-				}
-			}
-		},
-		handleImageLoad: function handleImageLoad(e) {
-			var image = $(e.target);
-			image.parent().children('.card-userpic-loader').css('display', 'none');
-		},
-		render: function render() {
-			var author = this.state.author;
-			var src;
-			if (author.pic != null) {
-				src = _Servers2.default.s3 + author.pic;
-			} else {
-				src = null;
-			}
-
-			return _react2.default.createElement(
-				'div',
-				{ className: 'card-userpic-holder' },
-				_react2.default.createElement('div', { className: 'card-userpic-loader' }),
-				_react2.default.createElement('img', { className: 'card-userpic', src: src, onLoad: this.handleImageLoad })
-			);
-		}
-	});
-
 	var CardLike = _react2.default.createClass({
 		displayName: 'CardLike',
 
-		getInitialState: function getInitialState() {
-			return {
-				image: this.props.image,
-				other: this.props.other,
-				session: this.props.session,
-				liked: false
-			};
-		},
-		componentDidMount: function componentDidMount() {
-			this.findLiker();
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			var self = this;
-			this.setState({
-				image: this.props.image,
-				other: this.props.other,
-				session: nextProps.session
-			}, function () {
-				self.findLiker();
-			});
-		},
-		findLiker: function findLiker() {
-			var self = this;
-			var session = this.state.session;
-			var image = this.state.image;
-			if (session != null && image.like.length != 0) {
-				for (var i = 0; i < image.like.length; i++) {
-					if (image.like[i].author == session._id) {
-						self.setState({
-							liked: true
-						});
-						break;
-					}
-				}
-				if (i == image.like.length) {
-					self.setState({
-						liked: false
-					});
-				}
-			} else {
-				self.setState({
-					liked: false
-				});
-			}
-		},
 		handleLike: function handleLike() {
 			var self = this;
 			var session = this.state.session;
@@ -27981,9 +27837,8 @@
 			}
 		},
 		render: function render() {
-			var image = this.state.image;
-			var liked = this.state.liked;
-			var session = this.state.session;
+			var likeCnt = this.props.likeCnt;
+			var liked = this.props.liked;
 			var btnClass;
 			if (liked) {
 				btnClass = "btn liked";
@@ -27993,12 +27848,68 @@
 			return _react2.default.createElement(
 				'div',
 				{ className: 'card-like' },
+				_react2.default.createElement('div', { className: btnClass }),
 				_react2.default.createElement(
-					'div',
+					'span',
 					{ className: 'count' },
-					image.like.length
-				),
-				_react2.default.createElement('div', { className: btnClass, onClick: this.handleLike })
+					likeCnt
+				)
+			);
+		}
+	});
+
+	var CardLikes = _react2.default.createClass({
+		displayName: 'CardLikes',
+
+		getInitialState: function getInitialState() {
+			return {
+				ALike: null,
+				BLike: null
+			};
+		},
+		componentDidMount: function componentDidMount() {
+			this.checkUserLike();
+		},
+		checkUserLike: function checkUserLike() {
+			var self = this;
+			var card = this.props.card;
+			var session = this.props.session;
+
+			if (!session) return null;
+			this.checkSectionLike(card.A, function (ALike) {
+				self.checkSectionLike(card.B, function (BLike) {
+					self.setState({
+						ALike: ALike,
+						BLike: BLike
+					});
+				});
+			});
+		},
+		checkSectionLike: function checkSectionLike(section, callback) {
+			if (section.like.length == 0) return false;
+
+			var session = this.props.session;
+			for (var i = 0; i < section.like.length; i++) {
+				if (section.like[i].author == session._id) {
+					break;
+				}
+			}
+			if (i == section.like.length) {
+				return false;
+			} else {
+				return true;
+			}
+		},
+		handleLike: function handleLike() {},
+		render: function render() {
+			var session = this.props.session;
+			var card = this.props.card;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-likes' },
+				_react2.default.createElement(CardLike, { likeCnt: card.A.like.length, liked: this.state.ALike, onLikeClick: this.handleLike }),
+				_react2.default.createElement(CardLike, { likeCnt: card.B.like.length, liked: this.state.BLike, onLikeClick: this.handleLike }),
+				_react2.default.createElement('div', { className: 'cb' })
 			);
 		}
 	});
@@ -28055,94 +27966,125 @@
 		}
 	});
 
-	var Card = _react2.default.createClass({
-		displayName: 'Card',
+	var CardDescription = _react2.default.createClass({
+		displayName: 'CardDescription',
 
-		getInitialState: function getInitialState() {
-			return {
-				card: this.props.card,
-				session: this.props.session
-			};
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				card: nextProps.card,
-				session: nextProps.session
-			});
-		},
-		handleCardClink: function handleCardClink(e) {
-			var card = this.state.card;
-			var header = $('.card-header');
-			if (!header.is(e.target) && header.has(e.target).length == 0) {
-				_AppHistory2.default.push('/cards/' + card._id);
-			}
-		},
 		render: function render() {
-			var card = this.state.card;
-			var session = this.state.session;
-			var date = _Util2.default.getParsedDate(card.date);
-			var cardText;
-			var centerWidth = this.props.centerWidth;
-			var rightWidth = this.props.rightWidth;
-			var imageWidth = this.props.imageWidth;
-			if (session != null) {
-				var like = _react2.default.createElement(
-					'div',
-					{ className: 'card-like-holder' },
-					_react2.default.createElement(CardLike, { session: session, image: card.A, other: card.B }),
-					_react2.default.createElement(CardLike, { session: session, image: card.B, other: card.A }),
-					_react2.default.createElement('div', { className: 'cb' })
-				);
-			} else {
-				var like = _react2.default.createElement(
-					'div',
-					{ className: 'session-message' },
-					'Sign-in first'
-				);
-			}
+			var description = this.props.description;
+			if (description == null) return null;
+			return _react2.default.createElement('div', { className: 'card-description', dangerouslySetInnerHTML: { __html: description } });
+		}
+	});
 
-			if (card.text != null && card.text.length > 0) {
-				cardText = _react2.default.createElement('div', { className: 'card-text', dangerouslySetInnerHTML: { __html: card.text } });
+	var CardAuthorPic = _react2.default.createClass({
+		displayName: 'CardAuthorPic',
+
+		render: function render() {
+			var author = this.props.author;
+			var src;
+			if (author.pic != null) {
+				src = _Servers2.default.s3 + author.pic;
 			} else {
-				cardText = null;
+				src = null;
 			}
 
 			return _react2.default.createElement(
-				'div',
-				{ className: 'card', onClick: this.handleCardClink },
+				_reactRouter.Link,
+				{ to: '/users/' + author._id },
 				_react2.default.createElement(
 					'div',
-					{ className: 'card-header' },
-					_react2.default.createElement(
-						'div',
-						{ className: 'card-header-left' },
-						_react2.default.createElement(
-							_reactRouter.Link,
-							{ to: '/users/' + card.author._id },
-							_react2.default.createElement(CardUserPic, { author: card.author, session: session })
-						)
-					),
-					_react2.default.createElement(
-						'div',
-						{ className: 'card-header-center', style: { 'width': centerWidth } },
-						_react2.default.createElement(
-							'div',
-							{ className: 'card-info-holder' },
-							_react2.default.createElement(CardTitle, { card: card }),
-							_react2.default.createElement(CardAuthor, { card: card }),
-							_react2.default.createElement(CardDate, { card: card }),
-							_react2.default.createElement('div', { className: 'cb' })
-						)
-					),
-					_react2.default.createElement(
-						'div',
-						{ className: 'card-header-right', style: { 'width': rightWidth } },
-						like
-					),
+					{ className: 'card-authorpic' },
+					_react2.default.createElement('img', { src: src })
+				)
+			);
+		}
+	});
+
+	var CardLeft = _react2.default.createClass({
+		displayName: 'CardLeft',
+
+		render: function render() {
+			var author = this.props.author;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-left' },
+				_react2.default.createElement(CardAuthorPic, { author: author })
+			);
+		}
+	});
+
+	var CardImage = _react2.default.createClass({
+		displayName: 'CardImage',
+
+		render: function render() {
+			var src = this.props.src;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-image' },
+				_react2.default.createElement('img', { src: src })
+			);
+		}
+	});
+
+	var CardImages = _react2.default.createClass({
+		displayName: 'CardImages',
+
+		render: function render() {
+			var card = this.props.card;
+			var A = card.A;
+			var B = card.B;
+			var thumbA = _Servers2.default.s3Thumb + A.hash;
+			var thumbB = _Servers2.default.s3Thumb + B.hash;
+
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-images' },
+				_react2.default.createElement(CardImage, { src: thumbA }),
+				_react2.default.createElement(CardImage, { src: thumbB }),
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var CardBody = _react2.default.createClass({
+		displayName: 'CardBody',
+
+		render: function render() {
+			var card = this.props.card;
+			var session = this.props.session;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card-body' },
+				_react2.default.createElement(
+					'div',
+					{ className: 'card-info' },
+					_react2.default.createElement(CardTitle, { card: card }),
+					_react2.default.createElement(CardAuthor, { card: card }),
+					_react2.default.createElement('div', { className: 'card-dot' }),
+					_react2.default.createElement(CardDate, { card: card }),
 					_react2.default.createElement('div', { className: 'cb' })
 				),
-				cardText,
-				_react2.default.createElement(CardImage, { card: card, imageWidth: imageWidth })
+				_react2.default.createElement(CardDescription, { description: card.description }),
+				_react2.default.createElement(CardLikes, { card: card, session: session }),
+				_react2.default.createElement(CardImages, { card: card })
+			);
+		}
+	});
+
+	var Card = _react2.default.createClass({
+		displayName: 'Card',
+
+		shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+			return nextProps.session !== this.props.session;
+		},
+		render: function render() {
+			var card = this.props.card;
+			var session = this.props.session;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'card' },
+				_react2.default.createElement(CardLeft, { author: card.author }),
+				_react2.default.createElement(CardBody, { card: card, session: session })
 			);
 		}
 	});
@@ -28222,7 +28164,7 @@
 		layout: function layout() {
 			var self = this;
 			var cardWidth = $('.card').innerWidth();
-			var cardPadding = 30;
+			var cardPadding = 5 * 2;
 			var leftWidth = 50;
 			var rightWidth = 140;
 			var rightPadding = 20;
@@ -28253,7 +28195,6 @@
 			var endOfData = this.state.endOfData;
 			if (cards == null) return null;
 			card = cards.map(function (c, i) {
-				console.log(c);
 				return _react2.default.createElement(Card, { key: c._id, card: c, session: session, rightWidth: rightWidth, centerWidth: centerWidth, imageWidth: imageWidth });
 			});
 
@@ -29048,6 +28989,26 @@
 	'use strict';
 
 	module.exports = {
+		s3: 'https://dhl5t9nj7h6c1.cloudfront.net/',
+		s3Thumb: 'https://dhl5t9nj7h6c1.cloudfront.net/thumbs/',
+		s3Image: 'https://dhl5t9nj7h6c1.cloudfront.net/images/',
+		host: 'http://localhost:3030',
+		api: 'http://localhost:3333'
+	};
+
+	// module.exports = {
+	// 	s3:'https://dhl5t9nj7h6c1.cloudfront.net/',
+	// 	host:'http://indegs.com',
+	// 	api: 'http://indegs.com:3333'
+	// }
+
+/***/ },
+/* 259 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
 		getParsedDate: function getParsedDate(string) {
 			var date = new Date(string);
 			var year = date.getFullYear();
@@ -29115,7 +29076,7 @@
 	};
 
 /***/ },
-/* 259 */
+/* 260 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -29289,7 +29250,7 @@
 	};
 
 /***/ },
-/* 260 */
+/* 261 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29302,15 +29263,15 @@
 
 	var _AppAPI2 = _interopRequireDefault(_AppAPI);
 
-	var _UserAPI = __webpack_require__(261);
+	var _UserAPI = __webpack_require__(262);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
-	var _UserStore = __webpack_require__(264);
+	var _UserStore = __webpack_require__(265);
 
 	var _UserStore2 = _interopRequireDefault(_UserStore);
 
-	var _UserAction = __webpack_require__(262);
+	var _UserAction = __webpack_require__(263);
 
 	var _UserAction2 = _interopRequireDefault(_UserAction);
 
@@ -29320,7 +29281,7 @@
 
 	var _reactRouter = __webpack_require__(159);
 
-	var _Post = __webpack_require__(266);
+	var _Post = __webpack_require__(267);
 
 	var _Post2 = _interopRequireDefault(_Post);
 
@@ -29582,7 +29543,7 @@
 	module.exports = Left;
 
 /***/ },
-/* 261 */
+/* 262 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29591,7 +29552,7 @@
 
 	var _credentials2 = _interopRequireDefault(_credentials);
 
-	var _UserAction = __webpack_require__(262);
+	var _UserAction = __webpack_require__(263);
 
 	var _UserAction2 = _interopRequireDefault(_UserAction);
 
@@ -29659,12 +29620,12 @@
 	};
 
 /***/ },
-/* 262 */
+/* 263 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var UserDispatcher = __webpack_require__(263);
+	var UserDispatcher = __webpack_require__(264);
 
 	var UserAction = {
 		updateUserCards: function updateUserCards(data) {
@@ -29696,7 +29657,7 @@
 	module.exports = UserAction;
 
 /***/ },
-/* 263 */
+/* 264 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29715,13 +29676,13 @@
 	module.exports = UserDispatcher;
 
 /***/ },
-/* 264 */
+/* 265 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var UserDispatcher = __webpack_require__(263);
-	var objectAssign = __webpack_require__(265);
+	var UserDispatcher = __webpack_require__(264);
+	var objectAssign = __webpack_require__(266);
 	var EventEmitter = __webpack_require__(249).EventEmitter;
 
 	var _cards;
@@ -29825,7 +29786,7 @@
 	module.exports = UserStore;
 
 /***/ },
-/* 265 */
+/* 266 */
 /***/ function(module, exports) {
 
 	/* eslint-disable no-unused-vars */
@@ -29870,7 +29831,7 @@
 
 
 /***/ },
-/* 266 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29891,17 +29852,21 @@
 
 	var _AppStore2 = _interopRequireDefault(_AppStore);
 
-	var _PostStore = __webpack_require__(291);
+	var _PostStore = __webpack_require__(268);
 
 	var _PostStore2 = _interopRequireDefault(_PostStore);
 
-	var _PostAction = __webpack_require__(293);
+	var _PostAction = __webpack_require__(270);
 
 	var _PostAction2 = _interopRequireDefault(_PostAction);
 
-	var _PostAPI = __webpack_require__(290);
+	var _PostAPI = __webpack_require__(271);
 
 	var _PostAPI2 = _interopRequireDefault(_PostAPI);
+
+	var _Files = __webpack_require__(272);
+
+	var _Files2 = _interopRequireDefault(_Files);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -29918,10 +29883,10 @@
 		handleChange: function handleChange(e) {
 			var self = this;
 			var file = e.target.files[0];
-			var tmpPath = URL.createObjectURL(file);
-			this.checkImage(tmpPath, function (res) {
-				if (res.status) {
-					self.props.onLocalSuccess(file, res.body);
+			var url = URL.createObjectURL(file);
+			_Files2.default.validateImageFromUrl(url, function (result) {
+				if (result.status) {
+					self.props.onLocalSuccess(file, result.body);
 				} else {
 					self.props.onLocalFailure(file);
 				}
@@ -29933,59 +29898,19 @@
 			e.preventDefault();
 			$(e.target).hide();
 
-			var isFromLocal, isFromBrowser;
 			var nativeEvent = e.nativeEvent;
-			var localFile = nativeEvent.dataTransfer.files[0];
-			if (localFile != null) {
-				var tmpPath = URL.createObjectURL(localFile);
-				self.checkImage(tmpPath, function (res) {
-					if (res.status) {
-						self.props.onLocalSuccess(localFile, res.body);
+			var file = nativeEvent.dataTransfer.files[0];
+
+			if (file != null) {
+				var url = URL.createObjectURL(file);
+				_Files2.default.validateImageFromUrl(url, function (result) {
+					if (result.status) {
+						self.props.onLocalSuccess(file, result.body);
 					} else {
-						self.props.onLocalFailure(localFile);
-					}
-				});
-			} else {
-				// 브라우저에서 가져온 경우
-				var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
-				self.checkImage(url, function (res) {
-					if (res.status) {
-						self.props.onBrowserSuccess(res.body);
-					} else {
-						self.props.onBrowserFailure(url);
+						self.props.onLocalFailure(file);
 					}
 				});
 			}
-		},
-		checkImage: function checkImage(url, callback, timeout) {
-			timeout = timeout || 5000;
-			var timedOut = false,
-			    timer;
-			var img = new Image();
-			img.onerror = img.onabort = function () {
-				if (!timedOut) {
-					clearTimeout(timer);
-					callback({ status: false });
-				}
-			};
-			img.onload = function () {
-				var image = this;
-				if (!timedOut) {
-					clearTimeout(timer);
-
-					var res = {
-						status: true,
-						body: {
-							url: url,
-							width: image.width,
-							height: image.height
-						}
-					};
-
-					callback(res);
-				}
-			};
-			img.src = url;
 		},
 		onFileDragOver: function onFileDragOver(e) {
 			$(e.target).children('.drop-box').show();
@@ -30000,7 +29925,7 @@
 				_react2.default.createElement(
 					'div',
 					{ className: 'drop-title' },
-					'Click this box or drag an image from your PC or browser.'
+					'Click this box or drag an image from your PC'
 				),
 				_react2.default.createElement('div', { className: 'drop-box', onDragLeave: this.onFileDragLeave }),
 				_react2.default.createElement('input', { type: 'file', className: 'image-input', onChange: this.handleChange })
@@ -30017,10 +29942,10 @@
 		handleChange: function handleChange(e) {
 			var self = this;
 			var file = e.target.files[0];
-			var tmpPath = URL.createObjectURL(file);
-			this.checkImage(tmpPath, function (res) {
-				if (res.status) {
-					self.props.onLocalSuccess(file, res.body);
+			var url = URL.createObjectURL(file);
+			_Files2.default.validateImageFromUrl(url, function (result) {
+				if (result.status) {
+					self.props.onLocalSuccess(file, result.body);
 				} else {
 					self.props.onLocalFailure(file);
 				}
@@ -30032,59 +29957,19 @@
 			e.preventDefault();
 			$(e.target).hide();
 
-			var isFromLocal, isFromBrowser;
 			var nativeEvent = e.nativeEvent;
-			var localFile = nativeEvent.dataTransfer.files[0];
-			if (localFile != null) {
-				var tmpPath = URL.createObjectURL(localFile);
-				self.checkImage(tmpPath, function (res) {
-					if (res.status) {
-						self.props.onLocalSuccess(localFile, res.body);
+			var file = nativeEvent.dataTransfer.files[0];
+
+			if (file != null) {
+				var url = URL.createObjectURL(file);
+				_Files2.default.validateImageFromUrl(url, function (result) {
+					if (result.status) {
+						self.props.onLocalSuccess(file, result.body);
 					} else {
-						self.props.onLocalFailure(localFile);
-					}
-				});
-			} else {
-				// 브라우저에서 가져온 경우
-				var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
-				self.checkImage(url, function (res) {
-					if (res.status) {
-						self.props.onBrowserSuccess(res.body);
-					} else {
-						self.props.onBrowserFailure(url);
+						self.props.onLocalFailure(file);
 					}
 				});
 			}
-		},
-		checkImage: function checkImage(url, callback, timeout) {
-			timeout = timeout || 5000;
-			var timedOut = false,
-			    timer;
-			var img = new Image();
-			img.onerror = img.onabort = function () {
-				if (!timedOut) {
-					clearTimeout(timer);
-					callback({ status: false });
-				}
-			};
-			img.onload = function () {
-				var image = this;
-				if (!timedOut) {
-					clearTimeout(timer);
-
-					var res = {
-						status: true,
-						body: {
-							url: url,
-							width: image.width,
-							height: image.height
-						}
-					};
-
-					callback(res);
-				}
-			};
-			img.src = url;
 		},
 		onFileDragOver: function onFileDragOver(e) {
 			$(e.target).prev().show();
@@ -30443,7 +30328,447 @@
 	module.exports = Post;
 
 /***/ },
-/* 267 */
+/* 268 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var PostDispatcher = __webpack_require__(269);
+	var objectAssign = __webpack_require__(266);
+	var EventEmitter = __webpack_require__(249).EventEmitter;
+
+	var _post;
+
+	var updatePostSection = function updatePostSection(data) {
+		if (_post == null) _post = {};
+		if (data.idx == 1) {
+			_post.A = data;
+		} else {
+			_post.B = data;
+		}
+	};
+
+	var updatePostTitle = function updatePostTitle(title) {
+		if (_post == null) _post = {};
+		_post.title = title;
+	};
+
+	var updatePostDescription = function updatePostDescription(description) {
+		if (_post == null) _post = {};
+		_post.description = description;
+	};
+
+	var emptyPost = function emptyPost() {
+		_post = null;
+	};
+
+	var PostStore = objectAssign({}, EventEmitter.prototype, {
+		addChangeListener: function addChangeListener(cb) {
+			this.on('change', cb);
+		},
+		removeChangeListener: function removeChangeListener(cb) {
+			this.removeListener('change', cb);
+		},
+		getPost: function getPost() {
+			return _post;
+		}
+	});
+
+	PostDispatcher.register(function (payload) {
+		var action = payload.action;
+		switch (action.actionType) {
+			case 'UPDATE_POST_SECTION':
+				updatePostSection(action.data);
+				PostStore.emit('change');
+				break;
+			case 'UPDATE_POST_TITLE':
+				updatePostTitle(action.data);
+				PostStore.emit('change');
+				break;
+			case 'UPDATE_POST_DESCRIPTION':
+				updatePostDescription(action.data);
+				PostStore.emit('change');
+				break;
+			case 'EMPTY_POST':
+				emptyPost();
+				PostStore.emit('change');
+				break;
+
+			default:
+				return true;
+		}
+	});
+
+	module.exports = PostStore;
+
+/***/ },
+/* 269 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Dispatcher = __webpack_require__(246).Dispatcher;
+
+	var PostDispatcher = new Dispatcher();
+
+	PostDispatcher.handleAction = function (action) {
+		this.dispatch({
+			source: 'VIEW_ACTION',
+			action: action
+		});
+	};
+
+	module.exports = PostDispatcher;
+
+/***/ },
+/* 270 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var PostDispatcher = __webpack_require__(269);
+
+	var PostAction = {
+		updatePostSection: function updatePostSection(data) {
+			PostDispatcher.handleAction({
+				actionType: 'UPDATE_POST_SECTION',
+				data: data
+			});
+		},
+		updatePostTitle: function updatePostTitle(data) {
+			PostDispatcher.handleAction({
+				actionType: 'UPDATE_POST_TITLE',
+				data: data
+			});
+		},
+		updatePostDescription: function updatePostDescription(data) {
+			PostDispatcher.handleAction({
+				actionType: 'UPDATE_POST_DESCRIPTION',
+				data: data
+			});
+		},
+		emptyPost: function emptyPost() {
+			PostDispatcher.handleAction({
+				actionType: 'EMPTY_POST'
+			});
+		}
+	};
+
+	module.exports = PostAction;
+
+/***/ },
+/* 271 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _Servers = __webpack_require__(258);
+
+	var _Servers2 = _interopRequireDefault(_Servers);
+
+	var _AppHistory = __webpack_require__(216);
+
+	var _AppHistory2 = _interopRequireDefault(_AppHistory);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	module.exports = {
+		post: function post(_post, _session) {
+			var self = this;
+			var date = new Date();
+
+			_post.A.author_id = _session._id;
+			_post.B.author_id = _session._id;
+
+			var card = {
+				title: _post.title,
+				description: _post.description,
+				author_id: _session._id,
+				A: {
+					width: _post.A.image.width,
+					height: _post.A.image.height
+				},
+				B: {
+					width: _post.B.image.width,
+					height: _post.B.image.height
+				}
+			};
+			self.getSectionFormData(_post.A, function (A) {
+				self.getSectionFormData(_post.B, function (B) {
+					var formData = new FormData();
+					formData.append('A', A, A.name);
+					formData.append('B', B, B.name);
+					formData.append('card', JSON.stringify(card));
+					self.postCard(formData);
+				});
+			});
+		},
+		postCard: function postCard(formData) {
+			$.ajax({
+				xhr: function xhr() {
+					var xhr = new window.XMLHttpRequest();
+					//Upload progress
+					xhr.upload.addEventListener("progress", function (evt) {
+						if (evt.lengthComputable) {
+							var percentComplete = evt.loaded / evt.total;
+							//Do something with upload progress
+							console.log(percentComplete);
+						}
+					}, false);
+					//Download progress
+					xhr.addEventListener("progress", function (evt) {
+						if (evt.lengthComputable) {
+							var percentComplete = evt.loaded / evt.total;
+							//Do something with download progress
+							console.log(percentComplete);
+						}
+					}, false);
+					return xhr;
+				},
+				url: _Servers2.default.api + '/cards',
+				type: 'POST',
+				contentType: false,
+				processData: false,
+				data: formData,
+				success: function success(result) {
+					if (result.status) {
+						location.href = 'http://localhost:3030';
+					} else {
+						console.log(result.body);
+					}
+				}
+			});
+		},
+		createFileObject: function createFileObject(path, name, callback) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", path);
+			xhr.responseType = "blob";
+			xhr.addEventListener('load', function () {
+				var blob = xhr.response;
+				blob.name = name;
+				blob.lastModifiedDate = new Date();
+				callback(blob);
+			});
+			xhr.send();
+		},
+		getSectionFormData: function getSectionFormData(section, callback) {
+			var self = this;
+			var file = section.file;
+			var image = section.image;
+
+			// 브라우저에서 전송된 경우
+			if (file == null) {
+				var formData = new FormData();
+
+				var origin = {
+					type: 'web',
+					url: image.url
+				};
+
+				var salt = (Math.round(new Date().valueOf() * Math.random()) + "").slice(0, 6);
+				var image = self.createFileObject(image.url, salt, function (data) {
+					data.origin = origin;
+					callback(data);
+				});
+			} else {
+				var formData = new FormData();
+				var data = file;
+				var origin = {
+					type: 'local',
+					url: file.path
+				};
+				data.width = image.width;
+				data.height = image.height;
+				data.origin = origin;
+				callback(data);
+			}
+
+			// var split = obj.image.split('/');
+			// var name = split[split.length-1];
+			// this.createFileObject(obj.image,name, function(image){
+			// 	var formData = new FormData();
+			// 	formData.append('image',image,image.name);
+			// 	$.ajax({
+			// 		url:credentials.api_server + '/cards/image',
+			// 		type:'POST',
+			// 		contentType:false,
+			// 		processData:false,
+			// 		data:formData,
+			// 		success:function(result){
+			// 			if(result.status){
+			// 				callback(result.body);
+			// 			} else {
+			// 				console.log(result.body);
+			// 			}
+			// 		}
+			// 	})	
+			// })
+		},
+		postImage: function postImage(obj, callback) {
+			var split = obj.image.split('/');
+			var name = split[split.length - 1];
+			this.createFileObject(obj.image, name, function (image) {
+				var formData = new FormData();
+				formData.append('image', image, image.name);
+				$.ajax({
+					url: credentials.api_server + '/cards/image',
+					type: 'POST',
+					contentType: false,
+					processData: false,
+					data: formData,
+					success: function success(result) {
+						if (result.status) {
+							callback(result.body);
+						} else {
+							console.log(result.body);
+						}
+					}
+				});
+			});
+		},
+		postCompare: function postCompare(postObj, callback) {
+			var self = this;
+			var date = new Date();
+			postObj.A.authorId = postObj.session._id;
+			postObj.B.authorId = postObj.session._id;
+			postObj.A.date = date;
+			postObj.B.date = date;
+
+			var data = {
+				title: postObj.title,
+				text: postObj.text,
+				authorId: postObj.session._id,
+				date: date
+			};
+			self.postImage(postObj.A, function (A) {
+				data.A = A._id;
+				self.postImage(postObj.B, function (B) {
+					data.B = B._id;
+					$.ajax({
+						url: credentials.api_server + '/cards',
+						type: 'POST',
+						data: data,
+						dataType: 'json',
+						success: function success(result) {
+							if (result.status) {
+								callback(result.body);
+								// AppAPI.updatePublished(result.body);
+								// CardAction.updateCard(result.body);
+								// AppHistory.push('/')
+							} else {
+									console.log(result.body);
+								}
+						}
+					});
+				});
+			});
+		}
+	};
+
+/***/ },
+/* 272 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = {
+		validateImageFromFile: function validateImageFromFile(e) {
+			var self = this;
+			var nativeEvent = e.nativeEvent;
+
+			if (nativeEvent.dataTransfer.files[0] != null) {
+				// 로컬에서 가져온 파일이다
+				var file = nativeEvent.dataTransfer.files[0];
+				var url = URL.createObjectURL(file);
+				self.validateImageFromUrl(url, function (result) {
+					return result;
+				});
+			} else {
+				// 브라우저에서 가져온 파일이다
+				var eventUrl = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
+				var eventText = nativeEvent.dataTransfer.getData('text/plain');
+				console.log(eventText);
+
+				self.validateImageFromUrl(url, function (result) {
+					if (result.status) return result;
+
+					try {
+						var eventHtml = nativeEvent.dataTransfer.getData('text/html');
+						console.log(eventHtml);
+						var object = $('<div/>').html(eventHtml).contents();
+						if (object) {
+							var url = object.closest('img').prop('src');
+							console.log(url);
+							self.validateImageFromUrl(url, function (result) {
+								console.log(result);
+							});
+						}
+					} catch (_error) {};
+				});
+			}
+
+			// var isFromLocal,isFromBrowser;
+			// var nativeEvent = e.nativeEvent;
+			// var localFile = nativeEvent.dataTransfer.files[0];
+			// if(localFile != null){
+			// 	var tmpPath = URL.createObjectURL(localFile);
+			// 	self.checkImage(tmpPath,function (res){
+			// 		if(res.status){
+			// 			self.props.onLocalSuccess(localFile,res.body);
+			// 		} else {
+			// 			self.props.onLocalFailure(localFile);
+			// 		}
+			// 	});
+			// } else {
+			// 	// 브라우저에서 가져온 경우
+			// 	var url = nativeEvent.dataTransfer.getData(nativeEvent.dataTransfer.types[0]);
+			// 	var html = nativeEvent.dataTransfer.getData('text/html');
+			// 	var text = nativeEvent.dataTransfer.getData('text/plain');
+			// 	console.log(html);
+			// 	console.log(text);
+			// 	self.checkImage(url,function (res){
+			// 		if(res.status){
+			// 			self.props.onBrowserSuccess(res.body);
+			// 		} else {
+			// 			self.props.onBrowserFailure(url);
+			// 		}
+			// 	})
+			// }
+		},
+		validateImageFromUrl: function validateImageFromUrl(url, callback) {
+			var timeout = 5000;
+			var timedOut = false,
+			    timer;
+			var img = new Image();
+			img.onerror = img.onabort = function () {
+				if (!timedOut) {
+					clearTimeout(timer);
+					callback({ status: false });
+				}
+			};
+			img.onload = function () {
+				var image = this;
+				if (!timedOut) {
+					clearTimeout(timer);
+
+					var res = {
+						status: true,
+						body: {
+							url: url,
+							width: image.width,
+							height: image.height
+						}
+					};
+
+					callback(res);
+				}
+			};
+			img.src = url;
+		}
+	};
+
+/***/ },
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -30571,7 +30896,7 @@
 	module.exports = Right;
 
 /***/ },
-/* 268 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -40408,7 +40733,7 @@
 
 
 /***/ },
-/* 269 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40427,11 +40752,11 @@
 
 	var _credentials2 = _interopRequireDefault(_credentials);
 
-	var _OnHeader = __webpack_require__(270);
+	var _OnHeader = __webpack_require__(276);
 
 	var _OnHeader2 = _interopRequireDefault(_OnHeader);
 
-	var _OffHeader = __webpack_require__(271);
+	var _OffHeader = __webpack_require__(277);
 
 	var _OffHeader2 = _interopRequireDefault(_OffHeader);
 
@@ -40442,89 +40767,6 @@
 	var AppAPI = __webpack_require__(251);
 
 	var CardAPI = __webpack_require__(255);
-
-	var PostBtn = _react2.default.createClass({
-		displayName: 'PostBtn',
-
-		getInitialState: function getInitialState() {
-			return {
-				message: null,
-				session: this.props.session,
-				loading: false
-			};
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				session: nextProps.session
-			});
-		},
-		componentDidMount: function componentDidMount() {
-			_AppStore2.default.addChangeListener(this._onChange);
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			_AppStore2.default.removeChangeListener(this._onChange);
-		},
-		_onChange: function _onChange() {
-			this.setState({
-				upload: _AppStore2.default.getUpload()
-			});
-		},
-		publish: function publish() {
-			var self = this;
-			var postObj = _AppStore2.default.getPost();
-			var session = this.state.session;
-			postObj.session = session;
-			if (postObj.title == null) {
-				self.setState({
-					message: 'Title is empty'
-				});
-			} else if (postObj.A == null) {
-				self.setState({
-					message: 'Version A is empty'
-				});
-			} else if (postObj.B == null) {
-				self.setState({
-					message: 'Version B is empty'
-				});
-			} else {
-				self.setState({
-					message: null,
-					loading: true
-				});
-				CardAPI.postCard(postObj);
-			}
-		},
-		render: function render() {
-			var publish;
-			if (this.state.message == null) {
-				var message = null;
-			} else {
-				var message = _react2.default.createElement(
-					'div',
-					{ id: 'header-publish-message' },
-					this.state.message
-				);
-			}
-
-			if (this.state.loading) {
-				publish = _react2.default.createElement('div', { id: 'header-publish-loading' });
-			} else {
-				publish = _react2.default.createElement(
-					'div',
-					{ className: 'header-btn', id: 'header-publish', onClick: this.publish },
-					'Publish >'
-				);
-			}
-
-			return _react2.default.createElement(
-				'div',
-				{ id: 'post-on-btn' },
-				message,
-				publish,
-				_react2.default.createElement('div', { className: 'cb' })
-			);
-		}
-	});
 
 	var Header = _react2.default.createClass({
 		displayName: 'Header',
@@ -40571,7 +40813,7 @@
 	module.exports = Header;
 
 /***/ },
-/* 270 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40582,7 +40824,7 @@
 
 	var _reactRouter = __webpack_require__(159);
 
-	var _Servers = __webpack_require__(289);
+	var _Servers = __webpack_require__(258);
 
 	var _Servers2 = _interopRequireDefault(_Servers);
 
@@ -40590,7 +40832,7 @@
 
 	var _AppAPI2 = _interopRequireDefault(_AppAPI);
 
-	var _UserAPI = __webpack_require__(261);
+	var _UserAPI = __webpack_require__(262);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
@@ -40705,7 +40947,7 @@
 				{ to: '/post' },
 				_react2.default.createElement(
 					'div',
-					{ id: 'new-ab' },
+					{ id: 'new-ab', className: 'button' },
 					'How about \'Helvetica\' vs \'Open Sans\''
 				)
 			);
@@ -40748,7 +40990,7 @@
 	module.exports = OnHeader;
 
 /***/ },
-/* 271 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40759,15 +41001,15 @@
 
 	var _reactRouter = __webpack_require__(159);
 
-	var _UserAction = __webpack_require__(262);
+	var _UserAction = __webpack_require__(263);
 
 	var _UserAction2 = _interopRequireDefault(_UserAction);
 
-	var _UserStore = __webpack_require__(264);
+	var _UserStore = __webpack_require__(265);
 
 	var _UserStore2 = _interopRequireDefault(_UserStore);
 
-	var _UserAPI = __webpack_require__(261);
+	var _UserAPI = __webpack_require__(262);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
@@ -40935,7 +41177,7 @@
 	module.exports = OffHeader;
 
 /***/ },
-/* 272 */
+/* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -40966,7 +41208,7 @@
 	module.exports = Banner;
 
 /***/ },
-/* 273 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41005,11 +41247,11 @@
 
 	var _reactRouter = __webpack_require__(159);
 
-	var _Util = __webpack_require__(258);
+	var _Util = __webpack_require__(259);
 
 	var _Util2 = _interopRequireDefault(_Util);
 
-	var _LikeGraph = __webpack_require__(274);
+	var _LikeGraph = __webpack_require__(280);
 
 	var _LikeGraph2 = _interopRequireDefault(_LikeGraph);
 
@@ -41796,12 +42038,12 @@
 	module.exports = AB;
 
 /***/ },
-/* 274 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _d = __webpack_require__(275);
+	var _d = __webpack_require__(281);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -41811,7 +42053,7 @@
 
 	var _reactDom = __webpack_require__(158);
 
-	var _Util = __webpack_require__(258);
+	var _Util = __webpack_require__(259);
 
 	var _Util2 = _interopRequireDefault(_Util);
 
@@ -41940,7 +42182,7 @@
 	module.exports = Chart;
 
 /***/ },
-/* 275 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;!function() {
@@ -51499,7 +51741,7 @@
 	}();
 
 /***/ },
-/* 276 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51771,7 +52013,7 @@
 		},
 		submitInput: function submitInput(e) {
 			var self = this;
-			var vd = __webpack_require__(277);
+			var vd = __webpack_require__(283);
 			var value = $(e.target).val();
 			if (value.length == 0 || value == null) {
 				self.props.answer({
@@ -52128,7 +52370,7 @@
 	module.exports = Join;
 
 /***/ },
-/* 277 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module, process) {/*!
@@ -52298,7 +52540,7 @@
 	            if (!validator.isServerSide()) {
 	                return;
 	            }
-	            depd = __webpack_require__(279)('validator');
+	            depd = __webpack_require__(285)('validator');
 	        }
 	        depd(msg);
 	    };
@@ -53114,10 +53356,10 @@
 
 	});
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(278)(module), __webpack_require__(4)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(284)(module), __webpack_require__(4)))
 
 /***/ },
-/* 278 */
+/* 284 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -53133,7 +53375,7 @@
 
 
 /***/ },
-/* 279 */
+/* 285 */
 /***/ function(module, exports) {
 
 	/*!
@@ -53218,7 +53460,7 @@
 
 
 /***/ },
-/* 280 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -53251,19 +53493,19 @@
 
 	var _CardAPI2 = _interopRequireDefault(_CardAPI);
 
-	var _UserAction = __webpack_require__(262);
+	var _UserAction = __webpack_require__(263);
 
 	var _UserAction2 = _interopRequireDefault(_UserAction);
 
-	var _UserStore = __webpack_require__(264);
+	var _UserStore = __webpack_require__(265);
 
 	var _UserStore2 = _interopRequireDefault(_UserStore);
 
-	var _UserAPI = __webpack_require__(261);
+	var _UserAPI = __webpack_require__(262);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
-	var _Right = __webpack_require__(267);
+	var _Right = __webpack_require__(273);
 
 	var _Right2 = _interopRequireDefault(_Right);
 
@@ -53271,7 +53513,7 @@
 
 	var _credentials2 = _interopRequireDefault(_credentials);
 
-	var _Cards = __webpack_require__(281);
+	var _Cards = __webpack_require__(287);
 
 	var _Cards2 = _interopRequireDefault(_Cards);
 
@@ -53336,7 +53578,7 @@
 		},
 		initCroppie: function initCroppie() {
 			var self = this;
-			var croppie = __webpack_require__(282);
+			var croppie = __webpack_require__(288);
 			this.croppie = new Croppie(document.getElementById('pic-edit-box'), {
 				viewport: {
 					width: 200,
@@ -53753,7 +53995,7 @@
 	module.exports = User;
 
 /***/ },
-/* 281 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -53780,7 +54022,7 @@
 
 	var _CardStore2 = _interopRequireDefault(_CardStore);
 
-	var _UserAPI = __webpack_require__(261);
+	var _UserAPI = __webpack_require__(262);
 
 	var _UserAPI2 = _interopRequireDefault(_UserAPI);
 
@@ -53788,7 +54030,7 @@
 
 	var _credentials2 = _interopRequireDefault(_credentials);
 
-	var _Util = __webpack_require__(258);
+	var _Util = __webpack_require__(259);
 
 	var _Util2 = _interopRequireDefault(_Util);
 
@@ -54158,7 +54400,7 @@
 	module.exports = Cards;
 
 /***/ },
-/* 282 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(setImmediate) {/*************************
@@ -55200,10 +55442,10 @@
 	    }
 	}));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(283).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(289).setImmediate))
 
 /***/ },
-/* 283 */
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(4).nextTick;
@@ -55282,10 +55524,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(283).setImmediate, __webpack_require__(283).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(289).setImmediate, __webpack_require__(289).clearImmediate))
 
 /***/ },
-/* 284 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -55294,23 +55536,23 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _d = __webpack_require__(275);
+	var _d = __webpack_require__(281);
 
 	var _d2 = _interopRequireDefault(_d);
 
-	var _AnAPI = __webpack_require__(285);
+	var _AnAPI = __webpack_require__(291);
 
 	var _AnAPI2 = _interopRequireDefault(_AnAPI);
 
-	var _AnStore = __webpack_require__(287);
+	var _AnStore = __webpack_require__(293);
 
 	var _AnStore2 = _interopRequireDefault(_AnStore);
 
-	var _AnAction = __webpack_require__(286);
+	var _AnAction = __webpack_require__(292);
 
 	var _AnAction2 = _interopRequireDefault(_AnAction);
 
-	var _GeneralLikeGraph = __webpack_require__(288);
+	var _GeneralLikeGraph = __webpack_require__(294);
 
 	var _GeneralLikeGraph2 = _interopRequireDefault(_GeneralLikeGraph);
 
@@ -55520,12 +55762,12 @@
 	module.exports = Analysis;
 
 /***/ },
-/* 285 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var _AnAction = __webpack_require__(286);
+	var _AnAction = __webpack_require__(292);
 
 	var _AnAction2 = _interopRequireDefault(_AnAction);
 
@@ -55567,7 +55809,7 @@
 	};
 
 /***/ },
-/* 286 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -55586,7 +55828,7 @@
 	module.exports = AnAction;
 
 /***/ },
-/* 287 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -55646,12 +55888,12 @@
 	module.exports = AnStore;
 
 /***/ },
-/* 288 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var _d = __webpack_require__(275);
+	var _d = __webpack_require__(281);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -55661,7 +55903,7 @@
 
 	var _reactDom = __webpack_require__(158);
 
-	var _Util = __webpack_require__(258);
+	var _Util = __webpack_require__(259);
 
 	var _Util2 = _interopRequireDefault(_Util);
 
@@ -55729,346 +55971,6 @@
 	// }
 
 	module.exports = Chart;
-
-/***/ },
-/* 289 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	module.exports = {
-		s3: 'https://dhl5t9nj7h6c1.cloudfront.net/',
-		s3Thumb: 'https://dhl5t9nj7h6c1.cloudfront.net/thumbs/',
-		s3Image: 'https://dhl5t9nj7h6c1.cloudfront.net/images/',
-		host: 'http://localhost:3030',
-		api: 'http://localhost:3333'
-	};
-
-	// module.exports = {
-	// 	s3:'https://dhl5t9nj7h6c1.cloudfront.net/',
-	// 	host:'http://indegs.com',
-	// 	api: 'http://indegs.com:3333'
-	// }
-
-/***/ },
-/* 290 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _Servers = __webpack_require__(289);
-
-	var _Servers2 = _interopRequireDefault(_Servers);
-
-	var _AppHistory = __webpack_require__(216);
-
-	var _AppHistory2 = _interopRequireDefault(_AppHistory);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	module.exports = {
-		post: function post(_post, _session) {
-			var self = this;
-			var date = new Date();
-
-			_post.A.author_id = _session._id;
-			_post.B.author_id = _session._id;
-
-			var card = {
-				title: _post.title,
-				description: _post.description,
-				author_id: _session._id,
-				A: {
-					width: _post.A.image.width,
-					height: _post.A.image.height
-				},
-				B: {
-					width: _post.B.image.width,
-					height: _post.B.image.height
-				}
-			};
-			console.log(card);
-
-			self.getSectionFormData(_post.A, function (A) {
-				self.getSectionFormData(_post.B, function (B) {
-					var formData = new FormData();
-					formData.append('A', A, A.name);
-					formData.append('B', B, B.name);
-					formData.append('card', JSON.stringify(card));
-					self.postCard(formData);
-				});
-			});
-		},
-		postCard: function postCard(formData) {
-			$.ajax({
-				url: _Servers2.default.api + '/cards',
-				type: 'POST',
-				contentType: false,
-				processData: false,
-				data: formData,
-				success: function success(result) {
-					if (result.status) {
-						location.href = 'http://localhost:3030';
-					} else {
-						console.log(result.body);
-					}
-				}
-			});
-		},
-		createFileObject: function createFileObject(path, name, callback) {
-			var xhr = new XMLHttpRequest();
-			xhr.open("GET", path);
-			xhr.responseType = "blob";
-			xhr.addEventListener('load', function () {
-				var blob = xhr.response;
-				blob.name = name;
-				blob.lastModifiedDate = new Date();
-				callback(blob);
-			});
-			xhr.send();
-		},
-		getSectionFormData: function getSectionFormData(section, callback) {
-			var self = this;
-			var file = section.file;
-			var image = section.image;
-
-			// 브라우저에서 전송된 경우
-			if (file == null) {
-				var formData = new FormData();
-
-				var origin = {
-					type: 'web',
-					url: image.url
-				};
-
-				var salt = (Math.round(new Date().valueOf() * Math.random()) + "").slice(0, 6);
-				var image = self.createFileObject(image.url, salt, function (data) {
-					data.origin = origin;
-					callback(data);
-				});
-			} else {
-				var formData = new FormData();
-				var data = file;
-				var origin = {
-					type: 'local',
-					url: file.path
-				};
-				data.width = image.width;
-				data.height = image.height;
-				data.origin = origin;
-				callback(data);
-			}
-
-			// var split = obj.image.split('/');
-			// var name = split[split.length-1];
-			// this.createFileObject(obj.image,name, function(image){
-			// 	var formData = new FormData();
-			// 	formData.append('image',image,image.name);
-			// 	$.ajax({
-			// 		url:credentials.api_server + '/cards/image',
-			// 		type:'POST',
-			// 		contentType:false,
-			// 		processData:false,
-			// 		data:formData,
-			// 		success:function(result){
-			// 			if(result.status){
-			// 				callback(result.body);
-			// 			} else {
-			// 				console.log(result.body);
-			// 			}
-			// 		}
-			// 	})	
-			// })
-		},
-		postImage: function postImage(obj, callback) {
-			var split = obj.image.split('/');
-			var name = split[split.length - 1];
-			this.createFileObject(obj.image, name, function (image) {
-				var formData = new FormData();
-				formData.append('image', image, image.name);
-				$.ajax({
-					url: credentials.api_server + '/cards/image',
-					type: 'POST',
-					contentType: false,
-					processData: false,
-					data: formData,
-					success: function success(result) {
-						if (result.status) {
-							callback(result.body);
-						} else {
-							console.log(result.body);
-						}
-					}
-				});
-			});
-		},
-		postCompare: function postCompare(postObj, callback) {
-			var self = this;
-			var date = new Date();
-			postObj.A.authorId = postObj.session._id;
-			postObj.B.authorId = postObj.session._id;
-			postObj.A.date = date;
-			postObj.B.date = date;
-
-			var data = {
-				title: postObj.title,
-				text: postObj.text,
-				authorId: postObj.session._id,
-				date: date
-			};
-			self.postImage(postObj.A, function (A) {
-				data.A = A._id;
-				self.postImage(postObj.B, function (B) {
-					data.B = B._id;
-					$.ajax({
-						url: credentials.api_server + '/cards',
-						type: 'POST',
-						data: data,
-						dataType: 'json',
-						success: function success(result) {
-							if (result.status) {
-								callback(result.body);
-								// AppAPI.updatePublished(result.body);
-								// CardAction.updateCard(result.body);
-								// AppHistory.push('/')
-							} else {
-									console.log(result.body);
-								}
-						}
-					});
-				});
-			});
-		}
-	};
-
-/***/ },
-/* 291 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var PostDispatcher = __webpack_require__(292);
-	var objectAssign = __webpack_require__(265);
-	var EventEmitter = __webpack_require__(249).EventEmitter;
-
-	var _post;
-
-	var updatePostSection = function updatePostSection(data) {
-		if (_post == null) _post = {};
-		if (data.idx == 1) {
-			_post.A = data;
-		} else {
-			_post.B = data;
-		}
-	};
-
-	var updatePostTitle = function updatePostTitle(title) {
-		if (_post == null) _post = {};
-		_post.title = title;
-	};
-
-	var updatePostDescription = function updatePostDescription(description) {
-		if (_post == null) _post = {};
-		_post.description = description;
-	};
-
-	var emptyPost = function emptyPost() {
-		_post = null;
-	};
-
-	var PostStore = objectAssign({}, EventEmitter.prototype, {
-		addChangeListener: function addChangeListener(cb) {
-			this.on('change', cb);
-		},
-		removeChangeListener: function removeChangeListener(cb) {
-			this.removeListener('change', cb);
-		},
-		getPost: function getPost() {
-			return _post;
-		}
-	});
-
-	PostDispatcher.register(function (payload) {
-		var action = payload.action;
-		switch (action.actionType) {
-			case 'UPDATE_POST_SECTION':
-				updatePostSection(action.data);
-				PostStore.emit('change');
-				break;
-			case 'UPDATE_POST_TITLE':
-				updatePostTitle(action.data);
-				PostStore.emit('change');
-				break;
-			case 'UPDATE_POST_DESCRIPTION':
-				updatePostDescription(action.data);
-				PostStore.emit('change');
-				break;
-			case 'EMPTY_POST':
-				emptyPost();
-				PostStore.emit('change');
-				break;
-
-			default:
-				return true;
-		}
-	});
-
-	module.exports = PostStore;
-
-/***/ },
-/* 292 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var Dispatcher = __webpack_require__(246).Dispatcher;
-
-	var PostDispatcher = new Dispatcher();
-
-	PostDispatcher.handleAction = function (action) {
-		this.dispatch({
-			source: 'VIEW_ACTION',
-			action: action
-		});
-	};
-
-	module.exports = PostDispatcher;
-
-/***/ },
-/* 293 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var PostDispatcher = __webpack_require__(292);
-
-	var PostAction = {
-		updatePostSection: function updatePostSection(data) {
-			PostDispatcher.handleAction({
-				actionType: 'UPDATE_POST_SECTION',
-				data: data
-			});
-		},
-		updatePostTitle: function updatePostTitle(data) {
-			PostDispatcher.handleAction({
-				actionType: 'UPDATE_POST_TITLE',
-				data: data
-			});
-		},
-		updatePostDescription: function updatePostDescription(data) {
-			PostDispatcher.handleAction({
-				actionType: 'UPDATE_POST_DESCRIPTION',
-				data: data
-			});
-		},
-		emptyPost: function emptyPost() {
-			PostDispatcher.handleAction({
-				actionType: 'EMPTY_POST'
-			});
-		}
-	};
-
-	module.exports = PostAction;
 
 /***/ }
 /******/ ]);

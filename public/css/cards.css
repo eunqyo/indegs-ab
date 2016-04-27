@@ -5,37 +5,33 @@
 }
 
 .card{
-    margin-bottom:30px;
+    margin-bottom: 30px;
     overflow: hidden;
-    padding: 15px;
-    padding-top:0px;
+    padding-top: 10px;
     background-color: white;
-    cursor:pointer;
+    border-top: 1px solid #d3d3d3;
+    cursor: pointer;
 }
-
-.card:hover{
-    background-color:#fafafa;
-}
-
 
 .card-title{
 	margin-bottom:-1px;
 }
 span.title{
-	text-align: left;
+    text-align: left;
     font-size: 14px;
-    line-height: 18px;
-    color: #191919;
+    line-height: 19px;
+    color: #252525;
+    /*text-decoration: underline;*/
     cursor: pointer;
     font-weight: 400;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.3px;
 }
 span.author{
     text-align: left;
     font-size: 12px;
     line-height: 16px;
-    color: #909090;
-    font-weight:400;
+    color: #FF1A56;
+    font-weight: 400;
     letter-spacing: -0.2px;
 }
 span.date{
@@ -57,39 +53,201 @@ span.category{
 	margin-bottom:-1px;
 	float:left;
 }
+.card-dot{
+    float: left;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    margin: 0 5px;
+    margin-top: 10px;
+    background: #909090;
+}
+
 .card-date{
-	margin-left:5px;
 	float:left;
 }
 
+/*<CardHeader />*/
+
+.card-header{
+    padding-top:15px;
+    padding-bottom:10px;
+    cursor:default;
+}
+.card-header-left{
+    float:left;
+    /*display:none;*/
+}
+.card-header-center{
+    float:left;
+    padding-right:30px;
+}
+.card-header-right{
+    float:left;
+    padding-left:30px;
+    border-left:1px solid #c5c5c5;
+}
+
+.card-info-holder{
+    float: left;
+}
+
+
+/*<CardLeft />*/
+.card-left{
+    width:60px;
+    float:left;
+}
+/*<CardAuthorPic />*/
+
+.card-authorpic{
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor:pointer;
+}
+
+.card-authorpic > img{
+    width:45px;
+    height:45px;
+}
+
+/*<CardBody />*/
+.card-body{
+    float:left;
+    width:540px;
+}
+
+/*<CardImage />*/
+.card-images{
+    margin-top:15px;
+}
+.card-image{
+    width:269px;
+    float:left;
+}
+.card-image > img{
+    width:100%;
+    height:auto;
+}
+
+.card-image:nth-child(1){
+    margin-right:1px;
+}
+.card-image:nth-child(1) > img{
+
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+.card-image:nth-child(2) > img{
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+
+.card-header .session-message{
+    font-size: 12px;
+    /* text-decoration: underline; */
+    color: #333333;
+    text-align: right;
+    width: 100%;
+}
+
+/*<CardDescription />*/
+
+.card-description{
+    color: #020202;
+    font-weight: 400;
+    margin-top: 15px;
+    font-size: 16px;
+    line-height: 25px;
+    letter-spacing: -0.4px;
+}
+
+.card-a-holder{
+    float:left;
+    width:50%;
+    height:100%;
+    background-color:#f1f1f1;
+    background-size:cover;
+    background-position:50% 50%;
+    border-right: 1px solid white;
+}
+.card-b-holder{
+    float:left;
+    width:50%;
+    height:100%;
+    background-size:cover;
+    background-color:#f1f1f1;
+    background-position:50% 50%;
+    /*transition:0.3s background ease;*/
+}
+
+.card-img-holder{
+    overflow: hidden;
+    background: #efefef;
+    border-radius: 5px;
+}
+.card-img-holder img{
+    background:white;
+    display:block;
+    float:left;
+    border:1px solid #efefef;
+}
+.card-a-img{
+    margin-right:0.5px;
+}
+.card-b-img{
+
+}
+.card-img-loader{
+/*    position:absolute;
+    top:0;
+    left:0;*/
+}
+.card-img-loader div{
+    float:left;
+    border: 1px solid #efefef;
+    background-color: #F9F9F9;
+}
+.card-a-loader{
+    margin-right:1px;
+}
+
+
+
 /*<CardLike />*/
+.card-likes{
+    margin: 15px 0;
+}
 .card-like{
     float:left;
 }
 .card-like:nth-child(2){
-    margin-left:30px;
+    /*margin-left:30px;*/
+    float:right;
 }
 .card-like .btn{
-    float: right;
+    float:left;
     cursor: pointer;
     width: 15px;
-    height: 15px;
-    background: url('/images/like-on.png') 50% 50% no-repeat;
+    height: 20px;
+    background: url('/images/like-off.png') 50% 50% no-repeat;
     background-size: contain;
-    opacity:0.2;
+    opacity:0.8;
 }
-.card-like .liked{
-    background: url('/images/like-on.png') 50% 50% no-repeat;
+.card-like .btn.liked{
+    background: url('/images/like-red.png') 50% 50% no-repeat;
     background-size: contain;
     opacity:1;
 }
 .card-like .count{
+    margin-left:10px;
     height: 15px;
-    line-height: 15px;
+    line-height: 20px;
     font-size: 13px;
     width: 22px;
-    float: right;
-    text-align: right;
 }
 
 

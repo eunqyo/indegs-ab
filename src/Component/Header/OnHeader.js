@@ -87,7 +87,7 @@ const NewAB = React.createClass({
 	render:function(){
 		return (
 			<Link to={'/post'}>
-				<div id="new-ab">How about 'Helvetica' vs 'Open Sans'</div>
+				<div id="new-ab" className="button">How about 'Helvetica' vs 'Open Sans'</div>
 			</Link>
 		)
 	}
