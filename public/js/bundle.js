@@ -28058,12 +28058,12 @@
 				_react2.default.createElement(
 					'div',
 					{ className: 'card-info' },
-					_react2.default.createElement(CardTitle, { card: card }),
 					_react2.default.createElement(CardAuthor, { card: card }),
 					_react2.default.createElement('div', { className: 'card-dot' }),
 					_react2.default.createElement(CardDate, { card: card }),
 					_react2.default.createElement('div', { className: 'cb' })
 				),
+				_react2.default.createElement(CardTitle, { card: card }),
 				_react2.default.createElement(CardDescription, { description: card.description }),
 				_react2.default.createElement(CardLikes, { card: card, session: session }),
 				_react2.default.createElement(CardImages, { card: card })

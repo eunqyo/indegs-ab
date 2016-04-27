@@ -237,12 +237,12 @@ const CardBody = React.createClass({
 		return (
 			<div className="card-body">
 				<div className="card-info">
-					<CardTitle card={card}/>
 					<CardAuthor card={card}/>
 					<div className="card-dot"></div>
 					<CardDate card={card} />
 					<div className="cb"></div>
 				</div>
+				<CardTitle card={card}/>
 				<CardDescription description={card.description}/>
 				<CardLikes card={card} session={session} />
 				<CardImages card={card} />
