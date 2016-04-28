@@ -153,6 +153,20 @@ var updateLike = function(image){
 	find(image,_card);
 };
 
+var updateImageComment = function(image){
+	for(var i=0; i<_card.length; i++){
+		if(_card[i]._id == image.card_id){
+			break;
+		}
+	}
+	if(_card[i].A._id == image._id){
+		_card[i].A.comment = image.comment;
+	} else {
+		_card[i].B.comment == image.comment;
+	}
+};
+
+
 var updateImageLike = function(imageObj){
 	for(var i = 0; i < _card.length; i++){
 		if(_card[i].A._id == imageObj._id){
@@ -238,6 +252,15 @@ var CardStore = objectAssign({},EventEmitter.prototype,{
 	getCard:function(){
 		return _card;
 	},
+	getCardById:function(card_id){
+		if(_card == null) return null;
+		for(var i=0;i<_card.length;i++){
+			if(_card[i]._id == card_id){
+				break;
+			}
+		}
+		return _card[i];
+	},
 	getNew:function(){
 		return _new;
 	},
@@ -282,6 +305,10 @@ AppDispatcher.register(function(payload){
 			break;
 		case 'UPDATE_IMAGE':
 			updateImage(action.data);
+			CardStore.emit('change');
+			break;
+		case 'UPDATE_IMAGE_COMMENT':
+			updateImageComment(action.data);
 			CardStore.emit('change');
 			break;
 		case 'UPDATE_IMAGE_LIKE':

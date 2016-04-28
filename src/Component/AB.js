@@ -8,34 +8,29 @@ import CardAction from '../Action/CardAction';
 import CardStore from '../Store/CardStore';
 import CardAPI from '../API/CardAPI';
 
-import credentials from '../../credentials';
+import CommentAPI from '../API/CommentAPI';
+
+import Servers from '../Util/Servers';
+import Dates from '../Util/Dates';
 import { Link } from 'react-router';
 
 import Util from '../Util/Util';
 import LikeGraph from './Chart/LikeGraph';
 
+import Data from './AB/Data';
+
 const TextVoteAuthorPic = React.createClass({
-	getInitialState:function(){
-		return ({
-			author:this.props.author
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			author:nextProps.author
-		})
-	},
 	render:function(){
-		var author = this.state.author;
+		var author = this.props.author;
 		var src;
 		if(author.pic!=null){
-			src = credentials.image_server + '/' + author.pic;
+			src = Servers.s3 + author.pic;
 		} else {
 			src = null;
 		}
 		return (
 			<Link to={'/users/'+author._id}>
-				<div className="textvote-author-pic-holder">
+				<div className="textvote-author-pic">
 					<img className="textvote-author-pic" src={src} />
 				</div>
 			</Link>
@@ -166,136 +161,366 @@ const TextVote = React.createClass({
 			</div>
 		)
 	}
+});
+
+const CommentInputUserPic = React.createClass({
+	render:function(){
+		var session = this.props.session;
+		var src = Servers.s3 + session.pic;
+		return (
+			<div className="comment-input-user-pic">
+				<img src={src} />
+			</div>
+		)
+	}
 })
 
-const SectionVote = React.createClass({
+const CommentInput = React.createClass({
 	getInitialState:function(){
 		return ({
-			value:null,
-			session:this.props.session,
-			image:this.props.image
+			value:'',
+			able:false,
+			toggle:false
 		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			session:nextProps.session,
-			image:nextProps.image
-		})
-	},
-	submitInput:function(e){
-		var value = this.state.value;
-		var image = this.props.image;
-		$(e.target).attr('placeholder','ex) Better Typography');
-	},
-	handleEnter:function(e){
-		var self = this;
-		if(e.which == 13){
-			$(e.target).blur();
-			self.submitText()
-		}
 	},
 	handleChange:function(e){
-		this.setState({
-			value:e.target.value
-		});
+		var self = this;
+		var value = e.target.value;
+		if(value==null){
+			self.setState({
+				value:value,
+				able:false
+			})
+		} else {
+			self.setState({
+				value:value,
+				able:true
+			})
+		}
 	},
-	changePlaceholder:function(e){
-		$(e.target).attr('placeholder','Press Enter to submit your comment');
+	replaceBR:function(value){
+		function replaceAll(str, target, replacement) {
+		    return str.split(target).join(replacement);
+		};
+		var replacement = replaceAll(value, '\n', '<br/>');
+		return replacement;
 	},
-	submitText:function(){
-		var image = this.state.image;
+	submitText:function(e){
+		var able = this.state.able;
+		if(!able) return null;
+
+		var image = this.props.image;
 		var value = this.state.value;
-		var session = this.state.session;
-		CardAPI.createVote(session._id,value,image);
+		var session = this.props.session;
+
+		var comment = this.replaceBR(value);
+		var commentObj = {
+	        image_id:image._id,
+	        comment:comment,
+	        author:session,
+	        date:new Date(),
+	        like:[]
+		}
+		image.comment.push(commentObj);
+		CardAction.updateImageComment(image);
+		CommentAPI.createComment(commentObj);
 		this.setState({
-			value:null
+			value:'',
+			toggle:false,
+			able:false
 		});
+		$(e.target).prev().css('min-height','33px');
+		$(e.target).prev().css('height','33px');
+	},
+	handleKeyUp:function(e){
+		var obj = $(e.target).context;
+		obj.style.height = "1px";
+		obj.style.height = (20+obj.scrollHeight)+"px";
+	},
+	handleFocus:function(e){
+		$(e.target).css('min-height','80px');
+		$(e.target).css('height','98px')
+		this.setState({
+			toggle:true
+		})
+	},
+	handleBlur:function(e){
+		var self = this;
+		var value = this.state.value;
+		if(value == null || value.length == 0){
+			$(e.target).css('height','33px');
+			$(e.target).css('min-height','33px');
+			self.setState({
+				toggle:false
+			});
+		}
 	},
 	render:function(){
+		var value = this.state.value;
+		var session = this.props.session;
 		var image = this.props.image;
+		var able = this.state.able;
+		var toggle = this.state.toggle;
+
+		var submit,textareaStyle,submitClass
+		if(able){
+			submitClass = "submit"
+		} else {
+			submitClass = "submit submit-disabled"
+		}
+		if(toggle){
+			submit = <div className={submitClass} onClick={this.submitText} >Submit ></div>;
+		} else {
+			submit = null;
+		}
+
 		return (
-			<div className="section-vote">
-				<div className="title">Add a comment</div>
-				<input maxLength="140" className="section-vote-input" type="text" placeholder="A great comment for this work" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyPress={this.handleEnter} onChange={this.handleChange} value={this.state.value}  />
-				<div className="submit" onClick={this.submitText} >Submit ></div>
+			<div className="comment-input">
+				<CommentInputUserPic session={session} />
+				<textarea type="text" onChange={this.handleChange} onBlur={this.handleBlur} onFocus={this.handleFocus} onKeyUp={this.handleKeyUp} value={value} />
+				{submit}
+			</div>
+		)
+	}
+})
+
+const CommentInputGuide = React.createClass({
+	render:function(){
+		return (
+			<div className="comment-input-guide">Sign in to leave a commment</div>
+		)
+	}
+})
+const CommentSubmit = React.createClass({
+	render:function(){
+		var image = this.props.image;
+		var session = this.props.session;
+		var body;
+		if(session == null) body = <CommentInputGuide />;
+		else body = <CommentInput session={session} image={image} />;
+		return (
+			<div className="comment-submit">
+				<div className="title">Why did you choose #A?</div>
+				{body}
+				<div className="cb"></div>
+			</div>
+		)
+	}
+});
+
+const CommentAuthor = React.createClass({
+	render:function(){
+		var author = this.props.author;
+		return (
+			<div className="comment-author">
+				<span>{'@'+ author.name}</span>
+			</div>
+		)
+	}
+});
+
+const CommentDate = React.createClass({
+	render:function(){
+		var date = Dates.getDateString(this.props.date)
+		return (
+			<div className="comment-date">
+				<span>{date}</span>
+			</div>
+		)
+	}
+});
+
+const CommentAuthorPic = React.createClass({
+	render:function(){
+		var author = this.props.author;
+		var src = Servers.s3 + author.pic;
+		return (
+			<div className="comment-author-pic">
+				<img src={src} />
+			</div>
+		)
+	}
+});
+
+const CommentLike = React.createClass({
+	handleLike:function(){
+		this.props.onLikeClick()
+	},
+	render:function(){
+		var liked = this.props.liked;
+		var likeLength = this.props.likeLength;
+
+		var likeClass;
+		if(liked){
+			likeClass = "comment-like liked"
+		} else {
+			likeClass = "comment-like"
+		}
+		return (
+			<div className={likeClass} onClick={this.handleLike} >
+				<div className="comment-like-dot"></div>
+				<div className="comment-like-btn"></div>
+				<span className="comment-like-cnt">{likeLength}</span>
+			</div>
+		)
+	}
+})
+
+const CommentItem = React.createClass({
+	getInitialState:function(){
+		return ({
+			liked:false
+		})
+	},
+	componentDidMount:function(){
+		this.appearAnimation();
+		this.checkLiked()
+	},
+	componentWillReceiveProps:function(){
+		this.checkLiked()
+	},
+	appearAnimation:function(){
+
+	},
+	checkLiked:function(){
+		var session = this.props.session;
+		var comment = this.props.comment;
+		var self = this;
+		console.log(session);
+		console.log(comment);
+		if(session == null) return null;
+		if(comment.like == null || comment.like.length == 0) return null;
+		for(var i=0;i<comment.like.length;i++){
+			if(comment.like[i].author == session._id){
+				break;
+			}
+		}
+		if(i == comment.like.length){
+			self.setState({
+				liked:false
+			})
+		} else {
+			self.setState({
+				liked:true
+			})
+		}
+	},
+	handleLike:function(){
+		var comment = this.props.comment;
+		var session = this.props.session;
+		var image = this.props.image;
+		var liked = this.state.liked;
+		if(liked){
+			for(var i=0;i<comment.like.length;i++){
+				if(comment.like[i].author == session._id){
+					comment.like.splice(i,1);
+					break;
+				}
+			}
+		}
+		CardAction.updateImageCommentLike()
+
+	},
+	render:function(){
+		var comment = this.props.comment;
+		var likeLength = comment.like.length;
+		var liked = this.state.liked;
+
+		return (
+			<div className="comment-item">
+				<div className="comment-item-left">
+					<CommentAuthorPic author={comment.author}/>
+				</div>
+				<div className="comment-item-center">
+					<div className="comment-item-info">
+						<CommentAuthor author={comment.author} />
+						<div className="card-dot"></div>
+						<CommentDate date={comment.date} />
+						<CommentLike likeLength={likeLength} liked={liked} onLikeClick={this.handleLike} />
+						<div className="cb"></div>
+					</div>
+					<div>
+						<span className="comment" dangerouslySetInnerHTML = {{__html:comment.comment}}></span>
+					</div>
+				</div>
+				<div className="cb"></div>
+			</div>			
+		)
+	}
+});
+
+const Comments = React.createClass({
+	render:function(){
+		var comments = this.props.comments;
+		var session = this.props.session;
+		var image = this.props.image;
+		var commentItem = comments.map(function(c){
+			if(c._id == null){
+				return <CommentItem key={c.date} comment={c} session={session} image={image}/> 
+			} else {
+				return <CommentItem key={c._id} comment={c} session={session} image={image}/>
+			}
+		})
+		return (
+			<div className="comments">
+				<div className="title">Why people chose #A</div>
+				{commentItem}
+			</div>
+		)
+	}
+})
+
+const ABSectionImage = React.createClass({
+	render:function(){
+		var image = this.props.image;
+		var src = Servers.s3Image + image.hash;
+		return (
+			<div className="section-image">
+				<img src={src} />
+			</div>
+		)
+	}
+});
+
+const ABSection = React.createClass({
+	render:function(){
+		var self = this;
+		var image = this.props.image;
+		var session = this.props.session;
+		console.log(session)
+		var comments;
+		if(image.comment == null || image.comment.length == 0){
+			comments = null;
+		} else {
+			comments = <Comments image={image} session={session} comments={image.comment} />
+		}
+		return (
+			<div className="ab-section">
+				<ABSectionImage session={session} image={image}/>
+				{comments}
+				<CommentSubmit session={session} image={image}/>
+			</div>
+		)
+	}
+});
+
+const ABSections = React.createClass({
+	render:function(){
+		var AB = this.props.AB;
+		var session = this.props.session;
+		return (
+			<div id="ab-sections">
+				<ABSection session={session} image={AB.A} />
+				<ABSection session={session} image={AB.B} />
 				<div className="cb"></div>
 			</div>
 		)
 	}
 })
 
-const Section = React.createClass({
-	getInitialState:function(){
-		return ({
-			session:this.props.session,
-			image:this.props.image,
-			other:this.props.other,
-			imgClass:'w'
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		var self = this;
-		this.setState({
-			session:nextProps.session,
-			image:nextProps.image,
-			other:nextProps.other
-		})
-	},
-	clearBlur:function(e){
-		$(e.target).css('-webkit-filter','blur(0px)')
-	},
-	render:function(){
-		var self = this;
-		var image = this.state.image;
-		var other = this.state.other;
-		var session = this.state.session;
-		var sectionVote,textvote;
-		if(image.vote.length == 0){
-			textvote = null;
-		} else {
-			textvote = image.vote.map(function(vote,idx){
-				return <TextVote key={idx} vote={vote} session={session} image={image} />
-			})
-		}
 
-		if(session!=null){
-			sectionVote = <SectionVote session={session} image={image} />;
-		} else {
-			sectionVote = null;
-		}
 
-		return (
-			<div className="ab-section">
-				<div className="section-image-holder">
-					<img className="section-image" onLoad={this.clearBlur} src={credentials.image_server + '/' + image.url} />
-				</div>
-				<div className="textvote-holder">{textvote}</div>
-				{sectionVote}
-			</div>
-		)
-	}
-});
 
-const SectionLoader = React.createClass({
-	render:function(){
-		return (
-			<div id="ab-section-loader">
-				<div className="c1190">
-					<div className="section-loader">
-						<div className="section-like-loader"></div>
-						<div className="section-img-loader"></div>
-
-					</div>
-					<div className="section-loader">
-						<div className="section-like-loader"></div>
-						<div className="section-img-loader"></div>
-					</div>
-					<div className="cb"></div>
-				</div>
-			</div>
-		)
-	}
-});
 
 const DeleteBtn = React.createClass({
 	handleDelete:function(){
@@ -318,170 +543,49 @@ const DeleteBtn = React.createClass({
 	}
 });
 
-const HeaderPic = React.createClass({
-	handleImageLoad:function(e){
-		var image = $(e.target);
-		image.parent().children('#ab-userpic-loader').css('display','none');
-	},
+const ABDate = React.createClass({
 	render:function(){
-		var author = this.props.author;
-		var src;
-
-		if(author.pic!=null){
-			src = credentials.image_server + '/' + author.pic;
-		} else {
-			src = null;
-		}
-
+		var date = Dates.getDateString(this.props.date);
 		return (
-			<Link to={'/users/'+author._id}>
-				<div id="ab-userpic-holder">
-					<div id="ab-userpic-loader"></div>
-					<img id="ab-userpic" src={src} onLoad={this.handleImageLoad} />
-				</div>
-			</Link>
+			<div className="ab-date">
+				<span className="date">{date}</span>
+			</div>
 		)
 	}
 });
 
-const ABLike = React.createClass({
-	getInitialState:function(){
-		return({
-			session:this.props.session,
-			image:this.props.image,
-			other:this.props.other,
-			liked:false,
-			message:null
-		})
-	},
-	componentDidMount:function(){
-		this.findLiker()
-		this.checkSession()
-	},
-	componentWillReceiveProps:function(nextProps){
-		var self = this;
-		this.setState({
-			session:nextProps.session,
-			image:nextProps.image,
-			other:nextProps.other
-		},function(){
-			self.findLiker();
-			self.checkSession();
-		})
-	},
-	checkSession:function(){
-		var self = this;
-		var session = this.state.session;
-		if(session == null){
-			self.setState({
-				message:'Sign-in to like this'
-			})
-		} else {
-			self.setState({
-				message:null
-			})
-		}
-	},
-	findLiker:function(){
-		var self = this;
-		var session = this.state.session;
-		var image = this.state.image;
-		if(session!=null&&image.like.length!=0){
-			for(var i=0;i<image.like.length;i++){
-				if(image.like[i].author == session._id){
-					self.setState({
-						liked:true
-					});
-					break;
-				}
-			}
-			if(i == image.like.length){
-				self.setState({
-					liked:false
-				})
-			}
-		} else {
-			self.setState({
-				liked:false
-			})
-		}
-	},
-	handleLike:function(){
-		var self = this;
-		var session = this.state.session;
-		var image = this.state.image;
-		var other = this.state.other;
-		var liked = this.state.liked;
-		if(session != null){
-			if(liked){
-				for(var i=0;i<image.like.length;i++){
-					if(image.like[i].author == session._id){
-						image.like.splice(i,1);
-						CardAction.updateABImage(image);
-						CardAPI.removeLike(image);
-						AppAPI.removeParticipated(session,image.card_id)
-						break;
-					}
-				}
-			} else {
-				var likeObj = {
-					date:new Date(),
-					author:session._id
-				}
-				image.like.push(likeObj);
-				CardAction.updateABImage(image)
-				CardAPI.addLike(session._id,image._id);
-				AppAPI.addParticipated(session._id,image.card_id)
-				for(var i=0;i<other.like.length; i++){
-					if(other.like[i].author == session._id){
-						other.like.splice(i,1);
-						CardAction.updateABImage(other)
-						CardAPI.removeLike(other);
-						break;
-					}
-				}
-			}
-		}
-	},
+const ABAuthor = React.createClass({
 	render:function(){
-		var image= this.state.image;
-		var btnClass,cntClass;
-		if(this.state.liked){
-			btnClass = "btn liked";
-			cntClass = "cnt cnt-liked"; 
-		} else {
-			btnClass = "btn";
-			cntClass = "cnt";
-		}
+		var author = this.props.author;
 		return (
-			<div className="ab-like">
-				<div className="btn-holder">
-					<div className={btnClass} onClick={this.handleLike}></div>
-					<div className="cb"></div>
+			<Link to={'/users/' + author._id}>
+				<div id="ab-author">
+					<span className="author">{'@'+author.name}</span>
 				</div>
-				<div className="cnt-holder">
-					<span className={cntClass} >{image.like.length}</span>
-				</div>
+			</Link>			
+		)
+	}
+});
+
+const ABTitle = React.createClass({
+	render:function(){
+		var title = this.props.title;
+		return (
+			<div id="ab-title">
+				<span>{title}</span>
 			</div>
 		)
 	}
-})
+});
 
-const Like = React.createClass({
+const ABDescription = React.createClass({
 	render:function(){
-		var AB = this.props.AB;
+		var description = this.props.description;
+		if(description==null) return null;
 		return (
-			<div id="ab-like">
-				<div id="ab-like-header">
-					<div id="action">
-						<ABLike session={this.props.session} image={AB.A} other={AB.B} />
-						<ABLike session={this.props.session} image={AB.B} other={AB.A} />
-						<div className="cb"></div>
-					</div>
-					<div className="cb"></div>
-				</div>
-				
-			</div>
+			<div id="ab-description">
+				<span className="description">{description}</span>
+			</div>		
 		)
 	}
 })
@@ -489,8 +593,6 @@ const Like = React.createClass({
 const Header = React.createClass({
 	getInitialState:function(){
 		return ({
-			AB:this.props.AB,
-			session:this.props.session,
 			isAuthor:false
 		})
 	},
@@ -498,19 +600,14 @@ const Header = React.createClass({
 		this.checkAuthor()
 	},
 	componentWillReceiveProps:function(nextProps){
-		var self = this;
-		this.setState({
-			AB:nextProps.AB,
-			session:nextProps.session
-		},function(){
-			self.checkAuthor()
-		})
+		this.checkAuthor()
 	},
 	checkAuthor:function(){
 		var self = this;
-		var author = this.state.AB.author;
-		var session = this.state.session;
-		if(session!=null && session._id == author._id){
+		var author = this.props.AB.author;
+		var session = this.props.session;
+		if(session == null) return null;
+		if(session._id == author._id){
 			self.setState({
 				isAuthor:true
 			})
@@ -520,15 +617,11 @@ const Header = React.createClass({
 			})
 		}
 	},
-	goResult:function(){
-		var AB = this.state.AB;
-	},
 	render:function(){
 		var self = this;
-		var AB = this.state.AB;
-		var session = this.state.session;
+		var AB = this.props.AB;
+		var session = this.props.session;
 		var isAuthor = this.state.isAuthor;
-		var date = Util.getParsedDate(AB.date);
 
 		if(isAuthor){
 			var editBtn = <div id="ab-edit">Edit</div>;
@@ -540,70 +633,231 @@ const Header = React.createClass({
 
 		return (
 			<div id="ab-header">
-				<div className="c1190">
-					<div id="left">
-						<div id="user-date">
-							<Link to={'/users/'+AB.author._id}>
-								<div id="ab-author">{'@'+AB.author.name}</div>
-							</Link>
-							<div id="ab-date">{date}</div>
-							{editBtn}
-							{deleteBtn}
-							<div className="cb"></div>
-						</div>
-						<div id="ab-title">{AB.title}</div>
-						<div id="ab-text" dangerouslySetInnerHTML={{__html:AB.text}}></div>
-						<div style={{"clear":"both"}}></div>
-					</div>
-					<div id="right">
-						<Like AB={AB} session={session}/>
-					</div>
+				<div className="ab-top-header">
+					<ABAuthor author={AB.author} />
+					<div className="card-dot"></div>
+					<ABDate date={AB.date} />
 					<div className="cb"></div>
 				</div>
+				<ABTitle title={AB.title} />
+				<div id="ab-text" dangerouslySetInnerHTML={{__html:AB.description}}></div>
+				<div className="cb"></div>
 			</div>
 		)
 	}
 });
 
-// <div id="go-result">
-// 	<Link to={'/analysis/'+AB._id}>
-// 		<div id="btn">Analysis ></div>
-// 	</Link >
-// </div>
+const Body = React.createClass({
+	render:function(){
+		var AB = this.props.AB;
+		var session = this.props.session;
+
+		return (
+			<div id="ab-body">
+				<Header AB={AB} session={session} />
+				<ABSections AB={AB} session={session} />
+			</div>
+		)
+	}
+});
+
+const ABLike = React.createClass({
+	handleClick:function(){
+		var section = this.props.section;
+		this.props.onLikeClick(section)
+	},
+	render:function(){
+		var likeCnt = this.props.likeCnt;
+		var liked = this.props.liked;
+		var section = this.props.section;
+		var likeClass;
+		if(liked){
+			likeClass = "card-like liked"
+		} else {
+			likeClass = "card-like"
+		}
+		return (
+			<div className={likeClass} onClick={this.handleClick}>
+				<div className="btn"></div>
+				<span className="count">{likeCnt}</span>
+			</div>
+		)
+	}
+});
+
+const ABLikes = React.createClass({
+	getInitialState:function(){
+		return ({
+			ALike:null,
+			BLike:null
+		})
+	},
+	componentDidMount:function(){
+		this.checkUserLike()
+	},
+	componentWillReceiveProps:function(nextProps){
+		this.checkUserLike()
+	},
+	checkUserLike:function(session){
+		var self = this;
+		var card = this.props.card;
+		var session = this.props.session;
+
+		if(!session) return null;
+		this.checkSectionLike(card.A,function (ALike){
+			self.checkSectionLike(card.B,function (BLike){
+				self.setState({
+					ALike:ALike,
+					BLike:BLike
+				})
+			})
+		});	
+	},
+	checkSectionLike:function(section,callback){
+		if(section.like.length == 0) callback(false);
+
+		var session = this.props.session;
+		for(var i=0;i<section.like.length;i++){
+			if(section.like[i].author == session._id){
+				break;
+			}
+		}
+		if(i == section.like.length){
+			callback(false);
+		} else {
+			callback(true);
+		}
+	},
+	handleLike:function(section){
+		var session = this.props.session;
+		if(session==null) return null;
+		var self =this;
+		var card = this.props.card;
+		var ALike = this.state.ALike;
+		var BLike = this.state.BLike;
+		if(section=='a'){
+			if(ALike){
+				self.removeLike(card.A,function (A){
+					card.A = A;
+					CardAction.updateCard(card);
+				});
+			} else {
+				self.addLike(card.A,function (A){
+					if(BLike){
+						self.removeLike(card.B,function (B){
+							card.A = A;
+							card.B = B;
+							CardAction.updateCard(card);
+						})
+					} else {
+						card.A = A;
+						CardAction.updateCard(card);
+					}
+				})
+			}
+		} else {
+			if(BLike){
+				self.removeLike(card.B,function (B){
+					card.B = B;
+					CardAction.updateCard(card);
+				});
+			} else {
+				self.addLike(card.B,function (B){
+					if(ALike){
+						self.removeLike(card.A,function (A){
+							card.A = A;
+							card.B = B;
+							CardAction.updateCard(card);
+						})
+					} else {
+						card.B = B;
+						CardAction.updateCard(card);
+					}
+				})
+			}
+		}
+		CardAPI.updateImageLike(card.A,card.B);
+	},
+	addLike:function(section,callback){
+		var session = this.props.session;
+		var likeObj = {
+			date:new Date(),
+			author:session._id
+		}
+		section.like.push(likeObj);
+		callback(section);
+	},
+	removeLike:function(section,callback){
+		var session = this.props.session;
+		for(var i=0;i<section.like.length;i++){
+			if(section.like[i].author == session._id){
+				section.like.splice(i,1);
+				break;
+			}
+		}
+		callback(section);
+	},
+	render:function(){
+		var session = this.props.session;
+		var card = this.props.card;
+		var ALike = this.state.ALike;
+		var BLike = this.state.BLike;
+		return (
+			<div className="ab-likes">
+				<div className="title">LIKES</div>
+				<ABLike section={'a'} likeCnt={card.A.like.length} liked={ALike} onLikeClick={this.handleLike} />
+				<ABLike section={'b'} likeCnt={card.B.like.length} liked={BLike} onLikeClick={this.handleLike} />
+				<div className="cb"></div>
+			</div>
+		)
+	}
+})
+
+const Right = React.createClass({
+	render:function(){
+		var card = this.props.card;
+		var session = this.props.session;
+
+		return (
+			<div id="ab-right">
+				<ABLikes card={card} session={session} />
+				<Data card={card} session={session} />
+			</div>
+		)
+	}
+})
 
 const AB = React.createClass({
 	getInitialState:function(){
 		return ({
-			session:AppStore.getSession(),
-			AB:CardStore.getAB(),
-			imageALoaded:false,
-			imageBLoaded:false
+			session:AppStore.getSession()
 		})
 	},
-	componentDidMount:function(){
+	componentWillMount:function(){
 		AppStore.addChangeListener(this._onSessionChange);
 		CardStore.addChangeListener(this._onChange);
+		
+		var self = this;
 		var card_id = this.props.params.card_id;
-		if(CardStore.getCard() == null){
-			CardAPI.receiveAB(card_id)
+		var AB = CardStore.getCardById(card_id);
+		if(AB == null){
+			CardAPI.receiveCard(card_id)
 		} else {
-			CardAction.updateAB(card_id);
+			self.setState({
+				AB:AB
+			})
 		}
 	},
 	componentWillUnmount:function(){
 		AppStore.removeChangeListener(this._onSessionChange)
 		CardStore.removeChangeListener(this._onChange);
-		CardAction.emptyAB(null)
-		this.setState({
-			AB:null
-		})
+		CardAction.emptyAB(null);
 	},
 	_onChange:function(){
 		var self = this;
+		var card_id = this.props.params.card_id;
 		this.setState({
-			AB:CardStore.getAB()
-		},function(){
-			self.handleImgLoad();
+			AB:CardStore.getCardById(card_id)
 		})
 	},
 	_onSessionChange:function(){
@@ -611,63 +865,22 @@ const AB = React.createClass({
 			session:AppStore.getSession()
 		})
 	},
-	handleImgLoad:function(){
-		var self = this;
-		var counter = 0;
-		var AB = this.state.AB;
-		if(AB!=null){
-			var A = AB.A;
-			var B = AB.B;
-			var imgA = new Image()
-			var imgB = new Image()
-			imgA.onload = function(){
-				counter ++;
-				if(counter == 2){
-					$('#ab-section-loader').css('display','none')
-					$('#ab-section-holder').css('-webkit-filter','blur(0px)')
-					$('#ab-section-holder').css('opacity','1')
-				}
-			}
-			imgB.onload = function(){
-				counter ++;
-				if(counter == 2){
-					$('#ab-section-loader').css('display','none')
-					$('#ab-section-holder').css('-webkit-filter','blur(0px)')
-					$('#ab-section-holder').css('opacity','1')
-				}
-			}
-			imgA.src = credentials.image_server + '/'+ A.url;
-			imgB.src = credentials.image_server + '/'+ B.url;
-			
-		}
-	},
 	render:function(){
 		var self = this;
 		var AB = this.state.AB;
 		var session = this.state.session;
-		var section;
-		var loader;
 
-		if(AB == null){
-			return null;
-		} else {
-			loader = <SectionLoader />
-			section = 
-			<div id="ab-section-holder" className="c1190">
-				<Section session={session} other={AB.B} image={AB.A} />
-				<Section session={session} other={AB.A} image={AB.B} />
-				<div className="cb"></div>
-			</div>;
-		}
+		if(AB == null) return null;
+
 		return (
-			<div id="ab">
-				<Header AB={AB} session={session} />
-				{section}
-				{loader}
+			<div id="ab" className="c1190">
+				<Body AB={AB} session={session}/>
+				<Right card={AB} session={session} />
+				<div className="cb"></div>
 			</div>
 		)
 	}
-})
+});
 
 
 module.exports = AB;

@@ -27841,7 +27841,7 @@
 		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 			this.checkUserLike();
 		},
-		checkUserLike: function checkUserLike() {
+		checkUserLike: function checkUserLike(session) {
 			var self = this;
 			var card = this.props.card;
 			var session = this.props.session;
@@ -27961,12 +27961,16 @@
 		render: function render() {
 			var card = this.props.card;
 			return _react2.default.createElement(
-				'div',
-				{ className: 'card-title' },
+				_reactRouter.Link,
+				{ to: '/cards/' + card._id },
 				_react2.default.createElement(
-					'span',
-					{ className: 'title' },
-					card.title
+					'div',
+					{ className: 'card-title' },
+					_react2.default.createElement(
+						'span',
+						{ className: 'title' },
+						card.title
+					)
 				)
 			);
 		}
@@ -28672,6 +28676,12 @@
 				data: data
 			});
 		},
+		updateImageComment: function updateImageComment(data) {
+			AppDispatcher.handleAction({
+				actionType: 'UPDATE_IMAGE_COMMENT',
+				data: data
+			});
+		},
 		updateImageLike: function updateImageLike(data) {
 			AppDispatcher.handleAction({
 				actionType: 'UPDATE_IMAGE_LIKE',
@@ -28878,6 +28888,19 @@
 		find(image, _card);
 	};
 
+	var updateImageComment = function updateImageComment(image) {
+		for (var i = 0; i < _card.length; i++) {
+			if (_card[i]._id == image.card_id) {
+				break;
+			}
+		}
+		if (_card[i].A._id == image._id) {
+			_card[i].A.comment = image.comment;
+		} else {
+			_card[i].B.comment == image.comment;
+		}
+	};
+
 	var updateImageLike = function updateImageLike(imageObj) {
 		for (var i = 0; i < _card.length; i++) {
 			if (_card[i].A._id == imageObj._id) {
@@ -28963,6 +28986,15 @@
 		getCard: function getCard() {
 			return _card;
 		},
+		getCardById: function getCardById(card_id) {
+			if (_card == null) return null;
+			for (var i = 0; i < _card.length; i++) {
+				if (_card[i]._id == card_id) {
+					break;
+				}
+			}
+			return _card[i];
+		},
 		getNew: function getNew() {
 			return _new;
 		},
@@ -29007,6 +29039,10 @@
 				break;
 			case 'UPDATE_IMAGE':
 				updateImage(action.data);
+				CardStore.emit('change');
+				break;
+			case 'UPDATE_IMAGE_COMMENT':
+				updateImageComment(action.data);
 				CardStore.emit('change');
 				break;
 			case 'UPDATE_IMAGE_LIKE':
@@ -41307,9 +41343,17 @@
 
 	var _CardAPI2 = _interopRequireDefault(_CardAPI);
 
-	var _credentials = __webpack_require__(252);
+	var _CommentAPI = __webpack_require__(295);
 
-	var _credentials2 = _interopRequireDefault(_credentials);
+	var _CommentAPI2 = _interopRequireDefault(_CommentAPI);
+
+	var _Servers = __webpack_require__(258);
+
+	var _Servers2 = _interopRequireDefault(_Servers);
+
+	var _Dates = __webpack_require__(260);
+
+	var _Dates2 = _interopRequireDefault(_Dates);
 
 	var _reactRouter = __webpack_require__(159);
 
@@ -41321,26 +41365,20 @@
 
 	var _LikeGraph2 = _interopRequireDefault(_LikeGraph);
 
+	var _Data = __webpack_require__(296);
+
+	var _Data2 = _interopRequireDefault(_Data);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var TextVoteAuthorPic = _react2.default.createClass({
 		displayName: 'TextVoteAuthorPic',
 
-		getInitialState: function getInitialState() {
-			return {
-				author: this.props.author
-			};
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				author: nextProps.author
-			});
-		},
 		render: function render() {
-			var author = this.state.author;
+			var author = this.props.author;
 			var src;
 			if (author.pic != null) {
-				src = _credentials2.default.image_server + '/' + author.pic;
+				src = _Servers2.default.s3 + author.pic;
 			} else {
 				src = null;
 			}
@@ -41349,7 +41387,7 @@
 				{ to: '/users/' + author._id },
 				_react2.default.createElement(
 					'div',
-					{ className: 'textvote-author-pic-holder' },
+					{ className: 'textvote-author-pic' },
 					_react2.default.createElement('img', { className: 'textvote-author-pic', src: src })
 				)
 			);
@@ -41518,156 +41556,413 @@
 		}
 	});
 
-	var SectionVote = _react2.default.createClass({
-		displayName: 'SectionVote',
+	var CommentInputUserPic = _react2.default.createClass({
+		displayName: 'CommentInputUserPic',
+
+		render: function render() {
+			var session = this.props.session;
+			var src = _Servers2.default.s3 + session.pic;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-input-user-pic' },
+				_react2.default.createElement('img', { src: src })
+			);
+		}
+	});
+
+	var CommentInput = _react2.default.createClass({
+		displayName: 'CommentInput',
 
 		getInitialState: function getInitialState() {
 			return {
-				value: null,
-				session: this.props.session,
-				image: this.props.image
+				value: '',
+				able: false,
+				toggle: false
 			};
 		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				session: nextProps.session,
-				image: nextProps.image
-			});
-		},
-		submitInput: function submitInput(e) {
-			var value = this.state.value;
-			var image = this.props.image;
-			$(e.target).attr('placeholder', 'ex) Better Typography');
-		},
-		handleEnter: function handleEnter(e) {
+		handleChange: function handleChange(e) {
 			var self = this;
-			if (e.which == 13) {
-				$(e.target).blur();
-				self.submitText();
+			var value = e.target.value;
+			if (value == null) {
+				self.setState({
+					value: value,
+					able: false
+				});
+			} else {
+				self.setState({
+					value: value,
+					able: true
+				});
 			}
 		},
-		handleChange: function handleChange(e) {
-			this.setState({
-				value: e.target.value
-			});
+		replaceBR: function replaceBR(value) {
+			function replaceAll(str, target, replacement) {
+				return str.split(target).join(replacement);
+			};
+			var replacement = replaceAll(value, '\n', '<br/>');
+			return replacement;
 		},
-		changePlaceholder: function changePlaceholder(e) {
-			$(e.target).attr('placeholder', 'Press Enter to submit your comment');
-		},
-		submitText: function submitText() {
-			var image = this.state.image;
+		submitText: function submitText(e) {
+			var able = this.state.able;
+			if (!able) return null;
+
+			var image = this.props.image;
 			var value = this.state.value;
-			var session = this.state.session;
-			_CardAPI2.default.createVote(session._id, value, image);
+			var session = this.props.session;
+
+			var comment = this.replaceBR(value);
+			var commentObj = {
+				image_id: image._id,
+				comment: comment,
+				author: session,
+				date: new Date(),
+				like: []
+			};
+			image.comment.push(commentObj);
+			_CardAction2.default.updateImageComment(image);
+			_CommentAPI2.default.createComment(commentObj);
 			this.setState({
-				value: null
+				value: '',
+				toggle: false,
+				able: false
 			});
+			$(e.target).prev().css('min-height', '33px');
+			$(e.target).prev().css('height', '33px');
+		},
+		handleKeyUp: function handleKeyUp(e) {
+			var obj = $(e.target).context;
+			obj.style.height = "1px";
+			obj.style.height = 20 + obj.scrollHeight + "px";
+		},
+		handleFocus: function handleFocus(e) {
+			$(e.target).css('min-height', '80px');
+			$(e.target).css('height', '98px');
+			this.setState({
+				toggle: true
+			});
+		},
+		handleBlur: function handleBlur(e) {
+			var self = this;
+			var value = this.state.value;
+			if (value == null || value.length == 0) {
+				$(e.target).css('height', '33px');
+				$(e.target).css('min-height', '33px');
+				self.setState({
+					toggle: false
+				});
+			}
 		},
 		render: function render() {
+			var value = this.state.value;
+			var session = this.props.session;
 			var image = this.props.image;
+			var able = this.state.able;
+			var toggle = this.state.toggle;
+
+			var submit, textareaStyle, submitClass;
+			if (able) {
+				submitClass = "submit";
+			} else {
+				submitClass = "submit submit-disabled";
+			}
+			if (toggle) {
+				submit = _react2.default.createElement(
+					'div',
+					{ className: submitClass, onClick: this.submitText },
+					'Submit >'
+				);
+			} else {
+				submit = null;
+			}
+
 			return _react2.default.createElement(
 				'div',
-				{ className: 'section-vote' },
+				{ className: 'comment-input' },
+				_react2.default.createElement(CommentInputUserPic, { session: session }),
+				_react2.default.createElement('textarea', { type: 'text', onChange: this.handleChange, onBlur: this.handleBlur, onFocus: this.handleFocus, onKeyUp: this.handleKeyUp, value: value }),
+				submit
+			);
+		}
+	});
+
+	var CommentInputGuide = _react2.default.createClass({
+		displayName: 'CommentInputGuide',
+
+		render: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-input-guide' },
+				'Sign in to leave a commment'
+			);
+		}
+	});
+	var CommentSubmit = _react2.default.createClass({
+		displayName: 'CommentSubmit',
+
+		render: function render() {
+			var image = this.props.image;
+			var session = this.props.session;
+			var body;
+			if (session == null) body = _react2.default.createElement(CommentInputGuide, null);else body = _react2.default.createElement(CommentInput, { session: session, image: image });
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-submit' },
 				_react2.default.createElement(
 					'div',
 					{ className: 'title' },
-					'Add a comment'
+					'Why did you choose #A?'
 				),
-				_react2.default.createElement('input', { maxLength: '140', className: 'section-vote-input', type: 'text', placeholder: 'A great comment for this work', onClick: this.changePlaceholder, onBlur: this.submitInput, onKeyPress: this.handleEnter, onChange: this.handleChange, value: this.state.value }),
+				body,
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var CommentAuthor = _react2.default.createClass({
+		displayName: 'CommentAuthor',
+
+		render: function render() {
+			var author = this.props.author;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-author' },
+				_react2.default.createElement(
+					'span',
+					null,
+					'@' + author.name
+				)
+			);
+		}
+	});
+
+	var CommentDate = _react2.default.createClass({
+		displayName: 'CommentDate',
+
+		render: function render() {
+			var date = _Dates2.default.getDateString(this.props.date);
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-date' },
+				_react2.default.createElement(
+					'span',
+					null,
+					date
+				)
+			);
+		}
+	});
+
+	var CommentAuthorPic = _react2.default.createClass({
+		displayName: 'CommentAuthorPic',
+
+		render: function render() {
+			var author = this.props.author;
+			var src = _Servers2.default.s3 + author.pic;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-author-pic' },
+				_react2.default.createElement('img', { src: src })
+			);
+		}
+	});
+
+	var CommentLike = _react2.default.createClass({
+		displayName: 'CommentLike',
+
+		handleLike: function handleLike() {
+			this.props.onLikeClick();
+		},
+		render: function render() {
+			var liked = this.props.liked;
+			var likeLength = this.props.likeLength;
+
+			var likeClass;
+			if (liked) {
+				likeClass = "comment-like liked";
+			} else {
+				likeClass = "comment-like";
+			}
+			return _react2.default.createElement(
+				'div',
+				{ className: likeClass, onClick: this.handleLike },
+				_react2.default.createElement('div', { className: 'comment-like-dot' }),
+				_react2.default.createElement('div', { className: 'comment-like-btn' }),
+				_react2.default.createElement(
+					'span',
+					{ className: 'comment-like-cnt' },
+					likeLength
+				)
+			);
+		}
+	});
+
+	var CommentItem = _react2.default.createClass({
+		displayName: 'CommentItem',
+
+		getInitialState: function getInitialState() {
+			return {
+				liked: false
+			};
+		},
+		componentDidMount: function componentDidMount() {
+			this.appearAnimation();
+			this.checkLiked();
+		},
+		componentWillReceiveProps: function componentWillReceiveProps() {
+			this.checkLiked();
+		},
+		appearAnimation: function appearAnimation() {},
+		checkLiked: function checkLiked() {
+			var session = this.props.session;
+			var comment = this.props.comment;
+			var self = this;
+			console.log(session);
+			console.log(comment);
+			if (session == null) return null;
+			if (comment.like == null || comment.like.length == 0) return null;
+			for (var i = 0; i < comment.like.length; i++) {
+				if (comment.like[i].author == session._id) {
+					break;
+				}
+			}
+			if (i == comment.like.length) {
+				self.setState({
+					liked: false
+				});
+			} else {
+				self.setState({
+					liked: true
+				});
+			}
+		},
+		handleLike: function handleLike() {
+			var comment = this.props.comment;
+			var session = this.props.session;
+			var image = this.props.image;
+			var liked = this.state.liked;
+			if (liked) {
+				for (var i = 0; i < comment.like.length; i++) {
+					if (comment.like[i].author == session._id) {
+						comment.like.splice(i, 1);
+						break;
+					}
+				}
+			}
+			_CardAction2.default.updateImageCommentLike();
+		},
+		render: function render() {
+			var comment = this.props.comment;
+			var likeLength = comment.like.length;
+			var liked = this.state.liked;
+
+			return _react2.default.createElement(
+				'div',
+				{ className: 'comment-item' },
 				_react2.default.createElement(
 					'div',
-					{ className: 'submit', onClick: this.submitText },
-					'Submit >'
+					{ className: 'comment-item-left' },
+					_react2.default.createElement(CommentAuthorPic, { author: comment.author })
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'comment-item-center' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'comment-item-info' },
+						_react2.default.createElement(CommentAuthor, { author: comment.author }),
+						_react2.default.createElement('div', { className: 'card-dot' }),
+						_react2.default.createElement(CommentDate, { date: comment.date }),
+						_react2.default.createElement(CommentLike, { likeLength: likeLength, liked: liked, onLikeClick: this.handleLike }),
+						_react2.default.createElement('div', { className: 'cb' })
+					),
+					_react2.default.createElement(
+						'div',
+						null,
+						_react2.default.createElement('span', { className: 'comment', dangerouslySetInnerHTML: { __html: comment.comment } })
+					)
 				),
 				_react2.default.createElement('div', { className: 'cb' })
 			);
 		}
 	});
 
-	var Section = _react2.default.createClass({
-		displayName: 'Section',
+	var Comments = _react2.default.createClass({
+		displayName: 'Comments',
 
-		getInitialState: function getInitialState() {
-			return {
-				session: this.props.session,
-				image: this.props.image,
-				other: this.props.other,
-				imgClass: 'w'
-			};
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			var self = this;
-			this.setState({
-				session: nextProps.session,
-				image: nextProps.image,
-				other: nextProps.other
-			});
-		},
-		clearBlur: function clearBlur(e) {
-			$(e.target).css('-webkit-filter', 'blur(0px)');
-		},
 		render: function render() {
-			var self = this;
-			var image = this.state.image;
-			var other = this.state.other;
-			var session = this.state.session;
-			var sectionVote, textvote;
-			if (image.vote.length == 0) {
-				textvote = null;
-			} else {
-				textvote = image.vote.map(function (vote, idx) {
-					return _react2.default.createElement(TextVote, { key: idx, vote: vote, session: session, image: image });
-				});
-			}
-
-			if (session != null) {
-				sectionVote = _react2.default.createElement(SectionVote, { session: session, image: image });
-			} else {
-				sectionVote = null;
-			}
-
+			var comments = this.props.comments;
+			var session = this.props.session;
+			var image = this.props.image;
+			var commentItem = comments.map(function (c) {
+				if (c._id == null) {
+					return _react2.default.createElement(CommentItem, { key: c.date, comment: c, session: session, image: image });
+				} else {
+					return _react2.default.createElement(CommentItem, { key: c._id, comment: c, session: session, image: image });
+				}
+			});
 			return _react2.default.createElement(
 				'div',
-				{ className: 'ab-section' },
+				{ className: 'comments' },
 				_react2.default.createElement(
 					'div',
-					{ className: 'section-image-holder' },
-					_react2.default.createElement('img', { className: 'section-image', onLoad: this.clearBlur, src: _credentials2.default.image_server + '/' + image.url })
+					{ className: 'title' },
+					'Why people chose #A'
 				),
-				_react2.default.createElement(
-					'div',
-					{ className: 'textvote-holder' },
-					textvote
-				),
-				sectionVote
+				commentItem
 			);
 		}
 	});
 
-	var SectionLoader = _react2.default.createClass({
-		displayName: 'SectionLoader',
+	var ABSectionImage = _react2.default.createClass({
+		displayName: 'ABSectionImage',
 
 		render: function render() {
+			var image = this.props.image;
+			var src = _Servers2.default.s3Image + image.hash;
 			return _react2.default.createElement(
 				'div',
-				{ id: 'ab-section-loader' },
-				_react2.default.createElement(
-					'div',
-					{ className: 'c1190' },
-					_react2.default.createElement(
-						'div',
-						{ className: 'section-loader' },
-						_react2.default.createElement('div', { className: 'section-like-loader' }),
-						_react2.default.createElement('div', { className: 'section-img-loader' })
-					),
-					_react2.default.createElement(
-						'div',
-						{ className: 'section-loader' },
-						_react2.default.createElement('div', { className: 'section-like-loader' }),
-						_react2.default.createElement('div', { className: 'section-img-loader' })
-					),
-					_react2.default.createElement('div', { className: 'cb' })
-				)
+				{ className: 'section-image' },
+				_react2.default.createElement('img', { src: src })
+			);
+		}
+	});
+
+	var ABSection = _react2.default.createClass({
+		displayName: 'ABSection',
+
+		render: function render() {
+			var self = this;
+			var image = this.props.image;
+			var session = this.props.session;
+			console.log(session);
+			var comments;
+			if (image.comment == null || image.comment.length == 0) {
+				comments = null;
+			} else {
+				comments = _react2.default.createElement(Comments, { image: image, session: session, comments: image.comment });
+			}
+			return _react2.default.createElement(
+				'div',
+				{ className: 'ab-section' },
+				_react2.default.createElement(ABSectionImage, { session: session, image: image }),
+				comments,
+				_react2.default.createElement(CommentSubmit, { session: session, image: image })
+			);
+		}
+	});
+
+	var ABSections = _react2.default.createClass({
+		displayName: 'ABSections',
+
+		render: function render() {
+			var AB = this.props.AB;
+			var session = this.props.session;
+			return _react2.default.createElement(
+				'div',
+				{ id: 'ab-sections' },
+				_react2.default.createElement(ABSection, { session: session, image: AB.A }),
+				_react2.default.createElement(ABSection, { session: session, image: AB.B }),
+				_react2.default.createElement('div', { className: 'cb' })
 			);
 		}
 	});
@@ -41697,188 +41992,74 @@
 		}
 	});
 
-	var HeaderPic = _react2.default.createClass({
-		displayName: 'HeaderPic',
+	var ABDate = _react2.default.createClass({
+		displayName: 'ABDate',
 
-		handleImageLoad: function handleImageLoad(e) {
-			var image = $(e.target);
-			image.parent().children('#ab-userpic-loader').css('display', 'none');
-		},
 		render: function render() {
-			var author = this.props.author;
-			var src;
-
-			if (author.pic != null) {
-				src = _credentials2.default.image_server + '/' + author.pic;
-			} else {
-				src = null;
-			}
-
+			var date = _Dates2.default.getDateString(this.props.date);
 			return _react2.default.createElement(
-				_reactRouter.Link,
-				{ to: '/users/' + author._id },
+				'div',
+				{ className: 'ab-date' },
 				_react2.default.createElement(
-					'div',
-					{ id: 'ab-userpic-holder' },
-					_react2.default.createElement('div', { id: 'ab-userpic-loader' }),
-					_react2.default.createElement('img', { id: 'ab-userpic', src: src, onLoad: this.handleImageLoad })
+					'span',
+					{ className: 'date' },
+					date
 				)
 			);
 		}
 	});
 
-	var ABLike = _react2.default.createClass({
-		displayName: 'ABLike',
+	var ABAuthor = _react2.default.createClass({
+		displayName: 'ABAuthor',
 
-		getInitialState: function getInitialState() {
-			return {
-				session: this.props.session,
-				image: this.props.image,
-				other: this.props.other,
-				liked: false,
-				message: null
-			};
-		},
-		componentDidMount: function componentDidMount() {
-			this.findLiker();
-			this.checkSession();
-		},
-		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			var self = this;
-			this.setState({
-				session: nextProps.session,
-				image: nextProps.image,
-				other: nextProps.other
-			}, function () {
-				self.findLiker();
-				self.checkSession();
-			});
-		},
-		checkSession: function checkSession() {
-			var self = this;
-			var session = this.state.session;
-			if (session == null) {
-				self.setState({
-					message: 'Sign-in to like this'
-				});
-			} else {
-				self.setState({
-					message: null
-				});
-			}
-		},
-		findLiker: function findLiker() {
-			var self = this;
-			var session = this.state.session;
-			var image = this.state.image;
-			if (session != null && image.like.length != 0) {
-				for (var i = 0; i < image.like.length; i++) {
-					if (image.like[i].author == session._id) {
-						self.setState({
-							liked: true
-						});
-						break;
-					}
-				}
-				if (i == image.like.length) {
-					self.setState({
-						liked: false
-					});
-				}
-			} else {
-				self.setState({
-					liked: false
-				});
-			}
-		},
-		handleLike: function handleLike() {
-			var self = this;
-			var session = this.state.session;
-			var image = this.state.image;
-			var other = this.state.other;
-			var liked = this.state.liked;
-			if (session != null) {
-				if (liked) {
-					for (var i = 0; i < image.like.length; i++) {
-						if (image.like[i].author == session._id) {
-							image.like.splice(i, 1);
-							_CardAction2.default.updateABImage(image);
-							_CardAPI2.default.removeLike(image);
-							_AppAPI2.default.removeParticipated(session, image.card_id);
-							break;
-						}
-					}
-				} else {
-					var likeObj = {
-						date: new Date(),
-						author: session._id
-					};
-					image.like.push(likeObj);
-					_CardAction2.default.updateABImage(image);
-					_CardAPI2.default.addLike(session._id, image._id);
-					_AppAPI2.default.addParticipated(session._id, image.card_id);
-					for (var i = 0; i < other.like.length; i++) {
-						if (other.like[i].author == session._id) {
-							other.like.splice(i, 1);
-							_CardAction2.default.updateABImage(other);
-							_CardAPI2.default.removeLike(other);
-							break;
-						}
-					}
-				}
-			}
-		},
 		render: function render() {
-			var image = this.state.image;
-			var btnClass, cntClass;
-			if (this.state.liked) {
-				btnClass = "btn liked";
-				cntClass = "cnt cnt-liked";
-			} else {
-				btnClass = "btn";
-				cntClass = "cnt";
-			}
+			var author = this.props.author;
 			return _react2.default.createElement(
-				'div',
-				{ className: 'ab-like' },
+				_reactRouter.Link,
+				{ to: '/users/' + author._id },
 				_react2.default.createElement(
 					'div',
-					{ className: 'btn-holder' },
-					_react2.default.createElement('div', { className: btnClass, onClick: this.handleLike }),
-					_react2.default.createElement('div', { className: 'cb' })
-				),
-				_react2.default.createElement(
-					'div',
-					{ className: 'cnt-holder' },
+					{ id: 'ab-author' },
 					_react2.default.createElement(
 						'span',
-						{ className: cntClass },
-						image.like.length
+						{ className: 'author' },
+						'@' + author.name
 					)
 				)
 			);
 		}
 	});
 
-	var Like = _react2.default.createClass({
-		displayName: 'Like',
+	var ABTitle = _react2.default.createClass({
+		displayName: 'ABTitle',
 
 		render: function render() {
-			var AB = this.props.AB;
+			var title = this.props.title;
 			return _react2.default.createElement(
 				'div',
-				{ id: 'ab-like' },
+				{ id: 'ab-title' },
 				_react2.default.createElement(
-					'div',
-					{ id: 'ab-like-header' },
-					_react2.default.createElement(
-						'div',
-						{ id: 'action' },
-						_react2.default.createElement(ABLike, { session: this.props.session, image: AB.A, other: AB.B }),
-						_react2.default.createElement(ABLike, { session: this.props.session, image: AB.B, other: AB.A }),
-						_react2.default.createElement('div', { className: 'cb' })
-					),
-					_react2.default.createElement('div', { className: 'cb' })
+					'span',
+					null,
+					title
+				)
+			);
+		}
+	});
+
+	var ABDescription = _react2.default.createClass({
+		displayName: 'ABDescription',
+
+		render: function render() {
+			var description = this.props.description;
+			if (description == null) return null;
+			return _react2.default.createElement(
+				'div',
+				{ id: 'ab-description' },
+				_react2.default.createElement(
+					'span',
+					{ className: 'description' },
+					description
 				)
 			);
 		}
@@ -41889,8 +42070,6 @@
 
 		getInitialState: function getInitialState() {
 			return {
-				AB: this.props.AB,
-				session: this.props.session,
 				isAuthor: false
 			};
 		},
@@ -41898,19 +42077,14 @@
 			this.checkAuthor();
 		},
 		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-			var self = this;
-			this.setState({
-				AB: nextProps.AB,
-				session: nextProps.session
-			}, function () {
-				self.checkAuthor();
-			});
+			this.checkAuthor();
 		},
 		checkAuthor: function checkAuthor() {
 			var self = this;
-			var author = this.state.AB.author;
-			var session = this.state.session;
-			if (session != null && session._id == author._id) {
+			var author = this.props.AB.author;
+			var session = this.props.session;
+			if (session == null) return null;
+			if (session._id == author._id) {
 				self.setState({
 					isAuthor: true
 				});
@@ -41920,15 +42094,11 @@
 				});
 			}
 		},
-		goResult: function goResult() {
-			var AB = this.state.AB;
-		},
 		render: function render() {
 			var self = this;
-			var AB = this.state.AB;
-			var session = this.state.session;
+			var AB = this.props.AB;
+			var session = this.props.session;
 			var isAuthor = this.state.isAuthor;
-			var date = _Util2.default.getParsedDate(AB.date);
 
 			if (isAuthor) {
 				var editBtn = _react2.default.createElement(
@@ -41951,91 +42121,248 @@
 				{ id: 'ab-header' },
 				_react2.default.createElement(
 					'div',
-					{ className: 'c1190' },
-					_react2.default.createElement(
-						'div',
-						{ id: 'left' },
-						_react2.default.createElement(
-							'div',
-							{ id: 'user-date' },
-							_react2.default.createElement(
-								_reactRouter.Link,
-								{ to: '/users/' + AB.author._id },
-								_react2.default.createElement(
-									'div',
-									{ id: 'ab-author' },
-									'@' + AB.author.name
-								)
-							),
-							_react2.default.createElement(
-								'div',
-								{ id: 'ab-date' },
-								date
-							),
-							editBtn,
-							deleteBtn,
-							_react2.default.createElement('div', { className: 'cb' })
-						),
-						_react2.default.createElement(
-							'div',
-							{ id: 'ab-title' },
-							AB.title
-						),
-						_react2.default.createElement('div', { id: 'ab-text', dangerouslySetInnerHTML: { __html: AB.text } }),
-						_react2.default.createElement('div', { style: { "clear": "both" } })
-					),
-					_react2.default.createElement(
-						'div',
-						{ id: 'right' },
-						_react2.default.createElement(Like, { AB: AB, session: session })
-					),
+					{ className: 'ab-top-header' },
+					_react2.default.createElement(ABAuthor, { author: AB.author }),
+					_react2.default.createElement('div', { className: 'card-dot' }),
+					_react2.default.createElement(ABDate, { date: AB.date }),
 					_react2.default.createElement('div', { className: 'cb' })
+				),
+				_react2.default.createElement(ABTitle, { title: AB.title }),
+				_react2.default.createElement('div', { id: 'ab-text', dangerouslySetInnerHTML: { __html: AB.description } }),
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var Body = _react2.default.createClass({
+		displayName: 'Body',
+
+		render: function render() {
+			var AB = this.props.AB;
+			var session = this.props.session;
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'ab-body' },
+				_react2.default.createElement(Header, { AB: AB, session: session }),
+				_react2.default.createElement(ABSections, { AB: AB, session: session })
+			);
+		}
+	});
+
+	var ABLike = _react2.default.createClass({
+		displayName: 'ABLike',
+
+		handleClick: function handleClick() {
+			var section = this.props.section;
+			this.props.onLikeClick(section);
+		},
+		render: function render() {
+			var likeCnt = this.props.likeCnt;
+			var liked = this.props.liked;
+			var section = this.props.section;
+			var likeClass;
+			if (liked) {
+				likeClass = "card-like liked";
+			} else {
+				likeClass = "card-like";
+			}
+			return _react2.default.createElement(
+				'div',
+				{ className: likeClass, onClick: this.handleClick },
+				_react2.default.createElement('div', { className: 'btn' }),
+				_react2.default.createElement(
+					'span',
+					{ className: 'count' },
+					likeCnt
 				)
 			);
 		}
 	});
 
-	// <div id="go-result">
-	// 	<Link to={'/analysis/'+AB._id}>
-	// 		<div id="btn">Analysis ></div>
-	// 	</Link >
-	// </div>
+	var ABLikes = _react2.default.createClass({
+		displayName: 'ABLikes',
+
+		getInitialState: function getInitialState() {
+			return {
+				ALike: null,
+				BLike: null
+			};
+		},
+		componentDidMount: function componentDidMount() {
+			this.checkUserLike();
+		},
+		componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+			this.checkUserLike();
+		},
+		checkUserLike: function checkUserLike(session) {
+			var self = this;
+			var card = this.props.card;
+			var session = this.props.session;
+
+			if (!session) return null;
+			this.checkSectionLike(card.A, function (ALike) {
+				self.checkSectionLike(card.B, function (BLike) {
+					self.setState({
+						ALike: ALike,
+						BLike: BLike
+					});
+				});
+			});
+		},
+		checkSectionLike: function checkSectionLike(section, callback) {
+			if (section.like.length == 0) callback(false);
+
+			var session = this.props.session;
+			for (var i = 0; i < section.like.length; i++) {
+				if (section.like[i].author == session._id) {
+					break;
+				}
+			}
+			if (i == section.like.length) {
+				callback(false);
+			} else {
+				callback(true);
+			}
+		},
+		handleLike: function handleLike(section) {
+			var session = this.props.session;
+			if (session == null) return null;
+			var self = this;
+			var card = this.props.card;
+			var ALike = this.state.ALike;
+			var BLike = this.state.BLike;
+			if (section == 'a') {
+				if (ALike) {
+					self.removeLike(card.A, function (A) {
+						card.A = A;
+						_CardAction2.default.updateCard(card);
+					});
+				} else {
+					self.addLike(card.A, function (A) {
+						if (BLike) {
+							self.removeLike(card.B, function (B) {
+								card.A = A;
+								card.B = B;
+								_CardAction2.default.updateCard(card);
+							});
+						} else {
+							card.A = A;
+							_CardAction2.default.updateCard(card);
+						}
+					});
+				}
+			} else {
+				if (BLike) {
+					self.removeLike(card.B, function (B) {
+						card.B = B;
+						_CardAction2.default.updateCard(card);
+					});
+				} else {
+					self.addLike(card.B, function (B) {
+						if (ALike) {
+							self.removeLike(card.A, function (A) {
+								card.A = A;
+								card.B = B;
+								_CardAction2.default.updateCard(card);
+							});
+						} else {
+							card.B = B;
+							_CardAction2.default.updateCard(card);
+						}
+					});
+				}
+			}
+			_CardAPI2.default.updateImageLike(card.A, card.B);
+		},
+		addLike: function addLike(section, callback) {
+			var session = this.props.session;
+			var likeObj = {
+				date: new Date(),
+				author: session._id
+			};
+			section.like.push(likeObj);
+			callback(section);
+		},
+		removeLike: function removeLike(section, callback) {
+			var session = this.props.session;
+			for (var i = 0; i < section.like.length; i++) {
+				if (section.like[i].author == session._id) {
+					section.like.splice(i, 1);
+					break;
+				}
+			}
+			callback(section);
+		},
+		render: function render() {
+			var session = this.props.session;
+			var card = this.props.card;
+			var ALike = this.state.ALike;
+			var BLike = this.state.BLike;
+			return _react2.default.createElement(
+				'div',
+				{ className: 'ab-likes' },
+				_react2.default.createElement(
+					'div',
+					{ className: 'title' },
+					'LIKES'
+				),
+				_react2.default.createElement(ABLike, { section: 'a', likeCnt: card.A.like.length, liked: ALike, onLikeClick: this.handleLike }),
+				_react2.default.createElement(ABLike, { section: 'b', likeCnt: card.B.like.length, liked: BLike, onLikeClick: this.handleLike }),
+				_react2.default.createElement('div', { className: 'cb' })
+			);
+		}
+	});
+
+	var Right = _react2.default.createClass({
+		displayName: 'Right',
+
+		render: function render() {
+			var card = this.props.card;
+			var session = this.props.session;
+
+			return _react2.default.createElement(
+				'div',
+				{ id: 'ab-right' },
+				_react2.default.createElement(ABLikes, { card: card, session: session }),
+				_react2.default.createElement(_Data2.default, { card: card, session: session })
+			);
+		}
+	});
 
 	var AB = _react2.default.createClass({
 		displayName: 'AB',
 
 		getInitialState: function getInitialState() {
 			return {
-				session: _AppStore2.default.getSession(),
-				AB: _CardStore2.default.getAB(),
-				imageALoaded: false,
-				imageBLoaded: false
+				session: _AppStore2.default.getSession()
 			};
 		},
-		componentDidMount: function componentDidMount() {
+		componentWillMount: function componentWillMount() {
 			_AppStore2.default.addChangeListener(this._onSessionChange);
 			_CardStore2.default.addChangeListener(this._onChange);
+
+			var self = this;
 			var card_id = this.props.params.card_id;
-			if (_CardStore2.default.getCard() == null) {
-				_CardAPI2.default.receiveAB(card_id);
+			var AB = _CardStore2.default.getCardById(card_id);
+			if (AB == null) {
+				_CardAPI2.default.receiveCard(card_id);
 			} else {
-				_CardAction2.default.updateAB(card_id);
+				self.setState({
+					AB: AB
+				});
 			}
 		},
 		componentWillUnmount: function componentWillUnmount() {
 			_AppStore2.default.removeChangeListener(this._onSessionChange);
 			_CardStore2.default.removeChangeListener(this._onChange);
 			_CardAction2.default.emptyAB(null);
-			this.setState({
-				AB: null
-			});
 		},
 		_onChange: function _onChange() {
 			var self = this;
+			var card_id = this.props.params.card_id;
 			this.setState({
-				AB: _CardStore2.default.getAB()
-			}, function () {
-				self.handleImgLoad();
+				AB: _CardStore2.default.getCardById(card_id)
 			});
 		},
 		_onSessionChange: function _onSessionChange() {
@@ -42043,60 +42370,19 @@
 				session: _AppStore2.default.getSession()
 			});
 		},
-		handleImgLoad: function handleImgLoad() {
-			var self = this;
-			var counter = 0;
-			var AB = this.state.AB;
-			if (AB != null) {
-				var A = AB.A;
-				var B = AB.B;
-				var imgA = new Image();
-				var imgB = new Image();
-				imgA.onload = function () {
-					counter++;
-					if (counter == 2) {
-						$('#ab-section-loader').css('display', 'none');
-						$('#ab-section-holder').css('-webkit-filter', 'blur(0px)');
-						$('#ab-section-holder').css('opacity', '1');
-					}
-				};
-				imgB.onload = function () {
-					counter++;
-					if (counter == 2) {
-						$('#ab-section-loader').css('display', 'none');
-						$('#ab-section-holder').css('-webkit-filter', 'blur(0px)');
-						$('#ab-section-holder').css('opacity', '1');
-					}
-				};
-				imgA.src = _credentials2.default.image_server + '/' + A.url;
-				imgB.src = _credentials2.default.image_server + '/' + B.url;
-			}
-		},
 		render: function render() {
 			var self = this;
 			var AB = this.state.AB;
 			var session = this.state.session;
-			var section;
-			var loader;
 
-			if (AB == null) {
-				return null;
-			} else {
-				loader = _react2.default.createElement(SectionLoader, null);
-				section = _react2.default.createElement(
-					'div',
-					{ id: 'ab-section-holder', className: 'c1190' },
-					_react2.default.createElement(Section, { session: session, other: AB.B, image: AB.A }),
-					_react2.default.createElement(Section, { session: session, other: AB.A, image: AB.B }),
-					_react2.default.createElement('div', { className: 'cb' })
-				);
-			}
+			if (AB == null) return null;
+
 			return _react2.default.createElement(
 				'div',
-				{ id: 'ab' },
-				_react2.default.createElement(Header, { AB: AB, session: session }),
-				section,
-				loader
+				{ id: 'ab', className: 'c1190' },
+				_react2.default.createElement(Body, { AB: AB, session: session }),
+				_react2.default.createElement(Right, { card: AB, session: session }),
+				_react2.default.createElement('div', { className: 'cb' })
 			);
 		}
 	});
@@ -56037,6 +56323,82 @@
 	// }
 
 	module.exports = Chart;
+
+/***/ },
+/* 295 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _Servers = __webpack_require__(258);
+
+	var _Servers2 = _interopRequireDefault(_Servers);
+
+	var _AnAction = __webpack_require__(292);
+
+	var _AnAction2 = _interopRequireDefault(_AnAction);
+
+	var _reactRouter = __webpack_require__(159);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	module.exports = {
+		createComment: function createComment(commentObj) {
+			var data = {};
+			data.image_id = commentObj.image_id, data.comment = commentObj.comment, data.author = commentObj.author._id, data.date = commentObj.date, data.like = commentObj.like;
+			$.ajax({
+				url: _Servers2.default.api + '/comments/',
+				type: 'POST',
+				data: data,
+				dataType: 'json',
+				success: function success(result) {
+					if (result.status) {
+						console.log(result.body);
+						// AnAction.updateAnalysis(result.body)
+					} else {
+							console.log(result.body);
+						}
+				}
+			});
+		},
+		receiveAB: function receiveAB(id) {
+			var data = { 'card_id': id };
+			$.ajax({
+				url: credentials.api_server + '/cards/' + id,
+				type: 'GET',
+				data: data,
+				dataType: 'json',
+				success: function success(result) {
+					var AB = result.data;
+					AB.imageA = JSON.parse(result.data.imageA);
+					AB.imageB = JSON.parse(result.data.imageB);
+					AppAction.sendAB(AB);
+				}
+			});
+		}
+	};
+
+/***/ },
+/* 296 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Data = _react2.default.createClass({
+		displayName: "Data",
+
+		render: function render() {
+			return _react2.default.createElement("div", { className: "ab-data" });
+		}
+	});
+
+	module.exports = Data;
 
 /***/ }
 /******/ ]);

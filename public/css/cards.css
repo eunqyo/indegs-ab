@@ -12,10 +12,6 @@
     border-top: 1px solid #d3d3d3;
 }
 
-.card:hover span.title{
-    text-decoration: underline;
-}
-
 .card-title{
 	margin-top:2px;
 }
@@ -55,6 +51,7 @@ span.category{
     margin-right: 3px;
     color: #909090;
     font-weight: 400;
+    display:block;
 }
 
 .card-author{
@@ -124,6 +121,9 @@ span.category{
     width:540px;
 }
 
+.card-body:hover span.title{
+    text-decoration: underline;
+}
 
 
 /*<CardImage />*/

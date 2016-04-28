@@ -51,7 +51,7 @@ const CardLikes = React.createClass({
 	componentWillReceiveProps:function(nextProps){
 		this.checkUserLike()
 	},
-	checkUserLike:function(){
+	checkUserLike:function(session){
 		var self = this;
 		var card = this.props.card;
 		var session = this.props.session;
@@ -169,9 +169,11 @@ const CardTitle = React.createClass({
 	render:function(){
 		var card = this.props.card;
 		return (
-			<div className="card-title">
-				<span className="title">{card.title}</span>
-			</div>
+			<Link to={'/cards/'+card._id}>
+				<div className="card-title">
+					<span className="title">{card.title}</span>
+				</div>
+			</Link>
 		)
 	}
 });

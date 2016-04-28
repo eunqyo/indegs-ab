@@ -53,6 +53,12 @@ var CardAction = {
 			data:data
 		})
 	},
+	updateImageComment:function(data){
+		AppDispatcher.handleAction({
+			actionType:'UPDATE_IMAGE_COMMENT',
+			data:data
+		})
+	},
 	updateImageLike:function(data){
 		AppDispatcher.handleAction({
 			actionType:'UPDATE_IMAGE_LIKE',
