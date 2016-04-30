@@ -105,12 +105,14 @@ const PictureEdit = React.createClass({
 			var data = {};
 			data.session = user;
 			data.image = img;
-			data.colorSchema = Colors.getColorSchema(img)
-			UserAPI.uploadUserPic(data,function(){
-				self.setState({
-					loading:false
-				});
-				self.props.toggle(false)
+			Colors.getColorSchema(img,function (colorSchema){
+				data.colorSchema = colorSchema;
+				UserAPI.uploadUserPic(data,function(){
+					self.setState({
+						loading:false
+					});
+					self.props.toggle(false)
+				})
 			})
 		});
 	},

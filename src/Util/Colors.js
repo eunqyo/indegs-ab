@@ -1,13 +1,16 @@
 module.exports = {
-	getColorSchema:function(url){
+	getColorSchema:function(url,callback){
 		var img = new Image();
-		img.src = url;
-		var colorThief = new ColorThief();
-		var dominantColor = colorThief.getColor(img);
-		var palette = colorThief.getPalette(img);
-		return {
-			dominantColor:dominantColor,
-			palette:palette
+		img.onload = function(){
+			var colorThief = new ColorThief();
+			var dominantColor = colorThief.getColor(img);
+			var palette = colorThief.getPalette(img);
+			callback({
+				dominantColor:dominantColor,
+				palette:palette
+			})
 		}
+		img.src = url;
+
 	}
 }

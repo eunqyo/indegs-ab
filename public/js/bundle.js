@@ -44860,12 +44860,14 @@
 				var data = {};
 				data.session = user;
 				data.image = img;
-				data.colorSchema = _Colors2.default.getColorSchema(img);
-				_UserAPI2.default.uploadUserPic(data, function () {
-					self.setState({
-						loading: false
+				_Colors2.default.getColorSchema(img, function (colorSchema) {
+					data.colorSchema = colorSchema;
+					_UserAPI2.default.uploadUserPic(data, function () {
+						self.setState({
+							loading: false
+						});
+						self.props.toggle(false);
 					});
-					self.props.toggle(false);
 				});
 			});
 		},
@@ -45110,16 +45112,18 @@
 	"use strict";
 
 	module.exports = {
-		getColorSchema: function getColorSchema(url) {
+		getColorSchema: function getColorSchema(url, callback) {
 			var img = new Image();
-			img.src = url;
-			var colorThief = new ColorThief();
-			var dominantColor = colorThief.getColor(img);
-			var palette = colorThief.getPalette(img);
-			return {
-				dominantColor: dominantColor,
-				palette: palette
+			img.onload = function () {
+				var colorThief = new ColorThief();
+				var dominantColor = colorThief.getColor(img);
+				var palette = colorThief.getPalette(img);
+				callback({
+					dominantColor: dominantColor,
+					palette: palette
+				});
 			};
+			img.src = url;
 		}
 	};
 
