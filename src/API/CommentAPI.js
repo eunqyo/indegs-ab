@@ -1,6 +1,5 @@
 import Servers from '../Util/Servers';
 
-import AnAction from '../Action/AnAction';
 import { browserHistory } from 'react-router';
 
 module.exports = {
@@ -19,7 +18,6 @@ module.exports = {
 			success:function(result){
 				if(result.status){
 					console.log(result.body)
-					// AnAction.updateAnalysis(result.body)
 				} else {
 					console.log(result.body)
 				}

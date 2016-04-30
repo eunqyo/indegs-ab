@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 
 import AppAPI from '../API/AppAPI';
 import AppAction from '../Action/AppAction';
@@ -12,12 +13,12 @@ import CommentAPI from '../API/CommentAPI';
 
 import Servers from '../Util/Servers';
 import Dates from '../Util/Dates';
-import { Link } from 'react-router';
 
 import Util from '../Util/Util';
-import LikeGraph from './Chart/LikeGraph';
 
 import Data from './AB/Data';
+import Likes from './AB/Likes';
+import ImageBox from './Common/ImageBox';
 
 const TextVoteAuthorPic = React.createClass({
 	render:function(){
@@ -369,25 +370,31 @@ const CommentLike = React.createClass({
 const CommentItem = React.createClass({
 	getInitialState:function(){
 		return ({
-			liked:false
+			liked:false,
+			session:this.props.session
 		})
 	},
 	componentDidMount:function(){
 		this.appearAnimation();
 		this.checkLiked()
 	},
-	componentWillReceiveProps:function(){
-		this.checkLiked()
+	componentWillReceiveProps:function(nextProps){
+		var self = this;
+		if(this.props.session != nextProps.session){
+			self.setState({
+				session:nextProps.session
+			},function(){
+				self.checkLiked()
+			})
+		}
 	},
 	appearAnimation:function(){
 
 	},
 	checkLiked:function(){
-		var session = this.props.session;
+		var session = this.state.session;
 		var comment = this.props.comment;
 		var self = this;
-		console.log(session);
-		console.log(comment);
 		if(session == null) return null;
 		if(comment.like == null || comment.like.length == 0) return null;
 		for(var i=0;i<comment.like.length;i++){
@@ -407,7 +414,7 @@ const CommentItem = React.createClass({
 	},
 	handleLike:function(){
 		var comment = this.props.comment;
-		var session = this.props.session;
+		var session = this.state.session;
 		var image = this.props.image;
 		var liked = this.state.liked;
 		if(liked){
@@ -468,15 +475,53 @@ const Comments = React.createClass({
 			</div>
 		)
 	}
-})
+});
+
 
 const ABSectionImage = React.createClass({
+	getInitialState:function(){
+		return ({
+			style:{},
+			toggle:false
+		})
+	},
+	componentDidMount:function(){
+		this.layout()
+	},
+	layout:function(){
+		var self = this;
+		var image = this.props.image;
+		var body = {
+			width:445
+		}
+		var style = {
+			width:'445px',
+			height:(body.width*image.height/image.width).toFixed(2)+'px'
+		}
+		this.setState({
+			style:style
+		})
+	},
+	toggleImageBox:function(){
+		var toggle = this.state.toggle;
+		this.setState({
+			toggle:!toggle
+		})
+	},
 	render:function(){
 		var image = this.props.image;
+		var style = this.state.style;
 		var src = Servers.s3Image + image.hash;
+		var toggle = this.state.toggle;
+		var imageBox;
+		if(toggle) imageBox = <ImageBox toggle={this.toggleImageBox} image={image} />;
+		else imageBox = null;
+
 		return (
-			<div className="section-image">
-				<img src={src} />
+			<div className="section-image" style={style}>
+				<div className="hover" style={style} onClick={this.toggleImageBox}></div>
+				<img src={src} style={style}/>
+				{imageBox}
 			</div>
 		)
 	}
@@ -487,7 +532,6 @@ const ABSection = React.createClass({
 		var self = this;
 		var image = this.props.image;
 		var session = this.props.session;
-		console.log(session)
 		var comments;
 		if(image.comment == null || image.comment.length == 0){
 			comments = null;
@@ -522,22 +566,55 @@ const ABSections = React.createClass({
 
 
 
-const DeleteBtn = React.createClass({
+const Delete = React.createClass({
+	getInitialState:function(){
+		return ({
+			session:this.props.session,
+			isAuthor:false
+		})
+	},
+	componentDidMount:function(){
+		this.checkAuthor()
+	},
+	componentWillReceiveProps:function(nextProps){
+		var self = this;
+		if(this.props.session!=nextProps.session){
+			self.setState({
+				session:nextProps.session
+			},function(){
+				self.checkAuthor()
+			})
+		}
+	},
+	checkAuthor:function(){
+		var self = this;
+		var card = this.props.card;
+		var session = this.state.session;
+		if(session._id == card.author._id){
+			self.setState({
+				isAuthor:true
+			})
+		} else {
+			self.setState({
+				isAuthor:false
+			})
+		}
+	},
 	handleDelete:function(){
 		var self = this;
+		var card = this.props.card;
 		var confirm = window.confirm("Do you really want to delete this card?");
 		if(confirm){
-			var card_id = self.props.card_id;
-			CardAPI.deleteCard(card_id)
-		} else {
-			
+			CardAPI.deleteCard(card)
 		}
 	},
 	render:function(){
+		var self = this;
+		var isAuthor = this.state.isAuthor;
+		if(!isAuthor) return null;
 		return (
-			<div id="ab-header-delete" onClick={this.handleDelete}>
-				<div id="ab-header-delete-text">Delete</div>
-				<div id="ab-header-delete-btn"></div>
+			<div id="ab-delete" onClick={this.handleDelete}>
+				<span>Delete</span>
 			</div>
 		)
 	}
@@ -547,7 +624,7 @@ const ABDate = React.createClass({
 	render:function(){
 		var date = Dates.getDateString(this.props.date);
 		return (
-			<div className="ab-date">
+			<div id="ab-date">
 				<span className="date">{date}</span>
 			</div>
 		)
@@ -584,7 +661,7 @@ const ABDescription = React.createClass({
 		if(description==null) return null;
 		return (
 			<div id="ab-description">
-				<span className="description">{description}</span>
+				<span dangerouslySetInnerHTML={{__html:description}}></span>
 			</div>		
 		)
 	}
@@ -637,10 +714,11 @@ const Header = React.createClass({
 					<ABAuthor author={AB.author} />
 					<div className="card-dot"></div>
 					<ABDate date={AB.date} />
+					<Delete session={session} card={AB} />
 					<div className="cb"></div>
 				</div>
 				<ABTitle title={AB.title} />
-				<div id="ab-text" dangerouslySetInnerHTML={{__html:AB.description}}></div>
+				<ABDescription description={AB.description} />
 				<div className="cb"></div>
 			</div>
 		)
@@ -661,157 +739,6 @@ const Body = React.createClass({
 	}
 });
 
-const ABLike = React.createClass({
-	handleClick:function(){
-		var section = this.props.section;
-		this.props.onLikeClick(section)
-	},
-	render:function(){
-		var likeCnt = this.props.likeCnt;
-		var liked = this.props.liked;
-		var section = this.props.section;
-		var likeClass;
-		if(liked){
-			likeClass = "card-like liked"
-		} else {
-			likeClass = "card-like"
-		}
-		return (
-			<div className={likeClass} onClick={this.handleClick}>
-				<div className="btn"></div>
-				<span className="count">{likeCnt}</span>
-			</div>
-		)
-	}
-});
-
-const ABLikes = React.createClass({
-	getInitialState:function(){
-		return ({
-			ALike:null,
-			BLike:null
-		})
-	},
-	componentDidMount:function(){
-		this.checkUserLike()
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.checkUserLike()
-	},
-	checkUserLike:function(session){
-		var self = this;
-		var card = this.props.card;
-		var session = this.props.session;
-
-		if(!session) return null;
-		this.checkSectionLike(card.A,function (ALike){
-			self.checkSectionLike(card.B,function (BLike){
-				self.setState({
-					ALike:ALike,
-					BLike:BLike
-				})
-			})
-		});	
-	},
-	checkSectionLike:function(section,callback){
-		if(section.like.length == 0) callback(false);
-
-		var session = this.props.session;
-		for(var i=0;i<section.like.length;i++){
-			if(section.like[i].author == session._id){
-				break;
-			}
-		}
-		if(i == section.like.length){
-			callback(false);
-		} else {
-			callback(true);
-		}
-	},
-	handleLike:function(section){
-		var session = this.props.session;
-		if(session==null) return null;
-		var self =this;
-		var card = this.props.card;
-		var ALike = this.state.ALike;
-		var BLike = this.state.BLike;
-		if(section=='a'){
-			if(ALike){
-				self.removeLike(card.A,function (A){
-					card.A = A;
-					CardAction.updateCard(card);
-				});
-			} else {
-				self.addLike(card.A,function (A){
-					if(BLike){
-						self.removeLike(card.B,function (B){
-							card.A = A;
-							card.B = B;
-							CardAction.updateCard(card);
-						})
-					} else {
-						card.A = A;
-						CardAction.updateCard(card);
-					}
-				})
-			}
-		} else {
-			if(BLike){
-				self.removeLike(card.B,function (B){
-					card.B = B;
-					CardAction.updateCard(card);
-				});
-			} else {
-				self.addLike(card.B,function (B){
-					if(ALike){
-						self.removeLike(card.A,function (A){
-							card.A = A;
-							card.B = B;
-							CardAction.updateCard(card);
-						})
-					} else {
-						card.B = B;
-						CardAction.updateCard(card);
-					}
-				})
-			}
-		}
-		CardAPI.updateImageLike(card.A,card.B);
-	},
-	addLike:function(section,callback){
-		var session = this.props.session;
-		var likeObj = {
-			date:new Date(),
-			author:session._id
-		}
-		section.like.push(likeObj);
-		callback(section);
-	},
-	removeLike:function(section,callback){
-		var session = this.props.session;
-		for(var i=0;i<section.like.length;i++){
-			if(section.like[i].author == session._id){
-				section.like.splice(i,1);
-				break;
-			}
-		}
-		callback(section);
-	},
-	render:function(){
-		var session = this.props.session;
-		var card = this.props.card;
-		var ALike = this.state.ALike;
-		var BLike = this.state.BLike;
-		return (
-			<div className="ab-likes">
-				<div className="title">LIKES</div>
-				<ABLike section={'a'} likeCnt={card.A.like.length} liked={ALike} onLikeClick={this.handleLike} />
-				<ABLike section={'b'} likeCnt={card.B.like.length} liked={BLike} onLikeClick={this.handleLike} />
-				<div className="cb"></div>
-			</div>
-		)
-	}
-})
 
 const Right = React.createClass({
 	render:function(){
@@ -820,7 +747,7 @@ const Right = React.createClass({
 
 		return (
 			<div id="ab-right">
-				<ABLikes card={card} session={session} />
+				<Likes card={card} session={session} />
 				<Data card={card} session={session} />
 			</div>
 		)

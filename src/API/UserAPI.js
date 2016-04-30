@@ -1,21 +1,60 @@
-import credentials from '../../credentials';
+import Servers from '../Util/Servers';
 
 import UserAction from '../Action/UserAction';
 import AppAction from '../Action/AppAction';
 
 module.exports = {
-	receiveUserCards:function(user_id){
+	receiveUser:function(user_id){
 		$.ajax({
-			url:credentials.api_server + '/users/'+ user_id + '/cards',
+			url:Servers.api + '/users/'+user_id,
 			type:'GET',
 			success:function(result){
 				if(result.status){
-					UserAction.updateUserCards(result.body)
+					UserAction.updateUser(result.body)
+				} else {
+					console.log(result.body)
+				}
+			}
+		})
+	},
+	receiveUserActivities:function(user_id){
+		$.ajax({
+			url:Servers.api + '/users/activities/'+user_id,
+			type:'GET',
+			success:function(result){
+				if(result.status){
+					UserAction.updateUserActivities(result.body)
 				} else {
 					console.log(result.body)
 				}
 			}
 
+		})
+	},
+	updatePublished:function(){
+
+	},
+	uploadUserPic:function(data,callback){
+		var self = this;
+		var formData = new FormData();
+		formData.append('user_id',data.session._id);
+		formData.append('image',data.image);
+		formData.append('colorSchema',JSON.stringify(data.colorSchema));
+		$.ajax({
+			url:Servers.api + '/users/pic',
+			type:'POST',
+			contentType:false,
+			processData:false,
+			data:formData,
+			success:function(result){
+				if(result.status){
+					UserAction.updateUserPic(result.body);
+					callback()
+				} else {
+					console.log(result.body);
+					callback()
+				}
+			}
 		})
 	},
 	addLike:function(session_id,image_id){

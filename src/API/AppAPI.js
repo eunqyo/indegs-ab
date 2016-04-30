@@ -151,29 +151,6 @@ module.exports = {
 	    	}
 	    })
 	},
-	uploadUserPic:function(data,callback){
-		var self = this;
-		var formData = new FormData();
-		formData.append('user_id',data.session._id);
-		formData.append('image',data.image);
-		$.ajax({
-			url:credentials.api_server + '/users/pic',
-			type:'POST',
-			contentType:false,
-			processData:false,
-			data:formData,
-			success:function(result){
-				if(result.status){
-					self.updateUserPic(result.body)
-					// AppAction.updateUser(result.body);
-					callback()
-				} else {
-					console.log(result.body);
-					callback()
-				}
-			}
-		})
-	},
 	updatePublished:function(cardObj){
 		var self = this;
 		var data = {

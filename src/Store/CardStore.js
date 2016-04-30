@@ -64,6 +64,24 @@ var updateCard = function(card){
 	}
 };
 
+var updateNewCards = function(card){
+	if(_new != null){
+		for(var i=0;i<_new.length;i++){
+			if(card._id == _new[i]._id){
+				_new[i] == card._id;
+				break;
+			}
+		}
+		if(i==_new.length){
+			_new.unshift(card)
+		}
+	} else {
+		_new = [];
+		_new.unshift(card);
+	}
+	_new.sort(compare);
+};
+
 var receiveCards = function(cards){
 	if(_card != null){
 		for(var i=0;i<cards.length;i++){
@@ -74,7 +92,7 @@ var receiveCards = function(cards){
 				}
 			}
 			if(k==_card.length){
-				_card.unshift(cards[i])
+				updateNewCards(cards[i])
 			}
 		}
 	} else {
@@ -218,25 +236,6 @@ var endOfData = function(bool){
 	_endOfData = bool;
 }
 
-var receiveNewCards = function(cards){
-	if(_new != null){
-		for(var i=0;i<cards.length;i++){
-			for(var k=0;k<_new.length;k++){
-				if(cards[i]._id == _new[k]._id){
-					_new[k] == cards[i];
-					break;
-				}
-			}
-			if(k==_new.length){
-				_new.unshift(cards[i])
-			}
-		}
-	} else {
-		_new = [];
-		_new = cards;
-	}
-	_new.sort(compare);
-};
 
 var emptyNewCards = function(){
 	_new = null;

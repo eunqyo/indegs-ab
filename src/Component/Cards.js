@@ -129,7 +129,7 @@ const CardLikes = React.createClass({
 				})
 			}
 		}
-		CardAPI.updateImageLike(card.A,card.B);
+		CardAPI.updateImageLike(card.A,card.B,section);
 	},
 	addLike:function(section,callback){
 		var session = this.props.session;
@@ -216,17 +216,19 @@ const CardDescription = React.createClass({
 const CardAuthorPic = React.createClass({
 	render:function(){
 		var author = this.props.author;
-		var src;
+		var src,body;
 		if(author.pic!=null){
 			src = Servers.s3 + author.pic;
+			body = <img src={src} />
 		} else {
 			src = null;
+			body = <div className="default-pic"></div>
 		}
 
 		return (
 			<Link to={'/users/'+author._id} >
 				<div className="card-authorpic">
-					<img src={src} />
+					{body}
 				</div>
 			</Link>
 		)
@@ -247,26 +249,71 @@ const CardLeft = React.createClass({
 const CardImage = React.createClass({
 	render:function(){
 		var src = this.props.src;
+		var style = this.props.style;
 		return (
-			<div className="card-image">
-				<img src={src} />
+			<div className="card-image" style={style}>
+				<img src={src} style={style}/>
 			</div>
 		)
 	}
 })
 
 const CardImages = React.createClass({
+	getInitialState:function(){
+		return ({
+			style:{}
+		})
+	},
+	componentDidMount:function(){
+		this.layout()
+	},
+	layout:function(){
+		var card = this.props.card;
+		var A = card.A;
+		var B = card.B;
+		var body = {
+			width:535
+		}
+		var A = {
+			width:card.A.width,
+			height:card.A.height,
+			ratio:card.A.width/card.A.height
+		}
+		var B = {
+			width:card.B.width,
+			height:card.B.height,
+			ratio:card.B.width/card.B.height
+		}
+		var imgA = {};
+		var imgB = {};
+		// var ratioA = A.width/A.height;
+		// var ratioB = B.width/B.height;
+		// imgA.width + imgB.width = 535;
+		// imgA.width = imgA.height*A.width/A.height;
+		// imgB.width = imgB.height*B.width/B.height;
+		var y = (body.width/(A.ratio + B.ratio)).toFixed(2);
+		imgA.height = y;
+		imgA.width = y*A.ratio;
+		imgB.height = y;
+		imgB.width = y*B.ratio;
+		this.setState({
+			imgA:imgA,
+			imgB:imgB	
+		})
+	},
 	render:function(){
 		var card = this.props.card;
 		var A = card.A;
 		var B = card.B;
+		var imgA = this.state.imgA;
+		var imgB = this.state.imgB;
 		var thumbA = Servers.s3Thumb + A.hash;
 		var thumbB = Servers.s3Thumb + B.hash;
 
 		return (
 			<div className="card-images">
-				<CardImage src={thumbA} />
-				<CardImage src={thumbB} />
+				<CardImage style={imgA} src={thumbA} />
+				<CardImage style={imgB} src={thumbB} />
 				<div className="cb"></div>
 			</div>
 		)
@@ -349,11 +396,12 @@ const Cards = React.createClass({
 		this.checkCards();
 	},
 	checkCards:function(){
+		var self = this;
 		var cards = this.state.cards;
-		if(cards == null) CardAPI.receiveCards();
-		else {
-			CardAPI.loadNewCards(cards[0]);
-		}
+		CardAPI.receiveCards(30);
+		// setInterval(function(){
+		// 	CardAPI.receiveCards(30)
+		// },20000)
 	},
 	componentWillUnmount:function(){
 		window.removeEventListener('resize',this.handleResize);

@@ -18,7 +18,6 @@ var AB = require('./Component/AB.js');
 var Join = require('./Component/Join.js');
 var Post = require('./Component/Post.js');
 var User = require('./Component/User.js');
-var Analysis = require('./Component/Analysis.js');
 
 
 import Main from './Component/Main';
@@ -97,7 +96,6 @@ render((
 		<Route path="/users/:_id" component={User}></Route>
 		<Route path="/post" component={Post}></Route>
 		<Route path="/cards/:card_id" component={AB}></Route>
-		<Route path="/analysis/:card_id" component={Analysis}></Route>
     </Route>
   </Router>
 ), document.getElementById('app'))

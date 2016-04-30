@@ -295,7 +295,7 @@ const PostDescription = React.createClass({
 		return (
 			<div id="post-description">
 				<div className="category">Description</div>
-				<textarea name="post-description" placeholder="Detailed explanation of your test (optional)" onClick={this.changePlaceholder} onBlur={this.submitInput} onKeyUp={this.resize} onChange={this.handleChange} value={this.state.text} spellCheck="false" autoCorrect="off" autoComplete="off"/>
+				<textarea name="post-description" placeholder="Detailed explanation of your test (optional)" onFocus={this.changePlaceholder} onBlur={this.submitInput} onKeyUp={this.resize} onChange={this.handleChange} value={this.state.text} spellCheck="false" autoCorrect="off" autoComplete="off"/>
 			</div>
 		)
 	}
@@ -372,7 +372,8 @@ const PostSubmit = React.createClass({
 		var _session = this.state._session;
 		var _post = this.state._post;
 		this.setState({
-			title:'Creating ...'
+			title:'Creating ...',
+			canPost:false
 		})
 		PostAPI.post(_post,_session);
 	},

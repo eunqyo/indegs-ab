@@ -4,8 +4,10 @@ var EventEmitter = require('events').EventEmitter;
 
 var _cards;
 var _mode;
-var _published = {};
-var _participated = {};
+var _published;
+var _participated;
+var _user;
+var _activity;
 
 var sortByDate = function(a,b){
 	if(a.date < b.date){return 1;}
@@ -13,8 +15,22 @@ var sortByDate = function(a,b){
 	return 0;
 }
 
-var updateUserCards = function(cards){
-	_cards = cards;
+var updateUser = function(userObj){
+	_user = userObj.user;
+	_activity = userObj.activity;
+}
+
+var updateUserPic = function(userObj){
+	_user = userObj;
+}
+
+var updateUserActivities = function(data){
+	if(data == null) return null;
+	else {
+		_published = data.published;
+		_participated = data.participated;
+		console.log(_published)
+	}
 }
 
 var updateUserImageLike = function(imageObj){
@@ -59,6 +75,12 @@ var UserStore = objectAssign({},EventEmitter.prototype,{
 	removeChangeListener:function(cb){
 		this.removeListener('change',cb);
 	},
+	getUser:function(){
+		return _user;
+	},
+	getActivity:function(){
+		return _activity;
+	},
 	getUserCards:function(){
 		return _cards;
 	},
@@ -76,8 +98,16 @@ var UserStore = objectAssign({},EventEmitter.prototype,{
 UserDispatcher.register(function(payload){
 	var action = payload.action;
 	switch(action.actionType){
-		case 'UPDATE_USER_CARDS':
-			updateUserCards(action.data);
+		case 'UPDATE_USER':
+			updateUser(action.data);
+			UserStore.emit('change');
+			break;
+		case 'UPDATE_USER_PIC':
+			updateUserPic(action.data);
+			UserStore.emit('change');
+			break;
+		case 'UPDATE_USER_ACTIVITIES':
+			updateUserActivities(action.data);
 			UserStore.emit('change');
 			break;
 		case 'UPDATE_USER_IMAGE_LIKE':

@@ -1,0 +1,66 @@
+#ab-right{
+	width: 260px;
+    float: left;
+    margin-left: 30px;
+    border-radius: 3px;
+    padding: 25px;
+}
+/*<ABLikes />*/
+
+.ab-likes{
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+#ab-right .title{
+    color: #3d3d3d;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #d3d3d3;
+}
+.ab-like{
+	width:50%;
+    float:left;
+}
+.ab-like .btn{
+	float: left;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    background: url('/images/like-on.png') 50% 50% no-repeat;
+    background-size: contain;
+    opacity: 0.2;
+}
+.ab-like.liked .btn{
+    background: url('/images/like-on.png') 50% 50% no-repeat;
+    background-size: contain;
+    opacity:1;
+}
+.ab-like .count{
+	line-height: 20px;
+    font-size: 20px;
+    font-weight: 100;
+    color: #BDBDBD;
+    margin-left: 10px;
+}
+.ab-like.liked .count{
+    color:black;
+    font-weight:600;
+}
+
+.data-likes{
+	margin-bottom:25px;
+}
+.data-like{
+	float:left;
+	width:50%;
+}
+span.data-label{
+	font-weight:600;
+	margin-right:10px;
+}
+span.data-value{
+	font-weight:500;
+	color:#4a4a4a;
+}

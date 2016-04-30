@@ -102,13 +102,30 @@ const UserABHeader = React.createClass({
 	}
 });
 
+const Published = React.createClass({
+	render:function(){
+		var published = this.props.published;
+		var card = published.card;
+		return (
+			<Link to={'/cards/'+published.card_id}>
+				<div className="publish-item">
+					<span>{published.card_title + ' >'}</span>
+				</div>
+			</Link>
+		)
+	}
+})
+
 const UserAB = React.createClass({
 	render:function(){
-		var _cards = this.props._cards;
+		var _published = this.props._published;
 		var body;
-		if(_cards.length == 0){
+		if(_published==null||_published.length == 0){
 			body = <UserABGuide />
 		} else {
+			body = _published.map(function(published){
+				return <Published key={published._id} published={published} />
+			})
 		}
 
 		return (
@@ -123,36 +140,33 @@ const UserAB = React.createClass({
 const UserCard = React.createClass({
 	getInitialState:function(){
 		return ({
-			_cards:UserStore.getUserCards()
+			_published:UserStore.getPublished(),
+			_participated:UserStore.getParticipated()
 		})
 	},
 	componentDidMount:function(){
 		// 사용자가 생성한 테스트가 있는지 확인한다
 		var session = this.props.session;
 		UserStore.addChangeListener(this._onChange);
-		UserAPI.receiveUserCards(session._id);
+		UserAPI.receiveUserActivities(session._id);
 	},
 	componentWillUnmount:function(){
 		UserStore.removeChangeListener(this._onChange);
 	},
 	_onChange:function(){
 		this.setState({
-			_cards:UserStore.getUserCards()
+			_published:UserStore.getPublished(),
+			_participated:UserStore.getParticipated()
 		})
 	},
 	render:function(){
 		var session = this.props.session;
-		var _cards = this.state._cards;
-		var userAB;
-		if(_cards == null){
-			userAB = null;
-		} else {
-			userAB = <UserAB session={session} _cards={_cards} />
-		}
+		var _published = this.state._published;
+		var _participated = this.state._participated;
 		return (
 			<div id="user-card">
 				<UserCardPic session={session} />
-				{userAB}
+				<UserAB session={session} _published={_published} />
 				<div className="cb"></div>
 			</div>
 		)

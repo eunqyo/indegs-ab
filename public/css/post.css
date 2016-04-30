@@ -90,10 +90,10 @@
     background: transparent;
     border:none;
     border-radius:0;
-    border-bottom: 1px solid;
+    border-bottom: 1px solid #d3d3d3;
 }
 #post-title > input:focus{
-    border-bottom: 1px solid #51a7e8;
+    border-bottom: 1px solid black;
 }
 #post-title > input::-webkit-scrollbar { 
     display: none; 
@@ -122,10 +122,10 @@
     font-size: 14px;
     padding: 10px;
     border: 1px solid #f2f2f2;
-    background: #f2f2f2;
-    font-weight: 300;
+    background: #FEFEFE;
+    font-weight: 400;
     letter-spacing: -0.2px;
-    height: 60px;
+    height:60px;
 }
 
 #post-description > textarea::-webkit-scrollbar { 

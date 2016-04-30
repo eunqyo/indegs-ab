@@ -67,16 +67,21 @@ const UserPic = React.createClass({
 	render:function(){
 		var session = this.props.session;
 		var toggle = this.state.toggle;
-		var menu,src;
-		if(session.pic != null) src = Servers.s3 + session.pic;
-		else src = null;
+		var menu,src,body;
+		if(session.pic != null){
+			src = Servers.s3 + session.pic;
+			body = <img src={src} />
+		} else {
+			src = null;
+			body = <div className="default-pic"></div>
+		}
 
 		if(toggle) menu = <UserMenu session={session} toggle={this.toggleMenu} />;
 		else menu = null;
 
 		return (
 			<div id="user-pic" onClick={this.toggleMenu} >
-				<img src={src} />
+				{body}
 				{menu}
 			</div>
 		)

@@ -12,10 +12,17 @@ import UserAction from '../Action/UserAction';
 import UserStore from '../Store/UserStore';
 import UserAPI from '../API/UserAPI';
 
+import Util from '../Util/Util';
+
+
 import Right from './Right';
-import credentials from '../../credentials';
+import Servers from '../Util/Servers';
+import Colors from '../Util/Colors';
 
 import Cards from './User/Cards';
+import UserInfo from './User/UserInfo';
+
+import Activity from './User/Activity';
 
 const PictureEdit = React.createClass({
 	getInitialState:function(){
@@ -40,7 +47,7 @@ const PictureEdit = React.createClass({
 	},
 	handleBodyClick:function(e){
 		var self = this;
-		var a = $('#pic-edit-holder');
+		var a = $('#pic-edit');
 		if(!a.is(e.target)&&a.has(e.target).length == 0){
 			self.props.toggle(false)
 		}
@@ -69,13 +76,14 @@ const PictureEdit = React.createClass({
 		var self = this;
 		var croppie = this.croppie;
 		this.tmpPath = URL.createObjectURL(file);
+		// Colors.process(this.tmpPath)
 		croppie.bind(this.tmpPath);
 		// URL.revokeObjectURL(tmpPath)
 	},
 	initCroppie:function(){
 		var self = this;
 		var croppie = require('croppie');
-		this.croppie = new Croppie(document.getElementById('pic-edit-box'), {
+		this.croppie = new Croppie(document.getElementById('pic-edit-view'), {
 		    viewport: {
 		        width: 200,
 		        height: 200
@@ -85,9 +93,6 @@ const PictureEdit = React.createClass({
 		        height: 250
 			}
 		});
-		// if(session.pic!=null){
-		// 	self.croppie.bind(credentials.image_server + '/'+ user.pic)
-		// }
 	},
 	handleConfirm:function(){
 		var self = this;
@@ -100,8 +105,8 @@ const PictureEdit = React.createClass({
 			var data = {};
 			data.session = user;
 			data.image = img;
-
-			AppAPI.uploadUserPic(data,function(){
+			data.colorSchema = Colors.getColorSchema(img)
+			UserAPI.uploadUserPic(data,function(){
 				self.setState({
 					loading:false
 				});
@@ -119,8 +124,10 @@ const PictureEdit = React.createClass({
 			confirm = <div id="pic-edit-submit" onClick={self.handleConfirm} >Save Changes ></div>
 		}
 		return (
-			<div id="pic-edit-holder">
-				<div id="pic-edit-box"></div>
+			<div id="pic-edit" className="modal">
+				<div className="modal-top-arrow"></div>
+				<div className="modal-top-cover"></div>
+				<div id="pic-edit-view"></div>
 				<div id="pic-edit-action">
 					{confirm}
 					<div id="pic-edit-upload" onClick={this.handleClick}>Upload</div>
@@ -132,292 +139,177 @@ const PictureEdit = React.createClass({
 	}
 })
 
-const UserPicture = React.createClass({
+const UserPic = React.createClass({
 	getInitialState:function(){
 		return ({
-			user:this.props.user,
-			owner:this.props.owner,
 			toggle:false
 		})
 	},
-	componentWillReceiveProps:function(nextProps){
-		var self = this;
+	toggleBox:function(){
+		var toggle = this.state.toggle
 		this.setState({
-			user:nextProps.user,
-			owner:nextProps.owner
+			toggle:!toggle
 		})
-	},
-	toggleEdit:function(e){
-		this.setState({
-			toggle:true
-		})
-	},
-	handleToggle:function(bool){
-		this.setState({
-			toggle:false
-		})
-	},
-	handleImageLoad:function(e){
-		var image = $(e.target);
-		image.parent().children('#loader').css('display','none');
 	},
 	render:function(){
-		var self = this;
-		var owner = this.state.owner;
-		var user = this.state.user;
+		var user = this.props.user;
 		var toggle = this.state.toggle;
-		var src,btn,edit;
-		if(owner) btn = <div id="user-pic-btn" onClick={self.toggleEdit}>Change Picture ></div>;
-		else btn = null;
-		if(toggle) edit = <PictureEdit user={user} toggle={self.handleToggle} />;
-		else edit = null;
-		if(user.pic!=null) src = credentials.image_server + '/' + user.pic;
-		else src = null;
+		var box,back;
+		if(toggle){
+			box = <PictureEdit user={user} toggle={this.toggleBox} />
+			back = <div id="modal-background"></div>
+		} else {
+			box = null;
+			back = null;
+		}
+		var src;
+		if(user.pic == null) src = null;
+		else {
+			src = Servers.s3 + user.pic;
+			// Colors.process(src)
 
-
+		};
 		return (
-			<div id="user-pic-section">
-				<div id="holder">
-					<div id="loader"></div>
-					<img src={src} id="pic" onLoad={this.handleImageLoad}/>
+			<div id="user-pic">
+				<div id="user-pic-drop">
+					<span onClick={this.toggleBox}>Change</span>
 				</div>
-				{btn}
-				{edit}
+				<img src={src} />
+				{box}
+				{back}
 			</div>
 		)
 	}
 });
 
-const Center = React.createClass({
-	getInitialState:function(){
-		return ({
-			user:this.props.user,
-			owner:this.props.owner,
-			session:this.props.session,
-			published:this.props.published,
-			participated:this.props.participated
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			user:nextProps.user,
-			owner:nextProps.owner,
-			session:nextProps.session,
-			published:nextProps.published,
-			participated:nextProps.participated
-		})
-	},
-	goParticipated:function(){
-		UserAction.changeMode("par");
-	},
-	goPublished:function(){
-		UserAction.changeMode("pub");
-	},
+const Follow = React.createClass({
 	render:function(){
-		var owner = this.state.owner;
-		var user = this.state.user;
-		var session = this.state.session;
-		var published = this.state.published;
-		var participated = this.state.participated;
-		var mode = this.props.mode;
-		if(mode==null || mode == "pub"){
-			var par = null;
-			var pub = <Cards cards={published} session={session} />;
-			var pubStyle = {borderBottom:"2px solid black"};
-			var parStyle = null;
-		} else {
-			var pub = null;
-			var par = <Cards cards={participated} session={session} />
-			var parStyle = {borderBottom:"2px solid black"};
-			var pubStyle = null;
+		return (
+			<div id="user-follow">Follow</div>
+		)
+	}
+});
+
+
+const BackgroundBlur = React.createClass({
+	render:function(){
+		var palette = this.props.palette;
+		var dominantColor = this.props.dominantColor;
+
+		var style = {
+			backgroundColor:'rgb('+ dominantColor.join(',') +')'
+		}
+		var style1 = {
+			backgroundColor:'rgb('+ palette[0].join(',') +')'
+		}
+		var style2 = {
+			backgroundColor:'rgb('+ palette[1].join(',') +')'
 		}
 		return (
-			<div id="center">
-				<div id="user-category">
-					<div className="category" style={pubStyle} onClick={this.goPublished} >
-						<div className="title">Published</div>
-						<div className="cnt">{user.published.length}</div>
-						<div className="cb"></div>
-					</div>
-					<div className="category" style={parStyle} onClick={this.goParticipated} >
-						<div className="title">Participated</div>
-						<div className="cnt">{user.participated.length}</div>
-						<div className="cb"></div>
-					</div>
-					<div className="cb"></div>
-				</div>
-				{pub}
-				{par}
+			<div id="user-background-blur">
+				<div className="blur" style={style}></div>
+				<div className="blur" style={style1}></div>
+				<div className="blur" style={style2}></div>
+			</div>
+		)
+	}
+})
+const UserBackground = React.createClass({
+	render:function(){
+		var src;
+		var user = this.props.user;
+		var dominantColor = user.colorSchema.dominantColor;
+		var palette = user.colorSchema.palette;
+		var blur;
+		if(dominantColor.length == 0 || palette.length == 0){
+			blur = null;
+		} else {
+			blur = <BackgroundBlur palette={palette} dominantColor={dominantColor}/>
+		}
+
+		return (
+			<div id="user-background">
+				{blur}
 			</div>
 		)
 	}
 })
 
-
-const Header = React.createClass({
-	getInitialState:function(){
-		return ({
-			session:this.props.session,
-			user:this.props.user,
-			owner:this.props.owner
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			user:nextProps.user,
-			session:nextProps.session,
-			owner:nextProps.owner
-		})
-	},
+const UserHeader = React.createClass({
 	render:function(){
-		var owner = this.state.owner;
-		var session = this.state.session;
-		var user = this.state.user;
-		var userInfo,userPic;
-		if(user!=null){
-			userInfo = <div id="userinfo-holder">
-							<div id="user-email">{user.email}</div>
-							<div id="user-name">{'@' +user.name}</div>
-						</div>
-			userPic = <UserPicture owner={owner} user={user} session={session}/>
-		} else {
-			userInfo = null
-		}
+		var user = this.props.user;
+		var isOwner = this.props.owner;
 		return (
 			<div id="user-header">
-				<div id="left-header">
-					{userPic}
-					{userInfo}
+				<div className="c1190">
+					<UserPic user={user} />
+					<UserInfo colorSchema={user.colorSchema} user={user} isOwner={isOwner} />
+					<Follow user={user} />
 					<div className="cb"></div>
 				</div>
-				<Center owner={owner} user={user} />
-				<div className="cb"></div>
+				<UserBackground user={user} />
 			</div>
 		)
 	}
 });
-
-const Left = React.createClass({
-	getInitialState:function(){
-		return ({
-			user:this.props.user,
-			owner:this.props.owner
-		})
-	},
-	componentWillReceiveProps:function(nextProps){
-		this.setState({
-			user:nextProps.user,
-			owner:nextProps.owner
-		})
-	},
-	render:function(){
-		var user = this.state.user;
-		var owner = this.state.owner;
-		return (
-			<div id="left">
-				<UserPicture owner={owner} user={user} />
-				<div id="userinfo-holder">
-					<div id="user-email">{user.email}</div>
-					<div id="user-name">{'@'+user.name}</div>
-				</div>
-			</div>
-		)
-	}
-})
 
 const User = React.createClass({
 	getInitialState:function(){
 		return ({
 			session:AppStore.getSession(),
-			user:AppStore.getUser(),
-			cards:UserStore.getUserCards(),
-			mode:UserStore.getMode()
+			user:AppStore.getUser()
 		})
 	},
 	componentDidMount:function(){
 		var _id = this.props.params._id;
-		AppAPI.receiveUser(_id);
-		UserAPI.receiveUserCards(_id);
-		AppStore.addChangeListener(this._onChange);
-		UserStore.addChangeListener(this._onUserChange);
-		this.checkUser()
-	},
-	componentWillReceiveProps:function(nextProps){
-		var _id = this.props.params._id;
-		if(_id != nextProps.params._id){
-			AppAction.updateUser(null);
-			UserAction.updateUserCards(null)
-			AppAPI.receiveUser(nextProps.params._id);
-			UserAPI.receiveUserCards(nextProps.params._id);
-		}
+		UserAPI.receiveUser(_id);
+		AppStore.addChangeListener(this._onSessionChange);
+		UserStore.addChangeListener(this._onChange);
+		this.checkUser();
 	},
 	componentWillUnmount:function(){
-		AppStore.removeChangeListener(this._onChange);
-		UserStore.removeChangeListener(this._onUserChange);
-		AppAction.updateUser(null);
-		UserAction.updateUserCards(null)
+		AppStore.removeChangeListener(this._onSessionChange);
+		UserStore.removeChangeListener(this._onChange);
 	},
-	_onChange:function(){
+	_onSessionChange:function(){
 		var self = this;
 		this.setState({
-			session:AppStore.getSession(),
-			user:AppStore.getUser(),
+			session:AppStore.getSession()
 		},function(){
 			self.checkUser()
 		})
 	},
-	_onUserChange:function(){
+	_onChange:function(){
 		this.setState({
-			cards:UserStore.getUserCards(),
-			mode:UserStore.getMode()
+			user:UserStore.getUser()
 		})
 	},
 	checkUser:function(){
 		var self = this;
 		var session = this.state.session;
 		var user = this.state.user;
-
-		if(session == null || user == null){
+		if(session == null || user == null) return null;
+		if(session._id == user._id){
 			self.setState({
-				owner:false,
+				isOwner:true
 			})
 		} else {
-			if(session._id == user._id){
-				self.setState({
-					owner:true,
-					user:session
-				})
-			} else {
-				self.setState({
-					owner:false
-				})
-			}
+			self.setState({
+				isOwner:false
+			})
 		}
 	},
 	render:function(){
-		var owner = this.state.owner;
 		var user = this.state.user;
-		var session = this.state.session;
-		var cards = this.state.cards;
-		var mode = this.state.mode;
-		var left,center,header;
-		if(user!=null && owner != null){
-			left = <Left owner={owner} user={user} />;
-			header = <Header owner={owner} user={user} session={session} />
-			if(cards!=null){
-				center = <Center owner={owner} session={session} user={user} published={cards.published} participated={cards.participated} mode={mode}/>
-			} else {
-				center = null;
-			}
-		} else {
-			left = null;
-			header = null;
-			center = null;
-		}
+		var isOwner = this.state.isOwner;
+		if(user==null) return null;
+
 		return (
-			<div id="user" className="c1190">
-				{left}
-				{center}
+			<div id="user">
+				<UserHeader user={user} isOwner={isOwner} />
+				<div id="user-body" className="c1190">
+					<Activity user={user} />
+				</div>
 			</div>
 		)
 	}

@@ -7,16 +7,16 @@ import AppHistory from '../Util/AppHistory';
 
 
 module.exports ={
-	receiveCards:function(){
+	receiveCards:function(limit){
 		$.ajax({
-			url: credentials.api_server + '/cards',
+			url: credentials.api_server + '/cards/limit/'+limit,
 			type: 'GET',
 			success: function(result){
 				if(result.status){
 					var cards = result.body;
 					if(cards == null || cards.length ==0 ) return null;
 					// 데이터의 끝에 다다르게 된 경우 처리
-					if(cards.length <= 4){
+					if(cards.length < limit){
 						CardAction.endOfData(true)
 					}
 					CardAction.receiveCards(cards)
@@ -27,9 +27,9 @@ module.exports ={
 			}
 		});
 	},
-	loadNewCards:function(LatestCard){
+	loadNewCards:function(date){
 		$.ajax({
-			url:credentials.api_server + '/cards/loadNew/'+LatestCard.date,
+			url:credentials.api_server + '/cards/loadNew/'+date,
 			type:'GET',
 			success:function(result){
 				if(result.status){
@@ -149,8 +149,29 @@ module.exports ={
 			})
 		})
 	},
-	deleteCard:function(card_id){
-		var data = {'card_id':card_id}
+	deleteCard:function(card){
+		var data = {
+			card_id:card._id,
+			a_hash:card.A.hash,
+			a_id:card.A._id,
+			b_hash:card.B.hash,
+			b_id:card.B._id
+		}
+
+		var getCommentsToDelete = function(image){
+			var comments = []
+			if(image.comment == null || image.comment.length == 0) return [];
+			for(var i=0;i<image.comment.length;i++){
+				comments.push({
+					_id:image.comment[i]._id
+				})
+			};
+			return comments;
+		}
+
+		var Ac = getCommentsToDelete(card.A);
+		var Bc = getCommentsToDelete(card.B);
+		data.comments = JSON.stringify((Ac).concat(Bc));
 		$.ajax({
 			url:credentials.api_server + '/cards/delete',
 			type:'POST',
@@ -184,10 +205,11 @@ module.exports ={
 			}
 		})
 	},
-	updateImageLike:function(A,B){
+	updateImageLike:function(A,B,section){
 		var data = {
 			A:JSON.stringify(A),
-			B:JSON.stringify(B)
+			B:JSON.stringify(B),
+			section:section
 		}
 		$.ajax({
 			url:credentials.api_server + '/images/like',

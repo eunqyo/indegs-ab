@@ -8,25 +8,6 @@
     width:900px;
     float:left;
 }
-#ab-right{
-    width: 270px;
-    float: left;
-    padding-left: 20px;
-    margin-left: 20px;
-    border-left: 1px solid #efefef;
-}
-
-/*<ABLikes />*/
-
-.ab-likes > .title{
-    color:#3d3d3d;
-    font-weight:500;
-    font-size:13px;
-    margin-bottom:10px;
-}
-
-
-
 
 .ab-section{
     width:447px;
@@ -42,9 +23,15 @@
 .ab-section:nth-child(2){
 }
 
+
+
 .section-image{
     width:100%;
     border-bottom: 1px solid #d3d3d3;
+}
+
+.section-image:hover > .hover{
+    opacity:1;
 }
 
 .section-image > img{
@@ -52,6 +39,16 @@
     /*border:1px solid #d3d3d3;*/
     width:100%;
     height:auto;
+}
+.section-image > .hover{
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.2);
+    z-index: 1;
+    opacity:0;
+    cursor:pointer;
+    transition: 0.3s opacity ease;
 }
 
 
@@ -74,15 +71,50 @@
     line-height: 30px;
     /* margin-top: 5px; */
     color: #252525;
-    cursor: pointer;
     font-weight: 400;
     letter-spacing: -0.8px;
 }
 #ab-author{
     float:left;
 }
+#ab-author:hover > span{
+    text-decoration: underline;
+}
+
 #ab-date{
     float:left;
+}
+
+#ab-delete{
+    float:left;
+    cursor:pointer;
+}
+#ab-delete:hover > span{
+    background:black;
+    border-color:black;
+    color:white;
+}
+#ab-delete > span{
+    font-size: 11px;
+    padding: 1px 8px;
+    color: #656565;
+    border-radius: 20px;
+    font-weight: 400;
+    border: 1px solid #6B6B6B;
+    margin-left: 8px;
+    letter-spacing:-0.2px;
+}
+
+#ab-description{
+
+}
+#ab-description > span{
+    color: #020202;
+    font-weight: 400;
+    margin-top: 7px;
+    font-size: 14px;
+    line-height: 23px;
+    letter-spacing: -0.4px;
 }
 
 
@@ -112,6 +144,7 @@
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
 
 /*<Comment />*/
 

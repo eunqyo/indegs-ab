@@ -11,6 +11,7 @@ import UserAPI from '../../API/UserAPI';
 
 import credentials from '../../../credentials';
 import Util from '../../Util/Util';
+import Servers from '../../Util/Servers';
 
 const CardImage = React.createClass({
 	componentDidMount:function(){
@@ -89,18 +90,20 @@ const CardUserPic = React.createClass({
 	},
 	render:function(){
 		var author = this.state.author;
-		var src;
+		var src,body;
 		if(author.pic!=null){
-			src = credentials.image_server + '/' + author.pic;
+			src = Servers.s3 + author.pic;
+			body = <img className="card-userpic" src={src} />
 		} else {
 			src = null;
+			body= <div className="card-userpic"></div>
 		}
 
 		return (
 			<Link to={'/users/'+ author._id}>
 				<div className="card-userpic-holder">
 					<div className="card-userpic-loader"></div>
-					<img className="card-userpic" src={src} onLoad={this.handleImageLoad} />
+					{body}
 				</div>
 			</Link>
 		)

@@ -3,7 +3,7 @@
 #header{
     width: 100%;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     top: 0;
     background-color: #F3F3F3;
     border-bottom: 1px solid #d2d2d2;
@@ -152,6 +152,7 @@
     width:40px;
     margin-left:5px;
     padding:6px;
+    border-radius:4px;
     float: left;
     cursor:pointer;
 }
