@@ -2,6 +2,7 @@ import Servers from '../Util/Servers';
 
 import UserAction from '../Action/UserAction';
 import AppAction from '../Action/AppAction';
+import AppAPI from './AppAPI';
 
 module.exports = {
 	receiveUser:function(user_id){
@@ -23,7 +24,8 @@ module.exports = {
 			type:'GET',
 			success:function(result){
 				if(result.status){
-					UserAction.updateUserActivities(result.body)
+					console.log(result.body)
+					// UserAction.updateUserActivities(result.body)
 				} else {
 					console.log(result.body)
 				}
@@ -48,6 +50,7 @@ module.exports = {
 			data:formData,
 			success:function(result){
 				if(result.status){
+					AppAPI.updateSession(result.body)
 					UserAction.updateUserPic(result.body);
 					callback()
 				} else {

@@ -1,4 +1,4 @@
-var credentials = require('../../credentials.js');
+import Servers from '../Util/Servers'
 var AppAction = require('../Action/AppAction.js');
 var AppStore = require('../Store/AppStore.js');
 import AppHistory from '../Util/AppHistory';
@@ -6,7 +6,7 @@ import AppHistory from '../Util/AppHistory';
 module.exports = {
 	receiveUser:function(_id){
 		$.ajax({
-			url: credentials.api_server + '/users/'+_id,
+			url: Servers.api + '/users/'+_id,
 			type: 'GET',
 			success:function(result){
 				if(result.status){
@@ -20,7 +20,7 @@ module.exports = {
 	receiveAB:function(id){
 		var data = {'card_id':id}
 		$.ajax({
-			url:credentials.api_server + '/cards/'+id,
+			url:Servers.api + '/cards/'+id,
 			type:'GET',
 			data:data,
 			dataType:'json',
@@ -34,7 +34,7 @@ module.exports = {
 	},
 	getSession:function(){
 		$.ajax({
-			url:credentials.host_server + '/users/session',
+			url:Servers.host + '/users/session',
 			type:'GET',
 			success:function(result){
 				if(result.status){
@@ -48,7 +48,7 @@ module.exports = {
 	updateSession:function(session){
 		var data = session;
 		$.ajax({
-			url:credentials.host_server + '/users/session',
+			url:Servers.host + '/users/session',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -62,7 +62,7 @@ module.exports = {
 	handleLogin:function(data,callback){
 		var self = this;
 		$.ajax({
-			url: credentials.api_server + '/users/login',
+			url: Servers.api + '/users/login',
 			type: 'POST',
 			data: data,
 			dataType: 'json',
@@ -77,7 +77,7 @@ module.exports = {
 	},
 	handleSignout:function(){
 		$.ajax({
-			url: credentials.host_server + '/users/logout',
+			url: Servers.host + '/users/logout',
 			type: 'POST',
 			success: function(result){
 				if(result.status){
@@ -89,7 +89,7 @@ module.exports = {
 	checkEmail:function(email,callback){
 		var data = {'email':email}
 		$.ajax({
-			url:credentials.api_server + '/users/email',
+			url:Servers.api + '/users/email',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -105,7 +105,7 @@ module.exports = {
 	checkName:function(name,callback){
 		var data = {'name':name}
 		$.ajax({
-			url:credentials.api_server + '/users/name',
+			url:Servers.api + '/users/name',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -133,18 +133,14 @@ module.exports = {
 		};
 
 	    $.ajax({
-	    	url:credentials.api_server + '/users/join',
+	    	url:Servers.api + '/users/join',
 	    	type:'POST',
 	    	data:data,
 	    	dataType:'json',
 	    	success:function(result){
 	    		if(result.status){
-	    			var json = {};
-	    			json.email = result.body.email;
-	    			json.pw = result.body.pw;
-	    			self.handleLogin(json)
-	    			// AppAction.updateSession(result.body)
-	    			AppHistory.push('/')
+	    			self.updateSession(result.body);
+	    			AppHistory.push('/');
 	    		} else {
 	    			console.log(result.body)
 	    		}
@@ -159,7 +155,7 @@ module.exports = {
 			session_id:cardObj.author._id
 		}
 		$.ajax({
-			url:credentials.api_server + '/users/published',
+			url:Servers.api + '/users/published',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -178,7 +174,7 @@ module.exports = {
 			published:JSON.stringify(published)
 		}
 		$.ajax({
-			url:credentials.host_server + '/users/published',
+			url:Servers.host + '/users/published',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -198,7 +194,7 @@ module.exports = {
 			card_id:card_id
 		}
 		$.ajax({
-			url:credentials.api_server + '/users/participate',
+			url:Servers.api + '/users/participate',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -225,7 +221,7 @@ module.exports = {
 			participated:JSON.stringify(participated)
 		}
 		$.ajax({
-			url:credentials.api_server + '/users/participate/remove',
+			url:Servers.api + '/users/participate/remove',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -241,7 +237,7 @@ module.exports = {
 			pic:pic
 		}
 		$.ajax({
-			url:credentials.host_server + '/users/pic',
+			url:Servers.host + '/users/pic',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -257,7 +253,7 @@ module.exports = {
 			participated:JSON.stringify(participated)
 		}
 		$.ajax({
-			url:credentials.host_server + '/users/participate',
+			url:Servers.host + '/users/participate',
 			type:'POST',
 			data:data,
 			dataType:'json',

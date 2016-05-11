@@ -20,157 +20,22 @@ import Data from './AB/Data';
 import Likes from './AB/Likes';
 import ImageBox from './Common/ImageBox';
 
-const TextVoteAuthorPic = React.createClass({
-	render:function(){
-		var author = this.props.author;
-		var src;
-		if(author.pic!=null){
-			src = Servers.s3 + author.pic;
-		} else {
-			src = null;
-		}
-		return (
-			<Link to={'/users/'+author._id}>
-				<div className="textvote-author-pic">
-					<img className="textvote-author-pic" src={src} />
-				</div>
-			</Link>
-		)
-	}
-})
-
-
-const TextVote = React.createClass({
-	getInitialState:function(){
-		return ({
-			session:this.props.session,
-			vote:this.props.vote,
-			agree:false,
-			author:false
-		})
-	},
-	componentDidMount:function(){
-		this.findAgree();
-		this.findAuthor();
-	},
-	componentWillReceiveProps:function(nextProps){
-		var self = this;
-		this.setState({
-			session:nextProps.session,
-			vote:nextProps.vote
-		},function(){
-			self.findAuthor()
-			self.findAgree()
-		})
-	},
-	findAuthor:function(){
-		var self = this;
-		var session = this.state.session;
-		var vote = this.state.vote;
-		if(session!=null&&vote.author._id == session._id){
-			self.setState({
-				author:true
-			})
-		} else {
-			self.setState({
-				author:false
-			})
-		}
-	},
-	findAgree:function(){
-		var self = this;
-		var session = this.state.session;
-		var vote = this.state.vote;
-		if(session!=null){
-			for(var i =0;i<vote.like.length;i++){
-				if(vote.like[i].author == session._id){
-					self.setState({
-						agree:true
-					});
-					break;
-				}
-			}
-			if(i==vote.like.length){
-				self.setState({
-					agree:false
-				})
-			}
-		} else {
-			self.setState({
-				agree:false
-			})
-		}
-	},
-	up:function(){
-		var vote = this.state.vote;
-		var session = this.state.session;
-		CardAPI.addVoteLike(session._id,vote)
-	},
-	down:function(){
-		var vote = this.state.vote;
-		var session = this.state.session;
-		for(var i=0;i<vote.like.length;i++){
-			if(vote.like[i].author == session._id){
-				vote.like.splice(i,1);
-				CardAPI.removeVoteLike(vote);
-				break;
-			}
-		};
-	},
-	handleDelete:function(){
-		var vote = this.state.vote;
-		CardAPI.deleteVote(vote)
-	},
-	
-	render:function(){
-		var self = this;
-		var vote = this.state.vote;
-		var agree = this.state.agree;
-		var author = this.state.author;
-		var deleteBtn,agreeBtn,likeStyle;
-		if(author){
-			deleteBtn = <div className="delete option-btn" onClick={self.handleDelete} > Delete </div>
-		} else {
-			if(agree){
-				likeStyle = {'color':'#4193ff'}
-				agreeBtn = <div className="down option-btn" onClick={self.down} > Liked </div>
-			} else {
-				likeStyle = null
-				agreeBtn = <div className="up option-btn" onClick={self.up}> Like </div>
-			}
-		}
-		var date = Util.getParsedDate(vote.date);
-		return (
-			<div className="textvote">
-				<div className="left">
-					<TextVoteAuthorPic author={vote.author} />
-				</div>
-				<div className="center">
-					<div className="textvote-header">
-						<div className="textvote-author-name">{'@' + vote.author.name}</div>
-						<div className="textvote-date">{date}</div>
-						<div className="cb"></div>
-					</div>
-					<div className="textvote-title">{vote.title}</div>
-				</div>
-				<div className="right">
-					<div className="cnt" style={likeStyle} >{vote.like.length}</div>
-					{deleteBtn}
-					{agreeBtn}
-				</div>
-				<div className="cb"></div>
-			</div>
-		)
-	}
-});
 
 const CommentInputUserPic = React.createClass({
 	render:function(){
 		var session = this.props.session;
-		var src = Servers.s3 + session.pic;
+		var src,body;
+		if(session.pic == null){
+			src = null;
+			body = <div className="default-pic"></div>
+		} else {
+			src = Servers.s3 + session.pic;
+			body = <img src={src} />
+		}
+
 		return (
 			<div className="comment-input-user-pic">
-				<img src={src} />
+				{body}
 			</div>
 		)
 	}
@@ -222,7 +87,7 @@ const CommentInput = React.createClass({
 	        date:new Date(),
 	        like:[]
 		}
-		image.comment.push(commentObj);
+		image._comment.push(commentObj);
 		CardAction.updateImageComment(image);
 		CommentAPI.createComment(commentObj);
 		this.setState({
@@ -313,19 +178,26 @@ const CommentAuthor = React.createClass({
 	render:function(){
 		var author = this.props.author;
 		return (
-			<div className="comment-author">
-				<span>{'@'+ author.name}</span>
-			</div>
+			<Link to={'/users/'+author._id}>
+				<div className="comment-author">
+					<span>{'@'+ author.name}</span>
+				</div>
+			</Link>
 		)
 	}
 });
 
 const CommentDate = React.createClass({
-	render:function(){
+	getInitialState:function(){
 		var date = Dates.getDateString(this.props.date)
+		return ({
+			date:date
+		})
+	},
+	render:function(){
 		return (
 			<div className="comment-date">
-				<span>{date}</span>
+				<span>{this.state.date}</span>
 			</div>
 		)
 	}
@@ -334,11 +206,19 @@ const CommentDate = React.createClass({
 const CommentAuthorPic = React.createClass({
 	render:function(){
 		var author = this.props.author;
-		var src = Servers.s3 + author.pic;
+		var body,src;
+		if(author.pic == null){
+			body = <div className="default-pic"></div>
+		} else {
+			src = Servers.s3 + author.pic;
+			body = <img src={src} />
+		}
 		return (
-			<div className="comment-author-pic">
-				<img src={src} />
-			</div>
+			<Link to={'/users/'+author._id}>
+				<div className="comment-author-pic">
+					{body}
+				</div>
+			</Link>
 		)
 	}
 });
@@ -365,6 +245,74 @@ const CommentLike = React.createClass({
 			</div>
 		)
 	}
+});
+
+const CommentDelete = React.createClass({
+	getInitialState:function(){
+		return ({
+			session:this.props.session,
+			comment:this.props.comment
+		})
+	},
+	componentWillReceiveProps:function(nextProps){
+		var self = this;
+		this.setState({
+			session:nextProps.session
+		},function(){
+			self.checkAuthor()
+		})
+	},
+	checkAuthor:function(){
+		var self = this;
+		var session = this.state.session;
+		var comment = this.props.comment;
+		if(session == null){
+			self.setState({isAuthor:false});
+			return null;
+		}
+		if(comment.author._id == session._id){
+			self.setState({
+				isAuthor:true
+			})
+		} else {
+			self.setState({
+				isAuthor:false
+			})
+		}
+	},
+	handleDelete:function(){
+		var confirm = window.confirm("Do you really want to delete this comment?");
+		if(!confirm){
+			return null;
+		}
+		var comment = this.props.comment;
+		var image = this.props.image;
+		for(var i=0;i<image._comment.length;i++){
+			if(comment._id == null){
+				if(image._comment[i]._id == comment._id){
+					image._comment.splice(i,1);
+					break;
+				}
+			} else {
+				if(image._comment[i]._id == comment._id){
+					image._comment.splice(i,1);
+					break;
+				}
+			}
+		}
+		CardAction.updateImage(image);
+		CommentAPI.deleteComment(comment);
+	},
+	render:function(){
+		if(!this.state.isAuthor){
+			return null;
+		}
+		return (
+			<div className="comment-delete" onClick={this.handleDelete}>
+				Delete
+			</div>
+		)
+	}
 })
 
 const CommentItem = React.createClass({
@@ -386,17 +334,23 @@ const CommentItem = React.createClass({
 			},function(){
 				self.checkLiked()
 			})
+		} else {
+			self.checkLiked()
 		}
 	},
 	appearAnimation:function(){
 
 	},
 	checkLiked:function(){
+		var self = this;
 		var session = this.state.session;
 		var comment = this.props.comment;
-		var self = this;
-		if(session == null) return null;
-		if(comment.like == null || comment.like.length == 0) return null;
+		if(session == null || comment.like == null || comment.like.length == 0){
+			self.setState({
+				liked:false
+			});
+			return null;
+		}
 		for(var i=0;i<comment.like.length;i++){
 			if(comment.like[i].author == session._id){
 				break;
@@ -424,12 +378,19 @@ const CommentItem = React.createClass({
 					break;
 				}
 			}
+		} else {
+			comment.like.push({
+				author:session._id,
+				date:new Date()
+			})
 		}
-		CardAction.updateImageCommentLike()
-
+		CardAction.updateImageComment(comment);
+		CommentAPI.updateCommentLike(comment);
 	},
 	render:function(){
+		var session = this.state.session;
 		var comment = this.props.comment;
+		var image = this.props.image;
 		var likeLength = comment.like.length;
 		var liked = this.state.liked;
 
@@ -444,6 +405,7 @@ const CommentItem = React.createClass({
 						<div className="card-dot"></div>
 						<CommentDate date={comment.date} />
 						<CommentLike likeLength={likeLength} liked={liked} onLikeClick={this.handleLike} />
+						<CommentDelete session={session} image={image} comment={comment}/>
 						<div className="cb"></div>
 					</div>
 					<div>
@@ -458,14 +420,14 @@ const CommentItem = React.createClass({
 
 const Comments = React.createClass({
 	render:function(){
-		var comments = this.props.comments;
+		var _comment = this.props._comment;
 		var session = this.props.session;
 		var image = this.props.image;
-		var commentItem = comments.map(function(c){
-			if(c._id == null){
-				return <CommentItem key={c.date} comment={c} session={session} image={image}/> 
+		var commentItem = _comment.map(function(comment){
+			if(comment._id == null){
+				return <CommentItem key={comment.date} comment={comment} session={session} image={image}/> 
 			} else {
-				return <CommentItem key={c._id} comment={c} session={session} image={image}/>
+				return <CommentItem key={comment._id} comment={comment} session={session} image={image}/>
 			}
 		})
 		return (
@@ -532,16 +494,16 @@ const ABSection = React.createClass({
 		var self = this;
 		var image = this.props.image;
 		var session = this.props.session;
-		var comments;
-		if(image.comment == null || image.comment.length == 0){
-			comments = null;
+		var _comment;
+		if(image._comment == null || image._comment.length == 0){
+			_comment = null;
 		} else {
-			comments = <Comments image={image} session={session} comments={image.comment} />
+			_comment = <Comments image={image} session={session} _comment={image._comment} />
 		}
 		return (
 			<div className="ab-section">
 				<ABSectionImage session={session} image={image}/>
-				{comments}
+				{_comment}
 				<CommentSubmit session={session} image={image}/>
 			</div>
 		)
@@ -590,14 +552,20 @@ const Delete = React.createClass({
 		var self = this;
 		var card = this.props.card;
 		var session = this.state.session;
-		if(session._id == card.author._id){
+		if(session == null){
 			self.setState({
-				isAuthor:true
+				istAuthor:false
 			})
 		} else {
-			self.setState({
-				isAuthor:false
-			})
+			if(session._id == card.author._id){
+				self.setState({
+					isAuthor:true
+				})
+			} else {
+				self.setState({
+					isAuthor:false
+				})
+			}
 		}
 	},
 	handleDelete:function(){
@@ -768,11 +736,9 @@ const AB = React.createClass({
 		var card_id = this.props.params.card_id;
 		var AB = CardStore.getCardById(card_id);
 		if(AB == null){
-			CardAPI.receiveCard(card_id)
+			CardAPI.receiveAB(card_id)
 		} else {
-			self.setState({
-				AB:AB
-			})
+			CardAction.receiveAB(AB)
 		}
 	},
 	componentWillUnmount:function(){
@@ -782,9 +748,8 @@ const AB = React.createClass({
 	},
 	_onChange:function(){
 		var self = this;
-		var card_id = this.props.params.card_id;
 		this.setState({
-			AB:CardStore.getCardById(card_id)
+			AB:CardStore.getAB()
 		})
 	},
 	_onSessionChange:function(){

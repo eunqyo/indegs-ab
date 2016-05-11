@@ -220,18 +220,17 @@ const UserBackground = React.createClass({
 	render:function(){
 		var src;
 		var user = this.props.user;
-		var dominantColor = user.colorSchema.dominantColor;
-		var palette = user.colorSchema.palette;
-		var blur;
-		if(dominantColor.length == 0 || palette.length == 0){
-			blur = null;
-		} else {
-			blur = <BackgroundBlur palette={palette} dominantColor={dominantColor}/>
-		}
+		// var dominantColor = user.colorSchema.dominantColor;
+		// var palette = user.colorSchema.palette;
+		// var blur;
+		// if(dominantColor.length == 0 || palette.length == 0){
+		// 	blur = null;
+		// } else {
+		// 	blur = <BackgroundBlur palette={palette} dominantColor={dominantColor}/>
+		// }
 
 		return (
 			<div id="user-background">
-				{blur}
 			</div>
 		)
 	}
@@ -246,7 +245,6 @@ const UserHeader = React.createClass({
 				<div className="c1190">
 					<UserPic user={user} />
 					<UserInfo colorSchema={user.colorSchema} user={user} isOwner={isOwner} />
-					<Follow user={user} />
 					<div className="cb"></div>
 				</div>
 				<UserBackground user={user} />

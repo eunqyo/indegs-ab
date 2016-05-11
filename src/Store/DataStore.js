@@ -2,43 +2,40 @@ var DataDispatcher = require('../Dispatcher/DataDispatcher.js');
 var objectAssign = require('object-assign');
 var EventEmitter = require('events').EventEmitter;
 
-var _card;
 var _data;
 
-var getImageLikers = function(image){
-	var ALikers = [];
-	var like = image.like;
-	if(like == null || like.length == 0) return null;
+const getAgeArray = function(like){
+	if(like == null) return [];
+	var thisYear = (new Date()).getFullYear();
+	var res = [];
 	for(var i=0;i<like.length;i++){
-		ALikers.push(like[i].author);
-	};
-	return ALikers;
-}
-
-var getLikesBySex = function(image){
-	var res = {}
-	res.menLikes = 0;
-	res.womenLikes = 0;
-	var like = image.like;
-	if(like == null || like.length == 0) return res;
-	for(var i=0;i<like.length;i++){
-		if(like[i].author.sex == 0){
-			res.menLikes ++ 
-		} else {
-			res.womenLikes ++
-		}
+		res.push({
+			value:thisYear - like[i].author.age,
+			user:like[i].author
+		})
 	}
 	return res;
 }
 
+const getSexArray = function(like){
+	if(like == null) return [];
+	var res = [];
+	for(var i=0;i<like.length;i++){
+		res.push({
+			value:like[i].author.sex,
+			user:like[i]
+		})
+	}
+	return res;
+}
 
 var updateCard = function(card){
-	_card = card;
-	_data = {};
-	_data.ALikers = getImageLikers(_card.A);
-	_data.BLikers = getImageLikers(_card.B);
-	_data.ALikes = getLikesBySex(_card.A);
-	_data.BLikes = getLikesBySex(_card.B);
+	if(_data == null) _data = {};
+	_data.A = {},_data.B = {};
+	_data.A._age = getAgeArray(card.A.like);
+	_data.A._sex = getSexArray(card.A.like);
+	_data.B._age = getAgeArray(card.B.like);
+	_data.B._sex = getSexArray(card.B.like);
 }
 
 

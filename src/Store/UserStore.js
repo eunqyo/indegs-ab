@@ -29,7 +29,6 @@ var updateUserActivities = function(data){
 	else {
 		_published = data.published;
 		_participated = data.participated;
-		console.log(_published)
 	}
 }
 

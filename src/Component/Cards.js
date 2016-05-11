@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link,browserHistory } from 'react-router';
-import { findDOMNode } from "react-dom";
+import ReactDOM from 'react-dom';
+import { Link } from 'react-router';
 
 import AppStore from '../Store/AppStore';
 import AppAPI from '../API/AppAPI';
@@ -13,6 +13,8 @@ import Servers from '../Util/Servers';
 import Util from '../Util/Util';
 import AppHistory from '../Util/AppHistory';
 import Dates from '../Util/Dates';
+
+import SigninModal from './Common/SigninModal';
 
 const CardLike = React.createClass({
 	handleClick:function(){
@@ -42,34 +44,47 @@ const CardLikes = React.createClass({
 	getInitialState:function(){
 		return ({
 			ALike:null,
-			BLike:null
+			BLike:null,
+			session:this.props.session
 		})
 	},
 	componentDidMount:function(){
 		this.checkUserLike()
 	},
 	componentWillReceiveProps:function(nextProps){
-		this.checkUserLike()
+		var self = this;
+		this.setState({
+			session:nextProps.session
+		},function(){
+			self.checkUserLike();
+		})
+
 	},
 	checkUserLike:function(session){
 		var self = this;
 		var card = this.props.card;
-		var session = this.props.session;
+		var session = this.state.session;
 
-		if(!session) return null;
-		this.checkSectionLike(card.A,function (ALike){
-			self.checkSectionLike(card.B,function (BLike){
-				self.setState({
-					ALike:ALike,
-					BLike:BLike
-				})
+		if(!session){
+			self.setState({
+				ALike:false,
+				BLike:false
 			})
-		});	
+		} else {
+			self.checkSectionLike(card.A,function (ALike){
+				self.checkSectionLike(card.B,function (BLike){
+					self.setState({
+						ALike:ALike,
+						BLike:BLike
+					})
+				})
+			});	
+		}
 	},
 	checkSectionLike:function(section,callback){
 		if(section.like.length == 0) callback(false);
 
-		var session = this.props.session;
+		var session = this.state.session;
 		for(var i=0;i<section.like.length;i++){
 			if(section.like[i].author == session._id){
 				break;
@@ -81,19 +96,33 @@ const CardLikes = React.createClass({
 			callback(true);
 		}
 	},
+	renderSigninModal:function(){
+		var title = 'Signin first'
+		ReactDOM.render(<SigninModal toggle={this.toggleSigninModal} title={title} />,document.getElementById('signin-modal-container'))
+	},
+	toggleSigninModal:function(e){
+		var a = $('#signin-modal');
+		if(!a.is(e.target)&&a.has(e.target).length == 0){
+			ReactDOM.unmountComponentAtNode(document.getElementById('signin-modal-container'),<SigninModal />)
+		}
+	},
 	handleLike:function(section){
-		var session = this.props.session;
-		if(session==null) return null;
 		var self =this;
+		var session = this.state.session;
+		if(session==null){
+			self.renderSigninModal();
+			return null;
+		};
 		var card = this.props.card;
 		var ALike = this.state.ALike;
 		var BLike = this.state.BLike;
 		if(section=='a'){
 			if(ALike){
-				self.removeLike(card.A,function (A){
-					card.A = A;
-					CardAction.updateCard(card);
-				});
+				return null;
+				// self.removeLike(card.A,function (A){
+				// 	card.A = A;
+				// 	CardAction.updateCard(card);
+				// });
 			} else {
 				self.addLike(card.A,function (A){
 					if(BLike){
@@ -110,10 +139,11 @@ const CardLikes = React.createClass({
 			}
 		} else {
 			if(BLike){
-				self.removeLike(card.B,function (B){
-					card.B = B;
-					CardAction.updateCard(card);
-				});
+				return null;
+				// self.removeLike(card.B,function (B){
+				// 	card.B = B;
+				// 	CardAction.updateCard(card);
+				// });
 			} else {
 				self.addLike(card.B,function (B){
 					if(ALike){
@@ -129,10 +159,10 @@ const CardLikes = React.createClass({
 				})
 			}
 		}
-		CardAPI.updateImageLike(card.A,card.B,section);
+		CardAPI.updateImageLike(card.A,card.B,section,session);
 	},
 	addLike:function(section,callback){
-		var session = this.props.session;
+		var session = this.state.session;
 		var likeObj = {
 			date:new Date(),
 			author:session._id
@@ -141,7 +171,7 @@ const CardLikes = React.createClass({
 		callback(section);
 	},
 	removeLike:function(section,callback){
-		var session = this.props.session;
+		var session = this.state.session;
 		for(var i=0;i<section.like.length;i++){
 			if(section.like[i].author == session._id){
 				section.like.splice(i,1);
@@ -150,13 +180,18 @@ const CardLikes = React.createClass({
 		}
 		callback(section);
 	},
+	handleMouseOver:function(){
+		this.props.mover()
+	},
+	handleMouseLeave:function(){
+		this.props.mleave()
+	},
 	render:function(){
-		var session = this.props.session;
 		var card = this.props.card;
 		var ALike = this.state.ALike;
 		var BLike = this.state.BLike;
 		return (
-			<div className="card-likes">
+			<div className="card-likes" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
 				<CardLike section={'a'} likeCnt={card.A.like.length} liked={ALike} onLikeClick={this.handleLike} />
 				<CardLike section={'b'} likeCnt={card.B.like.length} liked={BLike} onLikeClick={this.handleLike} />
 				<div className="cb"></div>
@@ -168,10 +203,11 @@ const CardLikes = React.createClass({
 const CardTitle = React.createClass({
 	render:function(){
 		var card = this.props.card;
+		var style = this.props.style;
 		return (
 			<Link to={'/cards/'+card._id}>
 				<div className="card-title">
-					<span className="title">{card.title}</span>
+					<span className="title" style={style}>{card.title}</span>
 				</div>
 			</Link>
 		)
@@ -179,11 +215,17 @@ const CardTitle = React.createClass({
 });
 
 const CardAuthor = React.createClass({
+	handleMouseOver:function(){
+		this.props.mover()
+	},
+	handleMouseLeave:function(){
+		this.props.mleave()
+	},
 	render:function(){
 		var card = this.props.card;
 		return (
 			<Link to={'/users/'+card.author._id}>
-				<div className="card-author">
+				<div className="card-author" onMouseOver={this.handleMouseOver} onMouseLeave={this.handleMouseLeave}>
 					<span className="author">{'@' + card.author.name}</span>
 				</div>
 			</Link>
@@ -192,9 +234,14 @@ const CardAuthor = React.createClass({
 });
 
 const CardDate = React.createClass({
-	render:function(){
+	getInitialState:function(){
 		var card = this.props.card;
-		var date = Dates.getDateString(card.date)
+		return ({
+			date:Dates.getDateString(card.date)
+		})
+	},
+	render:function(){
+		var date = this.state.date;
 		return (
 			<div className="card-date">
 				<span className="date">{date}</span>
@@ -321,20 +368,38 @@ const CardImages = React.createClass({
 });
 
 const CardBody = React.createClass({
+	getInitialState:function(){
+		return ({
+			style:{}
+		})
+	},
+	handleMouseOver:function(){
+		this.setState({
+			style:{
+				textDecoration:'none'
+			}
+		})
+	},
+	handleMouseLeave:function(){
+		this.setState({
+			style:{}
+		})
+	},
 	render:function(){
 		var card = this.props.card;
 		var session = this.props.session;
+		var style = this.state.style;
 		return (
 			<div className="card-body">
 				<div className="card-header">
 					<div className="card-info">
-						<CardAuthor card={card}/>
+						<CardAuthor mover={this.handleMouseOver} mleave={this.handleMouseLeave} card={card}/>
 						<div className="card-dot"></div>
 						<CardDate card={card} />
 						<div className="cb"></div>
-						<CardTitle card={card}/>
+						<CardTitle style={style} card={card}/>
 					</div>
-					<CardLikes card={card} session={session} />
+					<CardLikes mover={this.handleMouseOver} mleave={this.handleMouseLeave} card={card} session={session} />
 					<div className="cb"></div>
 				</div>
 				<CardDescription description={card.description}/>
@@ -349,7 +414,7 @@ const Card = React.createClass({
 		var card = this.props.card;
 		var session = this.props.session;
 		return (
-			<div className="card">
+			<div className="card" >
 				<CardLeft author={card.author} />
 				<CardBody card={card} session={session} />
 			</div>
@@ -407,6 +472,7 @@ const Cards = React.createClass({
 		window.removeEventListener('resize',this.handleResize);
 		window.removeEventListener('scroll',this._onScroll);
 		CardStore.removeChangeListener(this._onChange);
+		CardAction.receiveCards(null)
 	},
 	handleResize:function(){
 		this.layout()
@@ -414,7 +480,7 @@ const Cards = React.createClass({
 	_onScroll:function(){
 		var cards = this.state.cards;
 		var endOfData = this.state.endOfData;
-		if(endOfData) return null;
+		if(cards == null || endOfData) return null;
 		var lastCard = cards[cards.length-1];
 		var cHeight = $('#cards').outerHeight();
 		var yOffset = window.pageYOffset;
@@ -455,7 +521,7 @@ const Cards = React.createClass({
 		var centerWidth = this.state.centerWidth;
 		var imageWidth = this.state.imageWidth;
 		var endOfData = this.state.endOfData;
-		if(cards == null) return null;
+		if(cards == null){ card = null; return null}
 		card = cards.map(function(c,i){
 			return <Card key={c._id} card={c} session={session} rightWidth={rightWidth} centerWidth={centerWidth} imageWidth={imageWidth} />
 		});		

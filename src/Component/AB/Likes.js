@@ -1,7 +1,8 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import CardAPI from '../../API/CardAPI';
 import CardAction from '../../Action/CardAction';
-
+import SigninModal from '../Common/SigninModal';
 
 const Like = React.createClass({
 	handleClick:function(){
@@ -48,20 +49,26 @@ const Likes = React.createClass({
 			})
 		}
 	},
-	checkUserLike:function(){
+	checkUserLike:function(session){
 		var self = this;
 		var card = this.props.card;
 		var session = this.state.session;
 
-		if(!session) return null;
-		this.checkSectionLike(card.A,function (ALike){
-			self.checkSectionLike(card.B,function (BLike){
-				self.setState({
-					ALike:ALike,
-					BLike:BLike
-				})
+		if(!session){
+			self.setState({
+				ALike:false,
+				BLike:false
 			})
-		});	
+		} else {
+			self.checkSectionLike(card.A,function (ALike){
+				self.checkSectionLike(card.B,function (BLike){
+					self.setState({
+						ALike:ALike,
+						BLike:BLike
+					})
+				})
+			});	
+		}
 	},
 	checkSectionLike:function(section,callback){
 		if(section.like.length == 0) callback(false);
@@ -78,22 +85,29 @@ const Likes = React.createClass({
 			callback(true);
 		}
 	},
+	renderSigninModal:function(){
+		var title = 'Signin first'
+		ReactDOM.render(<SigninModal toggle={this.toggleSigninModal} title={title} />,document.getElementById('signin-modal-container'))
+	},
+	toggleSigninModal:function(e){
+		var a = $('#signin-modal');
+		if(!a.is(e.target)&&a.has(e.target).length == 0){
+			ReactDOM.unmountComponentAtNode(document.getElementById('signin-modal-container'),<SigninModal />)
+		}
+	},
 	handleLike:function(section){
-		var session = this.state.session;
-		if(session==null) return null;
 		var self =this;
+		var session = this.state.session;
+		if(session==null) {
+			self.renderSigninModal();
+			return null;
+		};
 		var card = this.props.card;
 		var ALike = this.state.ALike;
 		var BLike = this.state.BLike;
 		if(section=='a'){
 			if(ALike){
-				self.removeLike(card.A,function (A){
-					card.A = A;
-					CardAction.updateCard(card);
-				});
-				self.setState({
-					ALike:false
-				})
+				return null;
 			} else {
 				self.setState({
 					ALike:true,
@@ -114,13 +128,7 @@ const Likes = React.createClass({
 			}
 		} else {
 			if(BLike){
-				self.removeLike(card.B,function (B){
-					card.B = B;
-					CardAction.updateCard(card);
-				});
-				self.setState({
-					BLike:false
-				})
+				return null;
 			} else {
 				self.setState({
 					ALike:false,
@@ -140,7 +148,7 @@ const Likes = React.createClass({
 				})
 			}
 		}
-		CardAPI.updateImageLike(card.A,card.B);
+		CardAPI.updateImageLike(card.A,card.B,section,session);
 	},
 	addLike:function(section,callback){
 		var session = this.state.session;

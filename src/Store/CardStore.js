@@ -43,24 +43,20 @@ var byVoteLike = function(a,b){
 }
 
 var updateCard = function(card){
-	if(_card != undefined){
-		function find(card, _card){
-			for(var i=0;i<_card.length;i++){
-				if(_card[i]._id == card._id){
-					_card[i] = card;
-					_card.sort(compare)
-					break;
-				}
-			}
-			if(i == _card.length){
-				_card.unshift(card);
-				_card.sort(compare);
+	if(_card == null){
+		_AB = card
+	} else {
+		for(var i=0;i<_card.length;i++){
+			if(_card[i]._id == card._id){
+				_card[i] = card;
+				_card.sort(compare)
+				break;
 			}
 		}
-		find(card, _card);
-	} else {
-		_card = [];
-		_card.push(card);
+		if(i == _card.length){
+			_card.unshift(card);
+			_card.sort(compare);
+		}		
 	}
 };
 
@@ -83,49 +79,35 @@ var updateNewCards = function(card){
 };
 
 var receiveCards = function(cards){
-	if(_card != null){
-		for(var i=0;i<cards.length;i++){
-			for(var k=0;k<_card.length;k++){
-				if(cards[i]._id == _card[k]._id){
-					_card[k] == cards[i];
-					break;
-				}
-			}
-			if(k==_card.length){
-				updateNewCards(cards[i])
-			}
-		}
-	} else {
-		_card = [];
-		_card = cards;
-	}
+	// if(_card != null){
+	// 	for(var i=0;i<cards.length;i++){
+	// 		for(var k=0;k<_card.length;k++){
+	// 			if(cards[i]._id == _card[k]._id){
+	// 				_card[k] == cards[i];
+	// 				break;
+	// 			}
+	// 		}
+	// 		if(k==_card.length){
+	// 			_card.push(cards[i])
+	// 		}
+	// 	}
+	// } else {
+	// 	_card = [];
+	// }
+	_card = cards;
+	if(_card == null) return null;
 	_card.sort(compare);
-}
-
-var updateAB = function(_id){
-	function find(_id,_card){
-		for(var i=0;i<_card.length;i++){
-			if(_card[i]._id == _id){
-				_AB = _card[i]
-			}
-		}
-	}
-	find(_id,_card);
-	_AB.A.vote.sort(byVoteLike);
-	_AB.B.vote.sort(byVoteLike);
 }
 
 var receiveAB = function(AB){
 	_AB = AB;
-	_AB.A.vote.sort(byVoteLike);
-	_AB.B.vote.sort(byVoteLike);
 }
 
 var emptyAB = function(){
 	_AB = null;
 }
 
-var updateABImage = function(image){
+var updateImage = function(image){
 	if(_AB.A._id == image._id){
 		_AB.A = image;
 	} else {
@@ -133,83 +115,56 @@ var updateABImage = function(image){
 	}
 }
 
-
-var updateImage = function(image){
-	for(var i=0;i<_card.length;i++){
-		if(_card[i]._id == image.card_id){
-			if(_card[i].A._id == image._id){
-				_card[i].A == image;
-				_card[i].A.liker = image.liker;
-				_card[i].A.vote = image.vote;
-				_card[i].A.vote.sort(sortByLike)
-			} else {
-				_card[i].B == image;
-				_card[i].B.liker = image.liker;
-				_card[i].B.vote = image.vote;
-				_card[i].B.vote.sort(sortByLike)
-			}
-			if(_AB!=null&&_AB._id==_card[i]._id){
-				_AB == _card[i];
-			}
-			break;
-		}
-	}
-
-}
-
-var updateLike = function(image){
-	function find(image,_card){
-		for(var i=0;i<_card.length;i++){
-			if(_card[i].imageA._id == image._id){
-				_card[i].imageA == image;
-			}
-			if(_card[i].imageB._id == image._id){
-				_card[i].imageB == image;
-			}
-		}
-	}
-	find(image,_card);
-};
-
-var updateImageComment = function(image){
-	for(var i=0; i<_card.length; i++){
-		if(_card[i]._id == image.card_id){
-			break;
-		}
-	}
-	if(_card[i].A._id == image._id){
-		_card[i].A.comment = image.comment;
+var updateImageComment = function(comment){
+	var image;
+	if(_AB.A._id == comment.image_id){
+		image = _AB.A;
 	} else {
-		_card[i].B.comment == image.comment;
+		image = _AB.B;
+	}
+
+	for(var i=0;i<image._comment.length;i++){
+		if(comment._id == null){
+			if(image._comment[i].date == comment.date){
+				image._comment[i] = comment;
+				break;
+			}
+		} else {
+			if(image._comment[i]._id == comment._id){
+				image._comment[i] = comment;
+				break;
+			}
+		}
 	}
 };
 
 
-var updateImageLike = function(imageObj){
-	for(var i = 0; i < _card.length; i++){
-		if(_card[i].A._id == imageObj._id){
-			_card[i].A.like = imageObj.like;
-			break;
+var updateImageLike = function(image){
+	console.log('image liked')
+	console.log(_card)
+	if(_card == null){
+		if(_AB.A._id == image._id){
+			_AB.A.like = image.like;
 		}
-		if(_card[i].B._id == imageObj._id){
-			_card[i].B.like = imageObj.like;
-			break;
+		if(_AB.B._id == image._id){
+			_AB.B.like = image.like;
+		}
+	} else {
+		console.log('a')
+		for(var i = 0; i < _card.length; i++){
+			if(_card[i].A._id == image._id){
+				_card[i].A.like = image.like;
+				break;
+			}
+			if(_card[i].B._id == image._id){
+				_card[i].B.like = image.like;
+				break;
+			}
 		}
 	}
-};
 
-var createVote = function(imageObj){
-	for(var i=0;i<_card.length;i++){
-		if(_card[i].A._id == imageObj._id){
-			_card[i].A.vote = imageObj.vote;
-			break;
-		}
-		if(_card[i].B._id == imageObj._id){
-			_card[i].B.vote = imageObj.vote;
-			break;
-		}
-	}
-}
+
+};
 
 var updateVote = function(voteObj){
 	for(var i=0;i<_card.length;i++){

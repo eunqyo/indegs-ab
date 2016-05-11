@@ -1,4 +1,4 @@
-var credentials = require('../../credentials.js');
+var Servers = require('../Util/Servers.js');
 
 
 import AppAPI from './AppAPI';
@@ -9,7 +9,7 @@ import AppHistory from '../Util/AppHistory';
 module.exports ={
 	receiveCards:function(limit){
 		$.ajax({
-			url: credentials.api_server + '/cards/limit/'+limit,
+			url: Servers.api + '/cards/limit/'+limit,
 			type: 'GET',
 			success: function(result){
 				if(result.status){
@@ -29,7 +29,7 @@ module.exports ={
 	},
 	loadNewCards:function(date){
 		$.ajax({
-			url:credentials.api_server + '/cards/loadNew/'+date,
+			url:Servers.api + '/cards/loadNew/'+date,
 			type:'GET',
 			success:function(result){
 				if(result.status){
@@ -47,7 +47,7 @@ module.exports ={
 	},
 	loadMoreCards:function(OldestCard){
 		$.ajax({
-			url:credentials.api_server + '/cards/loadMore/'+ OldestCard.date,
+			url:Servers.api + '/cards/loadMore/'+ OldestCard.date,
 			type:'GET',
 			success:function(result){
 				if(result.status){
@@ -69,7 +69,7 @@ module.exports ={
 	receiveCard:function(card_id){
 		var self = this;
 		$.ajax({
-			url:credentials.api_server + '/cards/'+card_id,
+			url:Servers.api + '/cards/'+card_id,
 			type:'GET',
 			success:function(result){
 				if(result.status){
@@ -83,7 +83,7 @@ module.exports ={
 	receiveAB:function(card_id){
 		var self = this;
 		$.ajax({
-			url:credentials.api_server + '/cards/'+card_id,
+			url:Servers.api + '/cards/'+card_id,
 			type:'GET',
 			success:function(result){
 				if(result.status){
@@ -98,7 +98,7 @@ module.exports ={
 		var formData = new FormData();
 		formData.append('image',image)
 		$.ajax({
-			url:credentials.api_server + '/cards/image',
+			url:Servers.api + '/cards/image',
 			type:'POST',
 			contentType:false,
 			processData:false,
@@ -132,7 +132,7 @@ module.exports ={
 			self.postImage(postObj.B, function(B){
 				data.B = B._id;
 				$.ajax({
-					url:credentials.api_server + '/cards',
+					url:Servers.api + '/cards',
 					type:'POST',
 					data:data,
 					dataType:'json',
@@ -173,7 +173,7 @@ module.exports ={
 		var Bc = getCommentsToDelete(card.B);
 		data.comments = JSON.stringify((Ac).concat(Bc));
 		$.ajax({
-			url:credentials.api_server + '/cards/delete',
+			url:Servers.api + '/cards/delete',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -185,7 +185,7 @@ module.exports ={
 	receiveImage:function(id,callback){
 		var data = {'id':id}
 		$.ajax({
-			url: credentials.api_server + '/cards/image',
+			url: Servers.api + '/cards/image',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -196,7 +196,7 @@ module.exports ={
 	},
 	updateImage:function(image){
 		$.ajax({
-			url:credentials.api_server + '/images',
+			url:Servers.api + '/images',
 			type:'POST',
 			data:image,
 			dataType:'json',
@@ -205,14 +205,15 @@ module.exports ={
 			}
 		})
 	},
-	updateImageLike:function(A,B,section){
+	updateImageLike:function(A,B,section,session){
 		var data = {
 			A:JSON.stringify(A),
 			B:JSON.stringify(B),
-			section:section
+			section:section,
+			session:JSON.stringify(session)
 		}
 		$.ajax({
-			url:credentials.api_server + '/images/like',
+			url:Servers.api + '/images/like',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -231,7 +232,7 @@ module.exports ={
 			image_id:image_id
 		}
 		$.ajax({
-			url:credentials.api_server + '/images/like',
+			url:Servers.api + '/images/like',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -251,7 +252,7 @@ module.exports ={
 			likeObj:JSON.stringify(image.like)
 		}
 		$.ajax({
-			url:credentials.api_server + '/images/like/remove',
+			url:Servers.api + '/images/like/remove',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -272,7 +273,7 @@ module.exports ={
 			image_id:image._id
 		}
 		$.ajax({
-			url:credentials.api_server + '/votes',
+			url:Servers.api + '/votes',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -293,7 +294,7 @@ module.exports ={
 			vote_id:vote._id
 		}
 		$.ajax({
-			url:credentials.api_server + '/votes/like',
+			url:Servers.api + '/votes/like',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -314,7 +315,7 @@ module.exports ={
 			likeObj:JSON.stringify(vote.like)
 		}
 		$.ajax({
-			url:credentials.api_server + '/votes/like/remove',
+			url:Servers.api + '/votes/like/remove',
 			type:'POST',
 			data:data,
 			dataType:'json',
@@ -329,7 +330,7 @@ module.exports ={
 	},
 	deleteVote:function(vote){
 		$.ajax({
-			url:credentials.api_server + '/votes/delete',
+			url:Servers.api + '/votes/delete',
 			type:'POST',
 			data:vote,
 			dataType:'json',
@@ -346,7 +347,7 @@ module.exports ={
 		var data = vote;
 		data.liker = JSON.stringify(vote.liker);
 		$.ajax({
-			url:credentials.api_server + '/votes/update',
+			url:Servers.api + '/votes/update',
 			type:'POST',
 			data:data,
 			dataType:'json',

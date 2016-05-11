@@ -28,6 +28,9 @@ const UserMenu = React.createClass({
 	handleBodyClick:function(e){
 		this.props.toggle(e)
 	},
+	handlePageClick:function(){
+		this.props.toggle()
+	},
 	handleSignout:function(){
 		AppAPI.handleSignout();
 	},
@@ -39,11 +42,11 @@ const UserMenu = React.createClass({
 				<div className="modal-top-arrow"></div>
 				<div className="modal-top-cover"></div>
 				<UserMenuTitle session={session} />
-
-				<div className="item" onClick={this.goMypage}>Your page</div>
-				<div className="item" onClick={this.goMyLike}>Your likes</div>
+				<Link to={'/users/'+session._id} onClick={this.handlePageClick}>
+					<div className="item">Your page ></div>
+				</Link>
 				<div className="bar"></div>
-				<div className="item" id="logout" onClick={this.handleSignout}>Sign out</div>
+				<div className="item" id="logout" onClick={this.handleSignout}>Sign out ></div>
 			</div>
 		)
 	}
@@ -57,12 +60,19 @@ const UserPic = React.createClass({
 		})
 	},
 	toggleMenu:function(e){
-		var a = $('#user-menu');
-		if(a.is(e.target) || a.has(e.target).length > 0) return null;
 		var toggle = this.state.toggle;
-		this.setState({
-			toggle:!toggle
-		});
+		var self = this;
+		if(e){
+			var a = $('#user-menu');
+			if(a.is(e.target) || a.has(e.target).length > 0) return null;
+			self.setState({
+				toggle:!toggle
+			});
+		} else {
+			self.setState({
+				toggle:!toggle
+			})
+		}
 	},
 	render:function(){
 		var session = this.props.session;

@@ -258,7 +258,6 @@
     border-radius:4px;
 }
 
-
 /*<CommentItemCenter />*/
 .comment-item-center{
     float:left;
@@ -274,6 +273,9 @@
     line-height: 16px;
     font-weight: 600;
     letter-spacing: -0.2px;
+}
+.comment-author:hover > span {
+    text-decoration: underline;
 }
 
 .comment-date{
@@ -292,6 +294,21 @@
 .comment-item:hover .comment-like-dot{
     display:block;
 }
+.comment-item:hover .comment-delete{
+    display:block;
+}
+
+
+.comment-delete{
+    float:right;
+    font-size:11px;
+    padding:0 5px;
+    color:#989898;
+    font-weight:400;
+    cursor:pointer;
+    display:none;
+}
+
 .comment-like-dot{
     float: left;
     width: 2px;

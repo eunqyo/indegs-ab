@@ -27,7 +27,7 @@ const UserInfo = React.createClass({
 					<span>{user.name}</span>
 				</div>
 				<div id="user-info-email">
-					<span>{user.email}</span>
+					<span>{'('+user.email+')'}</span>
 				</div>
 			</div>
 		)

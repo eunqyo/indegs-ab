@@ -1,4 +1,5 @@
 import Servers from '../Util/Servers';
+import AppStore from '../Store/AppStore';
 
 import { browserHistory } from 'react-router';
 
@@ -24,18 +25,38 @@ module.exports = {
 			}
 		})
 	},
-	receiveAB:function(id){
-		var data = {'card_id':id}
+	deleteComment:function(commentObj){
 		$.ajax({
-			url:credentials.api_server + '/cards/'+id,
-			type:'GET',
-			data:data,
-			dataType:'json',
+			url: Servers.api + '/comments/delete',
+			type: 'POST',
+			data: commentObj,
+			dataType: 'json',
 			success:function(result){
-				var AB = result.data;
-				AB.imageA = JSON.parse(result.data.imageA)
-				AB.imageB = JSON.parse(result.data.imageB)
-				AppAction.sendAB(AB)
+				if(result.status){
+					console.log(result.body)
+				} else {
+					console.log(result.body)
+				}
+			}
+		})
+	},
+	updateCommentLike:function(comment){
+		var data = {
+			_id:comment._id,
+			date:comment.date,
+			like:JSON.stringify(comment.like)
+		}
+		$.ajax({
+			url: Servers.api + '/comments/like',
+			type: 'POST',
+			data: data,
+			dataType: 'json',
+			success:function(result){
+				if(result.status){
+					console.log(result.body)
+				} else {
+					console.log(result.body)
+				}
 			}
 		})
 	}
