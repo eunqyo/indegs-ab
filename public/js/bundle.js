@@ -30895,7 +30895,7 @@
 				data: formData,
 				success: function success(result) {
 					if (result.status) {
-						location.href = 'http://localhost:3030';
+						location.href = '/';
 					} else {
 						console.log(result.body);
 					}
